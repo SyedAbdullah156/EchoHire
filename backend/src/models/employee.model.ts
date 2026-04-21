@@ -1,10 +1,10 @@
 import mongoose, { Schema } from 'mongoose';
-import { IEmployee } from '../types/employee.types';
+import { TEmployee } from '../types/employee.types';
 
-const employeeSchema = new Schema<IEmployee>({
+const employeeSchema = new Schema<TEmployee>({
     company_id: { type: Schema.Types.ObjectId, ref: 'Company', required: true },
     user_id: { type: Schema.Types.ObjectId, ref: 'User', required: true },
     role: { type: String, required: true }
 });
 
-export const Employee = mongoose.model<IEmployee>('Employee', employeeSchema); 
+export const Employee = mongoose.model<TEmployee>('Employee', employeeSchema); 

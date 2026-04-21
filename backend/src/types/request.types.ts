@@ -1,7 +1,7 @@
 import { Request } from 'express';
-import { IUser } from './user.types';
+import { TUser } from './user.types';
 
 // Custom request type with user property
-export interface AuthenticatedRequest extends Request {
-    user?: IUser;
+export interface AuthRequest extends Request {
+    user?: TUser;
 }
