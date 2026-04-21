@@ -3,29 +3,28 @@ import { RoundType } from "../constants/roundtypes.constants";
 import { VIOLATION_TYPES } from "../constants/violations.constants";
 import { ROUND_STATUS, INTERVIEW_STATUS } from "../constants/status.constants";
 
-export type InterviewStatus = (typeof INTERVIEW_STATUS)[number];
-export type RoundStatus = (typeof ROUND_STATUS)[number];
+export type TInterviewStatus = (typeof INTERVIEW_STATUS)[number];
+export type TRoundStatus = (typeof ROUND_STATUS)[number];
 
-export interface Round {
+export interface TRound {
     type: RoundType;
-    status: RoundStatus;
+    status: TRoundStatus;
     score?: number;
     remarks?: string;
 }
 
-export interface Violation {
+export interface TViolation {
     type: (typeof VIOLATION_TYPES)[number];
     timestamp: Date;
 }
 
-export interface IInterview {
+export interface TInterview {
     job_id: mongoose.Types.ObjectId;
     user_id: mongoose.Types.ObjectId;
-    rounds: Round[];
-    status: InterviewStatus;
+    rounds: TRound[];
+    status: TInterviewStatus;
     cv_url?: string;
-    parsed_cv?: string;
     score?: number;
     remarks?: string;
-    violations?: Violation[];
+    violations?: TViolation[];
 }

@@ -1,10 +1,10 @@
 import mongoose, { Schema } from "mongoose";
 import { RoundType } from "../constants/roundtypes.constants";
-import { Round, Violation, IInterview } from "../types/interview.types";
+import { TRound, TViolation, TInterview } from "../types/interview.types";
 import { VIOLATION_TYPES } from "../constants/violations.constants";
 import { ROUND_STATUS, INTERVIEW_STATUS } from "../constants/status.constants";
 
-const roundSchema = new Schema<Round>(
+const roundSchema = new Schema<TRound>(
   {
     type: {
         type: String,
@@ -22,7 +22,7 @@ const roundSchema = new Schema<Round>(
   { _id: false },
 );
 
-const violationSchema = new Schema<Violation>(
+const violationSchema = new Schema<TViolation>(
   {
     type: {
         type: String,
@@ -34,7 +34,7 @@ const violationSchema = new Schema<Violation>(
   { _id: false },
 );
 
-export const interviewSchema = new Schema<IInterview>(
+export const interviewSchema = new Schema<TInterview>(
   {
     job_id: { type: Schema.Types.ObjectId, ref: "Job", required: true },
     user_id: { type: Schema.Types.ObjectId, ref: "User", required: true },
@@ -44,7 +44,6 @@ export const interviewSchema = new Schema<IInterview>(
         default: [],
     },
     cv_url: { type: String, required: false },
-    parsed_cv: { type: String, required: false },
     score: { type: Number, required: false },
     remarks: { type: String, required: false },
     status: {
@@ -60,4 +59,4 @@ export const interviewSchema = new Schema<IInterview>(
   { timestamps: true },
 );
 
-export const Interview = mongoose.model<IInterview>("Interview", interviewSchema)
+export const Interview = mongoose.model<TInterview>("Interview", interviewSchema)
