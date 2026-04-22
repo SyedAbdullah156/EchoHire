@@ -13,7 +13,7 @@ export const createUserService = async (userData: TUser) => {
     return user;
 };
 
-export const getUsersService = async () => {
+export const getAllUsersService = async () => {
     // .select('-password') ensures we never accidentally send hashes to the client
     const users = await User.find().select('-password');
     return users;
@@ -36,8 +36,6 @@ export const getUserByEmailService = async (email: string) => {
 };
 
 export const updateUserService = async (id: string, updateData: Partial<TUser>) => {
-    // { new: true, runValidators: true } ensures we get the updated doc back
-    // and that Mongoose checks our Schema rules (like enum or required)
     const user = await User.findByIdAndUpdate(id, updateData, {
         new: true,
         runValidators: true,

@@ -8,14 +8,20 @@ const roundSchema = new Schema<TRound>(
   {
     type: {
         type: String,
-        enum: Object.values(RoundType),
-        required: true,
+        enum: {
+            values: Object.values(RoundType),
+            message: '{VALUE} is not a valid round type'
+        },
+        required: [true, "Interview round type is required"],
     },
     score: { type: Number, required: false },
     remarks: { type: String, required: false },
     status: { 
         type: String, 
-        enum: ROUND_STATUS,
+        enum: {
+            values: ROUND_STATUS,
+            message: '{VALUE} is not a valid round status'
+        },
         default: "pending" 
     },
   },
@@ -26,8 +32,11 @@ const violationSchema = new Schema<TViolation>(
   {
     type: {
         type: String,
-        enum: VIOLATION_TYPES,
-        required: true,
+        enum: {
+            values: VIOLATION_TYPES,
+            message: '{VALUE} is not a recognized violation type'
+        },
+        required: [true, "Violation type must be specified"],
     },
     timestamp: { type: Date, default: Date.now },
   },
@@ -36,19 +45,35 @@ const violationSchema = new Schema<TViolation>(
 
 export const interviewSchema = new Schema<TInterview>(
   {
-    job_id: { type: Schema.Types.ObjectId, ref: "Job", required: true },
-    user_id: { type: Schema.Types.ObjectId, ref: "User", required: true },
+    job_id: { 
+        type: Schema.Types.ObjectId, 
+        ref: "Job", 
+        required: [true, "An interview must be linked to a specific job"] 
+    },
+    user_id: { 
+        type: Schema.Types.ObjectId, 
+        ref: "User", 
+        required: [true, "An interview must be linked to a candidate (user)"] 
+    },
     rounds: {
         type: [roundSchema],
-        required: true,
+        required: [true, "At least one interview round must be defined"],
         default: [],
     },
     cv_url: { type: String, required: false },
     score: { type: Number, required: false },
-    remarks: { type: String, required: false },
+    remarks: { 
+        type: String, 
+        required: false,
+        minlength: [2, 'Remarks must be at least 2 characters long'],
+        maxlength: [500, 'Remarks cannot exceed 500 characters']
+    },
     status: {
         type: String,
-        enum: INTERVIEW_STATUS,
+        enum: {
+            values: INTERVIEW_STATUS,
+            message: '{VALUE} is not a valid interview status'
+        },
         default: "applied",
     },
     violations: {
@@ -59,4 +84,4 @@ export const interviewSchema = new Schema<TInterview>(
   { timestamps: true },
 );
 
-export const Interview = mongoose.model<TInterview>("Interview", interviewSchema)
+export const Interview = mongoose.model<TInterview>("Interview", interviewSchema);
