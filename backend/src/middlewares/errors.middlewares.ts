@@ -1,22 +1,21 @@
-import { Request, Response, NextFunction } from "express";
-import { AppError } from "../utils/apperror.utls";
+import { Request, Response, NextFunction } from 'express';
 
 export const globalErrorHandler = (err: any, req: Request, res: Response, next: NextFunction) => {
-    let error = { ...err };
-    error.message = err.message;
+    let statusCode = err.statusCode || 500;
+    let message = err.message || "Internal Server Error";
+    let errors: string[] = [];
 
-    // OPTIMIZATION: Catch specific MongoDB/Mongoose errors
-    if (err.name === 'CastError') error = new AppError(`Invalid ${err.path}: ${err.value}`, 400);
-    if (err.code === 11000) error = new AppError("Duplicate field value entered", 400);
+    // Checking if Mongoose Validation Error
     if (err.name === 'ValidationError') {
-        const message = Object.values(err.errors).map((val: any) => val.message);
-        error = new AppError(`Invalid input data: ${message.join('. ')}`, 400);
+        statusCode = 400;
+        message = "Validation Failed";
+        errors = Object.values(err.errors).map((el: any) => el.message);
     }
 
-    res.status(error.statusCode || 500).json({
+    res.status(statusCode).json({
         success: false,
-        message: error.message || "Internal Server Error",
-        // Business Practice: Only reveal technical details in development
-        stack: process.env.NODE_ENV === 'development' ? err.stack : undefined
+        message: message,
+        errors: errors.length > 0 ? errors : undefined, // Only send errors if they exist
+        stack: process.env.NODE_ENV === 'development' ? err.stack : undefined,
     });
 };

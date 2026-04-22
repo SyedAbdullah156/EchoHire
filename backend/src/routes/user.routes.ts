@@ -1,7 +1,7 @@
 import express from "express";
 import {
     createUser,
-    getUsers,
+    getAllUsers,
     getUserById,
     getUserByEmail,
     updateUser,
@@ -14,7 +14,7 @@ const router = express.Router();
 router.post("/", createUser);
 
 // Protected: Only an Admin should see all users
-router.get("/", getUsers);
+router.get("/", getAllUsers);
 
 // User/Admin: Get specific profile
 router.get("/:id", getUserById);
