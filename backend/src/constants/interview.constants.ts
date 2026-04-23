@@ -1,0 +1,6 @@
+export const INTERVIEW_LIMITS = {
+    SCORE_MIN: 0,
+    SCORE_MAX: 100,
+    REMARKS_MIN: 2,
+    REMARKS_MAX: 500,
+};
