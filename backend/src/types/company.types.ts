@@ -5,5 +5,5 @@ export interface TCompany {
     description?: string;
     website?: string,
     logo?: string,
-    owner_id: mongoose.Types.ObjectId; // Use the actual ID type here
+    owner_id: mongoose.Types.ObjectId;
 }

@@ -1,0 +1,56 @@
+import { z } from "zod";
+import { COMPANY_LIMITS } from "../constants/company.constants";
+
+// Reusable ID validation
+const objectIdSchema = z
+    .string()
+    .regex(/^[0-9a-fA-F]{24}$/, "Invalid ID format");
+
+// Main Schema Validation
+const companyBodySchema = z.object({
+    name: z
+        .string()
+        .trim()
+        .min(1, "Company name is required")
+        .min(COMPANY_LIMITS.NAME_MIN, `Min ${COMPANY_LIMITS.NAME_MIN} chars`)
+        .max(COMPANY_LIMITS.NAME_MAX, `Max ${COMPANY_LIMITS.NAME_MAX} chars`),
+
+    description: z
+        .string()
+        .trim()
+        .min(
+            COMPANY_LIMITS.DESCRIPTION_MIN,
+            `Min ${COMPANY_LIMITS.DESCRIPTION_MIN} chars`,
+        )
+        .max(
+            COMPANY_LIMITS.DESCRIPTION_MAX,
+            `Max ${COMPANY_LIMITS.DESCRIPTION_MAX} chars`,
+        )
+        .optional(),
+
+    website: z
+        .string()
+        .trim()
+        .url("Invalid website URL format")
+        .optional()
+        .or(z.literal("")),
+
+    logo: z.string().optional(),
+
+    owner_id: objectIdSchema // This is must for Schema (Database saving) but here optional because it is fetched from token at the time of request and appended to the req.user in controller
+});
+
+// Actual Use Cases
+export const createCompanySchema = z.object({
+    body: companyBodySchema,
+});
+
+export const updateCompanySchema = z.object({
+    body: companyBodySchema.partial(),
+});
+
+export const companyParamsSchema = z.object({
+    params: z.object({
+        id: objectIdSchema,
+    }),
+});

@@ -3,6 +3,7 @@ import { RoundType } from "../constants/roundtypes.constants";
 import { TRound, TViolation, TInterview } from "../types/interview.types";
 import { VIOLATION_TYPES } from "../constants/violations.constants";
 import { ROUND_STATUS, INTERVIEW_STATUS } from "../constants/status.constants";
+import { INTERVIEW_LIMITS } from "../constants/interview.constants";
 
 const roundSchema = new Schema<TRound>(
   {
@@ -14,8 +15,19 @@ const roundSchema = new Schema<TRound>(
         },
         required: [true, "Interview round type is required"],
     },
-    score: { type: Number, required: false },
-    remarks: { type: String, required: false },
+    score: { 
+        type: Number, 
+        required: false,
+        min: [INTERVIEW_LIMITS.SCORE_MIN, `Score cannot be less than ${INTERVIEW_LIMITS.SCORE_MIN}`],
+        max: [INTERVIEW_LIMITS.SCORE_MAX, `Score cannot exceed ${INTERVIEW_LIMITS.SCORE_MAX}`]
+    },
+    remarks: { 
+        type: String, 
+        required: false,
+        trim: true,
+        minlength: [INTERVIEW_LIMITS.REMARKS_MIN, `Remarks must be at least ${INTERVIEW_LIMITS.REMARKS_MIN} characters`],
+        maxlength: [INTERVIEW_LIMITS.REMARKS_MAX, `Remarks cannot exceed ${INTERVIEW_LIMITS.REMARKS_MAX} characters`]
+    },
     status: { 
         type: String, 
         enum: {
@@ -61,12 +73,18 @@ export const interviewSchema = new Schema<TInterview>(
         default: [],
     },
     cv_url: { type: String, required: false },
-    score: { type: Number, required: false },
+    score: { 
+        type: Number, 
+        required: false,
+        min: [INTERVIEW_LIMITS.SCORE_MIN, `Score cannot be less than ${INTERVIEW_LIMITS.SCORE_MIN}`],
+        max: [INTERVIEW_LIMITS.SCORE_MAX, `Score cannot exceed ${INTERVIEW_LIMITS.SCORE_MAX}`]
+    },
     remarks: { 
         type: String, 
         required: false,
-        minlength: [2, 'Remarks must be at least 2 characters long'],
-        maxlength: [500, 'Remarks cannot exceed 500 characters']
+        trim: true,
+        minlength: [INTERVIEW_LIMITS.REMARKS_MIN, `Remarks must be at least ${INTERVIEW_LIMITS.REMARKS_MIN} characters`],
+        maxlength: [INTERVIEW_LIMITS.REMARKS_MAX, `Remarks cannot exceed ${INTERVIEW_LIMITS.REMARKS_MAX} characters`]
     },
     status: {
         type: String,

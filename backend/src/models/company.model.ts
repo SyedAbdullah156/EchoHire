@@ -1,38 +1,40 @@
-import mongoose, { Schema } from 'mongoose';
-import { TCompany } from '../types/company.types';
+import mongoose, { Schema } from "mongoose";
+import { TCompany } from "../types/company.types";
+import { COMPANY_LIMITS } from "../constants/company.constants";
 
-const companySchema = new Schema<TCompany>({
+const companySchema = new Schema<TCompany>(
+  {
     name: { 
         type: String, 
-        required: [true, 'Company name is required'],
+        required: [true, "Company name is required"],
         trim: true,
-        unique: true,
-        minlength: [2, 'Company name must be at least 2 characters long'],
-        maxlength: [50, 'Company name must be at most 50 characters long']
+        minlength: [COMPANY_LIMITS.NAME_MIN, `Name must be at least ${COMPANY_LIMITS.NAME_MIN} characters`],
+        maxlength: [COMPANY_LIMITS.NAME_MAX, `Name cannot exceed ${COMPANY_LIMITS.NAME_MAX} characters`]
     },
     description: { 
-        type: String,
-        required: [true, 'Please provide a brief description of the company'],
-        maxlength: [500, 'Description cannot exceed 500 characters']
+        type: String, 
+        required: false,
+        trim: true,
+        minlength: [COMPANY_LIMITS.DESCRIPTION_MIN, `Description must be at least ${COMPANY_LIMITS.DESCRIPTION_MIN} characters`],
+        maxlength: [COMPANY_LIMITS.DESCRIPTION_MAX, `Description cannot exceed ${COMPANY_LIMITS.DESCRIPTION_MAX} characters`]
     },
     website: { 
-        type: String,
-        match: [
-            /^(https?:\/\/)?([\da-z.-]+)\.([a-z.]{2,6})([\/\w .-]*)*\/?$/, 
-            'Please provide a valid website URL'
-        ]
+        type: String, 
+        required: false,
+        trim: true 
     },
     logo: { 
         type: String, 
+        required: false,
         default: 'https://placehold.co/400x400?text=Company+Logo'
     },
     owner_id: { 
         type: Schema.Types.ObjectId, 
-        ref: 'User', 
-        required: [true, 'A company must have an owner (User ID)'] 
-    }
-}, { 
-    timestamps: true 
-});
+        ref: "User", 
+        required: [true, "A company must be linked to an owner (user)"] 
+    },
+  },
+  { timestamps: true }
+);
 
-export const Company = mongoose.model<TCompany>('Company', companySchema);
+export const Company = mongoose.model<TCompany>("Company", companySchema);
