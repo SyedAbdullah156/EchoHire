@@ -1,10 +1,16 @@
+"use client";
+
 import Image from "next/image";
+import Link from "next/link";
 import Navbar from "@/components/Navbar";
 import { FiCheckSquare } from "react-icons/fi";
 import { FcGoogle } from "react-icons/fc";
 import { FiLinkedin } from "react-icons/fi";
+import { useState } from "react";
 
 export default function AuthPage() {
+  const [mode, setMode] = useState<"signin" | "signup">("signin");
+
   return (
     <main className="min-h-screen bg-black text-white">
       <Navbar />
@@ -20,58 +26,125 @@ export default function AuthPage() {
           />
         </div>
 
-        <div className="rounded-[22px] bg-[#05070f] p-8">
-          <div className="mb-6 flex gap-10 text-[24px] font-semibold">
-            <button className="border-b-2 border-[#2d7eff] pb-2 text-[#dbe7ff]">SIGN IN</button>
-            <button className="pb-2 text-[#858e9f]">CREATE ACCOUNT</button>
+        <div className="rounded-[22px] border border-[#243253] bg-[#05070f] p-6 md:p-8">
+          <div className="mb-6 flex gap-8 text-base font-semibold md:text-lg">
+            <button
+              type="button"
+              onClick={() => setMode("signin")}
+              className={`pb-2 transition ${
+                mode === "signin"
+                  ? "border-b-2 border-[#2d7eff] text-[#dbe7ff]"
+                  : "text-[#858e9f]"
+              }`}
+            >
+              SIGN IN
+            </button>
+            <button
+              type="button"
+              onClick={() => setMode("signup")}
+              className={`pb-2 transition ${
+                mode === "signup"
+                  ? "border-b-2 border-[#2d7eff] text-[#dbe7ff]"
+                  : "text-[#858e9f]"
+              }`}
+            >
+              CREATE ACCOUNT
+            </button>
           </div>
 
-          <h1 className="text-[64px] font-bold leading-none text-[#3f83ff]">Welcome Back!</h1>
-          <p className="mb-8 mt-2 text-[24px] text-[#8f97aa]">Log in to access your dashboard</p>
+          <h1 className="text-3xl font-bold leading-tight text-[#3f83ff] md:text-4xl">
+            {mode === "signin" ? "Welcome Back" : "Create Your Account"}
+          </h1>
+          <p className="mb-6 mt-2 text-sm text-[#8f97aa] md:text-base">
+            {mode === "signin"
+              ? "Sign in to continue to your dashboard."
+              : "Set up your account to start interview practice."}
+          </p>
 
-          <div className="space-y-6">
+          <div className="space-y-4">
+            {mode === "signup" && (
+              <div>
+                <label className="mb-2 block text-sm font-medium text-[#dce2ee] md:text-base">
+                  Full Name
+                </label>
+                <input
+                  className="w-full rounded-xl border border-[#2b344a] bg-transparent px-4 py-3 text-base outline-none placeholder:text-[#5c667f] focus:border-[#3f83ff]"
+                  placeholder="Enter your full name"
+                />
+              </div>
+            )}
             <div>
-              <label className="mb-2 block text-[35px] font-semibold text-[#dce2ee]">Email Address</label>
+              <label className="mb-2 block text-sm font-medium text-[#dce2ee] md:text-base">
+                Email Address
+              </label>
               <input
-                className="w-full rounded-2xl border border-[#2b344a] bg-transparent px-5 py-4 text-[27px] outline-none placeholder:text-[#5c667f] focus:border-[#3f83ff]"
+                className="w-full rounded-xl border border-[#2b344a] bg-transparent px-4 py-3 text-base outline-none placeholder:text-[#5c667f] focus:border-[#3f83ff]"
                 placeholder="Enter your email"
               />
             </div>
 
             <div>
-              <label className="mb-2 block text-[35px] font-semibold text-[#dce2ee]">Password</label>
+              <label className="mb-2 block text-sm font-medium text-[#dce2ee] md:text-base">
+                Password
+              </label>
               <input
                 type="password"
-                className="w-full rounded-2xl border border-[#2b344a] bg-transparent px-5 py-4 text-[27px] outline-none placeholder:text-[#5c667f] focus:border-[#3f83ff]"
+                className="w-full rounded-xl border border-[#2b344a] bg-transparent px-4 py-3 text-base outline-none placeholder:text-[#5c667f] focus:border-[#3f83ff]"
                 placeholder="Enter your password"
               />
             </div>
 
-            <div className="flex items-center justify-between text-[24px] text-[#8f97aa]">
+            {mode === "signup" && (
+              <div>
+                <label className="mb-2 block text-sm font-medium text-[#dce2ee] md:text-base">
+                  Confirm Password
+                </label>
+                <input
+                  type="password"
+                  className="w-full rounded-xl border border-[#2b344a] bg-transparent px-4 py-3 text-base outline-none placeholder:text-[#5c667f] focus:border-[#3f83ff]"
+                  placeholder="Confirm your password"
+                />
+              </div>
+            )}
+
+            <div className="flex items-center justify-between text-sm text-[#8f97aa] md:text-base">
               <label className="flex items-center gap-2">
                 <FiCheckSquare className="text-[#2e7eff]" />
                 Remember me
               </label>
-              <button className="hover:text-white">Forgot Password?</button>
+              {mode === "signin" && (
+                <button type="button" className="hover:text-white">
+                  Forgot Password?
+                </button>
+              )}
             </div>
 
-            <button className="w-full rounded-2xl bg-gradient-to-r from-[#227dff] to-[#332989] py-4 text-[34px] font-medium text-[#ebf2ff]">
-              Login to Your Space
-            </button>
+            <Link
+              href="/dashboard?completeProfile=1"
+              className="block w-full rounded-xl bg-gradient-to-r from-[#227dff] to-[#332989] py-3 text-center text-base font-medium text-[#ebf2ff] md:text-lg"
+            >
+              {mode === "signin" ? "Login to Your Space" : "Create Account"}
+            </Link>
           </div>
 
-          <div className="my-8 flex items-center gap-3 text-[23px] text-[#7f889b]">
+          <div className="my-6 flex items-center gap-3 text-sm text-[#7f889b]">
             <div className="h-px flex-1 bg-[#273148]" />
             or continue with
             <div className="h-px flex-1 bg-[#273148]" />
           </div>
 
           <div className="grid grid-cols-2 gap-4">
-            <button className="flex items-center justify-center gap-2 rounded-2xl border border-[#2a334a] py-4 text-[34px] font-medium text-[#d8e2fb]">
+            <button
+              type="button"
+              className="flex items-center justify-center gap-2 rounded-xl border border-[#2a334a] py-3 text-base font-medium text-[#d8e2fb] md:text-lg"
+            >
               <FcGoogle />
               Google
             </button>
-            <button className="flex items-center justify-center gap-2 rounded-2xl border border-[#2a334a] py-4 text-[34px] font-medium text-[#d8e2fb]">
+            <button
+              type="button"
+              className="flex items-center justify-center gap-2 rounded-xl border border-[#2a334a] py-3 text-base font-medium text-[#d8e2fb] md:text-lg"
+            >
               <FiLinkedin className="text-[#2f82ff]" />
               LinkedIn
             </button>

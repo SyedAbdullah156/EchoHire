@@ -2,34 +2,153 @@
 import Link from "next/link";
 import Navbar from "@/components/Navbar";
 import Hero from "@/components/Hero";
+import { FiArrowRight, FiBarChart2, FiBookOpen, FiCreditCard, FiFileText, FiGrid, FiUser } from "react-icons/fi";
+import type { IconType } from "react-icons";
+
+const quickLinks: Array<{
+  title: string;
+  desc: string;
+  href: string;
+  icon: IconType;
+}> = [
+  { title: "Pricing", desc: "Choose your plan", href: "/pricing", icon: FiCreditCard },
+  { title: "Sign In", desc: "Access your workspace", href: "/auth", icon: FiUser },
+  { title: "Dashboard", desc: "Track your progress", href: "/dashboard", icon: FiGrid },
+  { title: "AI Interview", desc: "Start practice session", href: "/ai-interview", icon: FiBookOpen },
+  { title: "LinkedIn Optimizer", desc: "Improve profile quality", href: "/linkedin-optimizer", icon: FiBarChart2 },
+  { title: "Resume Analyzer", desc: "Check ATS compatibility", href: "/resume-analyzer", icon: FiFileText },
+];
 
 export default function Home() {
   return (
-    <main className="bg-black text-white">
+    <main className="bg-[#030712] text-white">
       <Navbar />
       <Hero />
-      <section className="mx-auto max-w-6xl px-6 pb-20">
+      <section
+        id="quick-navigation"
+        className="mx-auto max-w-7xl px-6 pb-16 pt-6 sm:pb-20"
+      >
+        <div className="mb-6 flex flex-col gap-2 md:flex-row md:items-end md:justify-between">
+          <div>
+            <h2 className="text-3xl font-semibold text-white md:text-4xl">Quick Navigation</h2>
+            <p className="mt-2 text-sm text-[#98a7cb] md:text-base">
+              Open any section in one click.
+            </p>
+          </div>
+
+          <div className="flex gap-3">
+            <Link
+              href="/auth"
+              prefetch
+              className="inline-flex items-center justify-center rounded-xl border border-white/15 bg-white/5 px-4 py-2 text-sm text-[#dbe7ff] transition hover:border-blue-300/60 hover:bg-white/10"
+            >
+              Start Now
+              <FiArrowRight className="ml-2" />
+            </Link>
+            <Link
+              href="/pricing"
+              prefetch
+              className="inline-flex items-center justify-center rounded-xl border border-blue-400/40 bg-[linear-gradient(145deg,#081327_0%,#0b1730_100%)] px-4 py-2 text-sm text-blue-200 transition hover:border-blue-500/80"
+            >
+              View Pricing
+              <FiArrowRight className="ml-2" />
+            </Link>
+          </div>
+        </div>
+
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {quickLinks.map((item) => {
+            const Icon = item.icon;
+            return (
+              <Link
+                key={item.href}
+                href={item.href}
+                prefetch
+                className="group rounded-2xl border border-white/10 bg-[linear-gradient(145deg,rgba(7,20,43,0.95)_0%,rgba(11,23,48,0.65)_100%)] p-5 shadow-[0_10px_40px_rgba(0,0,0,0.25)] transition hover:-translate-y-0.5 hover:border-blue-400/50"
+              >
+                <div className="flex items-start gap-4">
+                  <div className="inline-flex h-12 w-12 items-center justify-center rounded-xl border border-blue-400/30 bg-blue-500/10">
+                    <Icon className="text-blue-200" size={22} />
+                  </div>
+                  <div>
+                    <p className="text-lg font-semibold text-blue-200">{item.title}</p>
+                    <p className="mt-1 text-sm text-[#aab8d8]">{item.desc}</p>
+                  </div>
+                </div>
+
+                <div className="mt-4 flex items-center justify-between">
+                  <span className="text-xs font-medium text-[#7f92be]">Open</span>
+                  <span className="inline-flex items-center gap-2 text-sm font-medium text-[#dbe7ff] transition group-hover:text-white">
+                    <FiArrowRight />
+                  </span>
+                </div>
+              </Link>
+            );
+          })}
+        </div>
+      </section>
+
+      <section className="mx-auto max-w-7xl px-6 pb-20">
+        <div className="mb-8 text-center">
+          <h3 className="text-2xl font-semibold text-white md:text-3xl">Everything you need</h3>
+          <p className="mx-auto mt-3 max-w-2xl text-sm text-[#98a7cb] md:text-base">
+            EchoHire combines AI interviews, ATS resume analysis, and LinkedIn optimization in one clean flow.
+          </p>
+        </div>
+
         <div className="grid gap-4 md:grid-cols-3">
+          {[
+            {
+              title: "AI Interviewer",
+              body: "Practice adaptive questions with a guided session and quick end controls.",
+              color: "from-blue-500/20 to-indigo-700/20",
+              href: "/ai-interview",
+            },
+            {
+              title: "Resume + ATS",
+              body: "Get compatibility insights and focus on the keywords recruiters expect.",
+              color: "from-cyan-500/20 to-blue-700/20",
+              href: "/resume-analyzer",
+            },
+            {
+              title: "LinkedIn Optimizer",
+              body: "Improve your profile with recommendations and an easy apply flow.",
+              color: "from-purple-500/20 to-indigo-700/20",
+              href: "/linkedin-optimizer",
+            },
+          ].map((f) => (
+            <Link
+              key={f.title}
+              href={f.href}
+              prefetch
+              className="group rounded-2xl border border-white/10 bg-[linear-gradient(145deg,rgba(255,255,255,0.04)_0%,rgba(255,255,255,0.02)_100%)] p-6 transition hover:-translate-y-0.5 hover:border-blue-400/50"
+            >
+              <div className={`mb-4 h-12 w-12 rounded-xl border border-white/10 bg-gradient-to-br ${f.color}`} />
+              <h4 className="text-lg font-semibold text-blue-200">{f.title}</h4>
+              <p className="mt-2 text-sm leading-relaxed text-[#aab8d8]">{f.body}</p>
+              <span className="mt-4 inline-flex items-center text-sm font-medium text-[#dbe7ff] transition group-hover:text-white">
+                Learn more <FiArrowRight className="ml-2" />
+              </span>
+            </Link>
+          ))}
+        </div>
+
+        <div className="mt-10 flex flex-col items-stretch justify-center gap-3 sm:flex-row sm:items-center">
           <Link
-            href="/pricing"
-            className="rounded-xl border border-blue-900/60 bg-[#071125] p-5 transition hover:border-blue-500"
+            href="/auth"
+            prefetch
+            className="inline-flex items-center justify-center rounded-xl bg-gradient-to-r from-[#227dff] to-[#332989] px-6 py-3 text-base font-medium text-white shadow-[0_10px_30px_rgba(39,131,255,0.25)]"
           >
-            <p className="text-lg font-semibold text-blue-300">Pricing</p>
-            <p className="text-sm text-gray-300">Choose the plan that fits you best.</p>
+            Get Started For Free
+            <FiArrowRight className="ml-2" />
           </Link>
           <Link
             href="/dashboard"
-            className="rounded-xl border border-blue-900/60 bg-[#071125] p-5 transition hover:border-blue-500"
+            prefetch
+            className="inline-flex items-center justify-center rounded-xl border border-white/15 bg-white/5 px-6 py-3 text-base font-medium text-[#dbe7ff] transition hover:bg-white/10"
           >
-            <p className="text-lg font-semibold text-blue-300">Dashboard</p>
-            <p className="text-sm text-gray-300">Track interviews, skills, and progress.</p>
-          </Link>
-          <Link
-            href="/auth"
-            className="rounded-xl border border-blue-900/60 bg-[#071125] p-5 transition hover:border-blue-500"
-          >
-            <p className="text-lg font-semibold text-blue-300">Sign In / Sign Up</p>
-            <p className="text-sm text-gray-300">Access your workspace securely.</p>
+            Go to Dashboard
+            <FiArrowRight className="ml-2" />
           </Link>
         </div>
       </section>
