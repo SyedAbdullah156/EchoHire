@@ -54,32 +54,38 @@ export default function PricingPage() {
     <main className="min-h-screen bg-[#02050d] text-white">
       <Navbar />
 
-      <section className="mx-auto max-w-6xl px-6 pb-16 pt-32">
-        <h1 className="mb-10 text-center text-4xl font-bold tracking-[0.2em] text-white md:text-5xl">
+      <section className="mx-auto max-w-7xl px-6 pb-20 pt-32">
+        <h1 className="mb-3 text-center text-4xl font-bold tracking-[0.12em] text-white md:text-5xl">
           PRICING
         </h1>
+        <p className="mx-auto mb-10 max-w-2xl text-center text-base text-[#9ca8c4]">
+          Pick the plan that matches your prep goals.
+        </p>
 
         <div className="grid gap-6 md:grid-cols-3">
           {plans.map((plan) => (
             <article
               key={plan.title}
-              className={`rounded-sm border border-[#1a2338] p-8 shadow-[0_0_30px_rgba(9,28,84,0.2)] ${
-                plan.featured ? "bg-[#323a46]" : "bg-[#050d17]"
+              className={`flex min-h-[460px] flex-col rounded-2xl border border-[#1a2338] p-7 shadow-[0_0_30px_rgba(9,28,84,0.2)] ${
+                plan.featured ? "scale-[1.02] bg-[#1f2738]" : "bg-[#050d17]"
               }`}
             >
               <div className="mb-6 text-center">
-                <p className="mb-1 text-7xl font-light text-white">
-                  <span className="mr-1 text-3xl text-[#1689f2]">$</span>
+                <p className="mb-1 text-6xl font-semibold text-white">
+                  <span className="mr-1 text-xl text-[#1689f2]">$</span>
                   {plan.price}
                 </p>
-                <p className="text-4xl text-[#d9e0f1]">/ month</p>
+                <p className="text-lg text-[#d9e0f1]">/ month</p>
               </div>
 
-              <button className="mb-8 w-full rounded-xl bg-gradient-to-r from-[#2080f8] to-[#3f2f8e] py-3 text-3xl font-medium text-[#e4edff]">
+              <button
+                type="button"
+                className="mb-6 w-full rounded-xl bg-gradient-to-r from-[#2080f8] to-[#3f2f8e] py-3 text-lg font-medium text-[#e4edff]"
+              >
                 {plan.title}
               </button>
 
-              <ul className="space-y-3 text-[31px]">
+              <ul className="space-y-3 text-base">
                 {plan.perks.map((perk) => (
                   <li
                     key={perk.label}
@@ -96,6 +102,13 @@ export default function PricingPage() {
                   </li>
                 ))}
               </ul>
+
+              <button
+                type="button"
+                className="mt-auto w-full rounded-xl border border-[#385488] bg-[#0e1a31] py-2.5 text-sm text-[#d7e4ff] transition hover:bg-[#132344]"
+              >
+                Choose {plan.title}
+              </button>
             </article>
           ))}
         </div>

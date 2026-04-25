@@ -1,104 +1,88 @@
+"use client";
+
 import Navbar from "@/components/Navbar";
-import {
-  FiBarChart2,
-  FiBookOpen,
-  FiFileText,
-  FiGrid,
-  FiHelpCircle,
-  FiLogOut,
-  FiPieChart,
-  FiSettings,
-  FiUser,
-} from "react-icons/fi";
-
-const sidebarItems = [
-  { label: "Dashboard", icon: FiGrid, active: true },
-  { label: "AI Interview", icon: FiBookOpen },
-  { label: "Resume Analyzer", icon: FiFileText },
-  { label: "Linkedin Optimization", icon: FiBarChart2 },
-  { label: "Exam & Quizzes", icon: FiBookOpen },
-  { label: "Progress", icon: FiPieChart },
-];
-
-const profileItems = [
-  { label: "Profile", icon: FiUser },
-  { label: "Settings", icon: FiSettings },
-  { label: "Logout", icon: FiLogOut },
-  { label: "Help & Support", icon: FiHelpCircle },
-];
+import DashboardSidebar from "@/components/DashboardSidebar";
+import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 
 export default function DashboardPage() {
-  return (
-    <main className="min-h-screen bg-[#eef0f5]">
-      <Navbar />
-      <section className="mx-auto flex max-w-[1500px] gap-5 px-4 pb-6 pt-24">
-        <aside className="w-[310px] rounded-md bg-[#14161c] p-5 text-[#d2d9ea] shadow-[0_10px_30px_rgba(0,0,0,0.25)]">
-          <h2 className="mb-8 text-[40px] font-bold text-[#3390ff]">EchoHire</h2>
-          <nav className="space-y-2">
-            {sidebarItems.map(({ label, icon: Icon, active }) => (
-              <button
-                key={label}
-                className={`flex w-full items-center gap-3 rounded-xl px-4 py-3 text-left text-[27px] ${
-                  active
-                    ? "bg-gradient-to-r from-[#2a7df7] to-[#332b8c] text-white"
-                    : "text-[#aeb7cc] hover:bg-[#1f2330]"
-                }`}
-              >
-                <Icon />
-                {label}
-              </button>
-            ))}
-          </nav>
+  const searchParams = useSearchParams();
+  const shouldCompleteProfile = searchParams.get("completeProfile") === "1";
 
-          <div className="mt-14 space-y-2 border-t border-white/10 pt-6">
-            {profileItems.map(({ label, icon: Icon }) => (
-              <button
-                key={label}
-                className="flex w-full items-center gap-3 rounded-xl px-4 py-3 text-left text-[25px] text-[#aeb7cc] hover:bg-[#1f2330]"
-              >
-                <Icon />
-                {label}
-              </button>
-            ))}
-          </div>
-        </aside>
+  return (
+    <main className="min-h-screen bg-[#050b18] text-white">
+      <Navbar />
+      <section className="mx-auto flex max-w-[1500px] flex-col gap-5 px-4 pb-8 pt-24 lg:flex-row">
+        <DashboardSidebar active="dashboard" />
 
         <div className="flex-1 space-y-4 rounded-md">
-          <header className="rounded-2xl bg-white p-5 shadow-sm">
-            <h1 className="text-[44px] font-semibold text-[#141a29]">
+          {shouldCompleteProfile && (
+            <div className="rounded-2xl border border-[#35548b] bg-[#0d1932] p-4 text-[#dbe7ff] shadow-[0_0_20px_rgba(59,130,246,0.2)]">
+              <p className="text-sm md:text-base">
+                Welcome! Please complete your profile so EchoHire can personalize interview and career recommendations.
+              </p>
+              <Link
+                href="/profile"
+                className="mt-3 inline-flex rounded-lg bg-gradient-to-r from-[#2a7df7] to-[#372e8f] px-4 py-2 text-sm font-medium text-white"
+              >
+                Complete Profile
+              </Link>
+            </div>
+          )}
+
+          <header className="rounded-2xl border border-[#243253] bg-[#0d162a] p-5 shadow-[0_0_30px_rgba(10,39,105,0.2)]">
+            <h1 className="text-2xl font-semibold text-[#dbe7ff] md:text-4xl">
               Welcome Back, Uzair Ahmad
             </h1>
-            <p className="text-[24px] text-[#74809a]">
+            <p className="text-sm text-[#9fb1d8] md:text-lg">
               Explore your Interviews and keep progressing today
             </p>
           </header>
 
-          <div className="grid grid-cols-3 gap-4">
-            <div className="rounded-2xl bg-white p-5 shadow-sm">
-              <p className="text-[24px] font-semibold text-[#151a2c]">Recent Interview</p>
-              <p className="mt-4 text-[30px] text-[#6f7b94]">Google Senior Software Engineer</p>
-              <p className="text-[23px] text-[#7e889f]">Date: Sep 5th | Time: 2PM</p>
+          <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+            <div className="rounded-2xl border border-[#243253] bg-[#0d162a] p-5 shadow-[0_0_30px_rgba(10,39,105,0.15)]">
+              <p className="text-base font-semibold text-[#dbe7ff] md:text-lg">Recent Interview</p>
+              <p className="mt-3 text-lg text-[#b8c8e8] md:text-2xl">Google Senior Software Engineer</p>
+              <p className="text-sm text-[#8ea2ca] md:text-base">Date: Sep 5th | Time: 2PM</p>
+              <Link
+                href="/ai-interview"
+                className="mt-4 inline-flex rounded-lg bg-[#17243f] px-4 py-2 text-sm text-[#dbe5ff] hover:bg-[#1f2f53] md:text-base"
+              >
+                Continue Interview
+              </Link>
             </div>
-            <div className="rounded-2xl bg-white p-5 shadow-sm">
-              <p className="text-[24px] font-semibold text-[#151a2c]">LinkedIn Visibility</p>
-              <p className="mt-3 text-[66px] text-[#111827]">82 / 100</p>
+            <div className="rounded-2xl border border-[#243253] bg-[#0d162a] p-5 shadow-[0_0_30px_rgba(10,39,105,0.15)]">
+              <p className="text-base font-semibold text-[#dbe7ff] md:text-lg">LinkedIn Visibility</p>
+              <p className="mt-2 text-4xl text-[#f4f7ff] md:text-6xl">82 / 100</p>
+              <Link
+                href="/linkedin-optimizer"
+                className="mt-4 inline-flex rounded-lg bg-[#17243f] px-4 py-2 text-sm text-[#dbe5ff] hover:bg-[#1f2f53] md:text-base"
+              >
+                Optimize Profile
+              </Link>
             </div>
-            <div className="rounded-2xl bg-white p-5 shadow-sm">
-              <p className="text-[24px] font-semibold text-[#151a2c]">Resume Score</p>
-              <p className="mt-3 text-[66px] text-[#111827]">92 / 100</p>
+            <div className="rounded-2xl border border-[#243253] bg-[#0d162a] p-5 shadow-[0_0_30px_rgba(10,39,105,0.15)]">
+              <p className="text-base font-semibold text-[#dbe7ff] md:text-lg">Resume Score</p>
+              <p className="mt-2 text-4xl text-[#f4f7ff] md:text-6xl">92 / 100</p>
+              <Link
+                href="/resume-analyzer"
+                className="mt-4 inline-flex rounded-lg bg-[#17243f] px-4 py-2 text-sm text-[#dbe5ff] hover:bg-[#1f2f53] md:text-base"
+              >
+                Analyze Resume
+              </Link>
             </div>
           </div>
 
-          <div className="grid grid-cols-[2fr_1fr] gap-4">
-            <div className="rounded-2xl bg-white p-5 shadow-sm">
-              <p className="text-[40px] font-semibold text-[#151a2c]">Interview Progress</p>
-              <p className="mb-4 text-[24px] text-[#77839b]">
+          <div className="grid gap-4 xl:grid-cols-[2fr_1fr]">
+            <div className="rounded-2xl border border-[#243253] bg-[#0d162a] p-5 shadow-[0_0_30px_rgba(10,39,105,0.15)]">
+              <p className="text-2xl font-semibold text-[#dbe7ff] md:text-3xl">Interview Progress</p>
+              <p className="mb-4 text-sm text-[#9fb1d8] md:text-base">
                 Track all ongoing and completed interviews
               </p>
-              <svg viewBox="0 0 700 280" className="h-[280px] w-full rounded-lg bg-[#f2f6fc]">
+              <svg viewBox="0 0 700 280" className="h-[220px] w-full rounded-lg bg-[#0a1223] md:h-[280px]">
                 <polyline
                   fill="none"
-                  stroke="#2c86d0"
+                  stroke="#4aa3ff"
                   strokeWidth="5"
                   points="20,110 90,150 160,125 230,140 300,35 370,190 440,70 510,180 580,195 650,115 690,170"
                 />
@@ -106,9 +90,9 @@ export default function DashboardPage() {
             </div>
 
             <div className="space-y-4">
-              <div className="rounded-2xl bg-white p-5 shadow-sm">
-                <p className="text-[38px] font-semibold text-[#151a2c]">Skill Mastery</p>
-                <p className="mb-4 text-[24px] text-[#77839b]">Track your progress and skills</p>
+              <div className="rounded-2xl border border-[#243253] bg-[#0d162a] p-5 shadow-[0_0_30px_rgba(10,39,105,0.15)]">
+                <p className="text-2xl font-semibold text-[#dbe7ff] md:text-3xl">Skill Mastery</p>
+                <p className="mb-4 text-sm text-[#9fb1d8] md:text-base">Track your progress and skills</p>
                 {[
                   ["Coding", "90%"],
                   ["Design", "72%"],
@@ -116,17 +100,17 @@ export default function DashboardPage() {
                   ["Technical", "66%"],
                 ].map(([label, width]) => (
                   <div key={label} className="mb-3">
-                    <p className="mb-1 text-[24px] text-[#253047]">{label}</p>
-                    <div className="h-3 rounded-full bg-[#e4ecf8]">
-                      <div className="h-3 rounded-full bg-[#6ea8da]" style={{ width }} />
+                    <p className="mb-1 text-sm text-[#c0d0ef] md:text-base">{label}</p>
+                    <div className="h-3 rounded-full bg-[#1a2a46]">
+                      <div className="h-3 rounded-full bg-[#4ea1ff]" style={{ width }} />
                     </div>
                   </div>
                 ))}
               </div>
 
-              <div className="rounded-2xl bg-white p-5 shadow-sm">
-                <p className="mb-3 text-[34px] font-semibold text-[#151a2c]">Daily Challenges</p>
-                <ul className="space-y-2 text-[25px] text-[#202b42]">
+              <div className="rounded-2xl border border-[#243253] bg-[#0d162a] p-5 shadow-[0_0_30px_rgba(10,39,105,0.15)]">
+                <p className="mb-3 text-2xl font-semibold text-[#dbe7ff] md:text-3xl">Daily Challenges</p>
+                <ul className="space-y-2 text-sm text-[#c0d0ef] md:text-base">
                   <li>
                     <strong>Coding Challenge:</strong> Implement a Hash Map
                   </li>
