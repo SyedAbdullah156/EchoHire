@@ -62,16 +62,22 @@ function MenuItem({ item, isActive, collapsed, onNavigate }: MenuItemProps) {
           collapsed ? "justify-center" : "gap-3"
         } ${
           isActive
-            ? "bg-gradient-to-r from-[#2a7df7] to-[#332b8c] text-white shadow-[0_8px_24px_rgba(42,125,247,0.3)]"
-            : "text-[#aeb7cc] hover:bg-[#17243f] hover:text-white"
+            ? "bg-gradient-to-r from-[#2a7df7]/90 to-[#332b8c]/90 text-white shadow-[0_8px_24px_rgba(42,125,247,0.3)]"
+            : "text-[#aeb7cc] hover:bg-white/5 hover:text-white"
         }`}
       >
-        <Icon className="shrink-0" size={18} />
+        <div
+          className={`rounded-md border p-1.5 ${
+            isActive ? "border-white/30 bg-white/15" : "border-white/10 bg-white/5"
+          }`}
+        >
+          <Icon className="shrink-0" size={15} />
+        </div>
         {!collapsed && <span className="truncate">{item.label}</span>}
       </Link>
 
       {collapsed && (
-        <span className="pointer-events-none absolute left-full top-1/2 z-30 ml-3 -translate-y-1/2 rounded-md border border-[#334770] bg-[#0d162a] px-2 py-1 text-xs text-[#dbe7ff] opacity-0 shadow-[0_6px_20px_rgba(0,0,0,0.35)] transition group-hover:opacity-100">
+        <span className="pointer-events-none absolute left-full top-1/2 z-30 ml-3 -translate-y-1/2 rounded-md border border-white/10 bg-[#0d162a] px-2 py-1 text-xs text-[#dbe7ff] opacity-0 shadow-[0_6px_20px_rgba(0,0,0,0.35)] transition group-hover:opacity-100">
           {item.label}
         </span>
       )}
@@ -96,7 +102,7 @@ function SidebarShell({
 }: SidebarShellProps) {
   return (
     <aside
-      className={`rounded-2xl border border-white/30 bg-black/20 p-3 text-[#d2d9ea] shadow-[0_0_1px_1px_rgba(255,255,255,0.1),0_0_20px_rgba(59,130,246,0.28)] backdrop-blur-xl transition-all duration-300 ${
+      className={`rounded-2xl border border-white/10 bg-black/20 p-3 text-[#d2d9ea] shadow-[0_0_1px_1px_rgba(255,255,255,0.1),0_0_20px_rgba(59,130,246,0.28)] backdrop-blur-xl transition-all duration-300 ${
         collapsed ? "w-[88px]" : "w-[290px]"
       } ${mobile ? "h-full w-[290px] rounded-none border-y-0 border-l-0" : ""}`}
     >
@@ -109,7 +115,7 @@ function SidebarShell({
         <button
           type="button"
           onClick={onToggleCollapsed}
-          className="rounded-lg border border-white/20 bg-black/30 p-2 text-[#c7d7f8] transition hover:border-blue-300/50 hover:text-white"
+          className="rounded-lg border border-white/10 bg-black/30 p-2 text-[#c7d7f8] transition hover:border-blue-300/50 hover:text-white"
           aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
         >
           {collapsed ? <FiChevronRight size={16} /> : <FiChevronLeft size={16} />}
@@ -151,11 +157,17 @@ export default function DashboardSidebar({ active }: DashboardSidebarProps) {
 
   useEffect(() => {
     const onResize = () => {
+      const isDesktop = window.innerWidth >= 1024;
+      const shouldCollapse = window.innerWidth < 1280;
+      if (isDesktop) {
+        setCollapsed(shouldCollapse);
+      }
       if (window.innerWidth >= 1024) {
         setMobileOpen(false);
       }
     };
 
+    onResize();
     window.addEventListener("resize", onResize);
     return () => window.removeEventListener("resize", onResize);
   }, []);
@@ -166,7 +178,7 @@ export default function DashboardSidebar({ active }: DashboardSidebarProps) {
         <button
           type="button"
           onClick={() => setMobileOpen(true)}
-          className="inline-flex items-center gap-2 rounded-xl border border-white/30 bg-black/20 px-4 py-2 text-sm text-[#dbe7ff] shadow-[0_0_1px_1px_rgba(255,255,255,0.1),0_0_15px_rgba(59,130,246,0.25)] transition hover:border-blue-300/50"
+          className="inline-flex items-center gap-2 rounded-xl border border-white/10 bg-black/20 px-4 py-2 text-sm text-[#dbe7ff] shadow-[0_0_1px_1px_rgba(255,255,255,0.1),0_0_15px_rgba(59,130,246,0.25)] transition hover:border-blue-300/50"
         >
           <FiMenu />
           Open Menu
@@ -201,7 +213,7 @@ export default function DashboardSidebar({ active }: DashboardSidebarProps) {
             <button
               type="button"
               onClick={() => setMobileOpen(false)}
-              className="rounded-lg border border-white/20 bg-black/30 p-2 text-[#c7d7f8]"
+              className="rounded-lg border border-white/10 bg-black/30 p-2 text-[#c7d7f8]"
               aria-label="Close sidebar"
             >
               <FiX size={16} />
