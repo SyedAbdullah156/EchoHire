@@ -24,13 +24,18 @@ export default function Home() {
     <main className="bg-[#030712] text-white">
       <Navbar />
       <Hero />
+
+      {/* Quick Navigation */}
       <section
         id="quick-navigation"
+        aria-labelledby="quick-nav-heading"
         className="mx-auto max-w-7xl px-6 pb-16 pt-6 sm:pb-20"
       >
         <div className="mb-6 flex flex-col gap-2 md:flex-row md:items-end md:justify-between">
           <div>
-            <h2 className="text-3xl font-semibold text-white md:text-4xl">Quick Navigation</h2>
+            <h2 id="quick-nav-heading" className="text-3xl font-semibold text-white md:text-4xl">
+              Quick Navigation
+            </h2>
             <p className="mt-2 text-sm text-[#98a7cb] md:text-base">
               Open any section in one click.
             </p>
@@ -40,7 +45,8 @@ export default function Home() {
             <Link
               href="/auth"
               prefetch
-              className="inline-flex items-center justify-center rounded-xl border border-white/15 bg-white/5 px-4 py-2 text-sm text-[#dbe7ff] transition hover:border-blue-300/60 hover:bg-white/10"
+              aria-label="Start now and sign in"
+              className="inline-flex items-center justify-center rounded-xl border border-white/15 bg-white/5 px-4 py-2 text-sm text-[#dbe7ff] transition hover:border-blue-300/60 hover:bg-white/10 focus:outline-none focus:ring-2 focus:ring-blue-400"
             >
               Start Now
               <FiArrowRight className="ml-2" />
@@ -48,7 +54,8 @@ export default function Home() {
             <Link
               href="/pricing"
               prefetch
-              className="inline-flex items-center justify-center rounded-xl border border-blue-400/40 bg-[linear-gradient(145deg,#081327_0%,#0b1730_100%)] px-4 py-2 text-sm text-blue-200 transition hover:border-blue-500/80"
+              aria-label="View pricing plans"
+              className="inline-flex items-center justify-center rounded-xl border border-blue-400/40 bg-[linear-gradient(145deg,#081327_0%,#0b1730_100%)] px-4 py-2 text-sm text-blue-200 transition hover:border-blue-500/80 focus:outline-none focus:ring-2 focus:ring-blue-400"
             >
               View Pricing
               <FiArrowRight className="ml-2" />
@@ -64,7 +71,8 @@ export default function Home() {
                 key={item.href}
                 href={item.href}
                 prefetch
-                className="group rounded-2xl border border-white/10 bg-[linear-gradient(145deg,rgba(7,20,43,0.95)_0%,rgba(11,23,48,0.65)_100%)] p-5 shadow-[0_10px_40px_rgba(0,0,0,0.25)] transition hover:-translate-y-0.5 hover:border-blue-400/50"
+                aria-label={`Go to ${item.title}`}
+                className="group rounded-2xl border border-white/10 bg-[linear-gradient(145deg,rgba(7,20,43,0.95)_0%,rgba(11,23,48,0.65)_100%)] p-5 shadow-[0_10px_40px_rgba(0,0,0,0.25)] transition hover:-translate-y-0.5 hover:border-blue-400/50 focus:outline-none focus:ring-2 focus:ring-blue-400"
               >
                 <div className="flex items-start gap-4">
                   <div className="inline-flex h-12 w-12 items-center justify-center rounded-xl border border-blue-400/30 bg-blue-500/10">
@@ -88,9 +96,12 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="mx-auto max-w-7xl px-6 pb-20">
+      {/* Features */}
+      <section className="mx-auto max-w-7xl px-6 pb-20" aria-labelledby="features-heading">
         <div className="mb-8 text-center">
-          <h3 className="text-2xl font-semibold text-white md:text-3xl">Everything you need</h3>
+          <h3 id="features-heading" className="text-2xl font-semibold text-white md:text-3xl">
+            Everything you need
+          </h3>
           <p className="mx-auto mt-3 max-w-2xl text-sm text-[#98a7cb] md:text-base">
             EchoHire combines AI interviews, ATS resume analysis, and LinkedIn optimization in one clean flow.
           </p>
@@ -121,7 +132,8 @@ export default function Home() {
               key={f.title}
               href={f.href}
               prefetch
-              className="group rounded-2xl border border-white/10 bg-[linear-gradient(145deg,rgba(255,255,255,0.04)_0%,rgba(255,255,255,0.02)_100%)] p-6 transition hover:-translate-y-0.5 hover:border-blue-400/50"
+              aria-label={`Learn more about ${f.title}`}
+              className="group rounded-2xl border border-white/10 bg-[linear-gradient(145deg,rgba(255,255,255,0.04)_0%,rgba(255,255,255,0.02)_100%)] p-6 transition hover:-translate-y-0.5 hover:border-blue-400/50 focus:outline-none focus:ring-2 focus:ring-blue-400"
             >
               <div className={`mb-4 h-12 w-12 rounded-xl border border-white/10 bg-gradient-to-br ${f.color}`} />
               <h4 className="text-lg font-semibold text-blue-200">{f.title}</h4>
@@ -137,7 +149,8 @@ export default function Home() {
           <Link
             href="/auth"
             prefetch
-            className="inline-flex items-center justify-center rounded-xl bg-gradient-to-r from-[#227dff] to-[#332989] px-6 py-3 text-base font-medium text-white shadow-[0_10px_30px_rgba(39,131,255,0.25)]"
+            aria-label="Get started for free"
+            className="inline-flex items-center justify-center rounded-xl bg-gradient-to-r from-[#227dff] to-[#332989] px-6 py-3 text-base font-medium text-white shadow-[0_10px_30px_rgba(39,131,255,0.25)] focus:outline-none focus:ring-2 focus:ring-blue-400"
           >
             Get Started For Free
             <FiArrowRight className="ml-2" />
@@ -145,7 +158,8 @@ export default function Home() {
           <Link
             href="/dashboard"
             prefetch
-            className="inline-flex items-center justify-center rounded-xl border border-white/15 bg-white/5 px-6 py-3 text-base font-medium text-[#dbe7ff] transition hover:bg-white/10"
+            aria-label="Go to dashboard"
+            className="inline-flex items-center justify-center rounded-xl border border-white/15 bg-white/5 px-6 py-3 text-base font-medium text-[#dbe7ff] transition hover:bg-white/10 focus:outline-none focus:ring-2 focus:ring-blue-400"
           >
             Go to Dashboard
             <FiArrowRight className="ml-2" />
