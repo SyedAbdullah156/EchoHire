@@ -1,16 +1,31 @@
 import { User } from "../models/user.model";
 import { TUser } from "../types/user.types";
 import { AppError } from "../utils/apperror.utls";
+import bcrypt from "bcryptjs";
+
+const normalizeEmail = (email: string) => email.trim().toLowerCase();
 
 export const createUserService = async (userData: TUser) => {
     // Check if user already exists to prevent duplicate errors from MongoDB
-    const existingUser = await User.findOne({ email: userData.email });
+    const email = normalizeEmail(userData.email);
+    const existingUser = await User.findOne({ email });
     if (existingUser) {
         throw new AppError("Email is already registered", 400);
     }
+
+    const hashedPassword = userData.password
+        ? await bcrypt.hash(userData.password, 10)
+        : undefined;
     
-    const user = await User.create(userData);
-    return user;
+    const user = await User.create({
+        ...userData,
+        email,
+        password: hashedPassword,
+    });
+
+    const userObject = user.toObject();
+    delete userObject.password;
+    return userObject;
 };
 
 export const getAllUsersService = async () => {
@@ -28,7 +43,7 @@ export const getUserByIdService = async (id: string) => {
 };
 
 export const getUserByEmailService = async (email: string) => {
-    const user = await User.findOne({ email }).select('-password');
+    const user = await User.findOne({ email: normalizeEmail(email) }).select('-password');
     if (!user) {
         throw new AppError("No user found with this email", 404);
     }
@@ -36,7 +51,16 @@ export const getUserByEmailService = async (email: string) => {
 };
 
 export const updateUserService = async (id: string, updateData: Partial<TUser>) => {
-    const user = await User.findByIdAndUpdate(id, updateData, {
+    const updatePayload = {
+        ...updateData,
+        ...(updateData.email ? { email: normalizeEmail(updateData.email) } : {}),
+    };
+
+    if (updatePayload.password) {
+        updatePayload.password = await bcrypt.hash(updatePayload.password, 10);
+    }
+
+    const user = await User.findByIdAndUpdate(id, updatePayload, {
         new: true,
         runValidators: true,
     }).select('-password');

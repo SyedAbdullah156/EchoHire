@@ -17,8 +17,8 @@ router.post("/", createUser);
 router.get("/", getAllUsers);
 
 // User/Admin: Get specific profile
-router.get("/:id", getUserById);
 router.get("/email/:email", getUserByEmail);
+router.get("/:id", getUserById);
 
 // User/Admin: Update or Delete
 router.put("/:id", updateUser);
