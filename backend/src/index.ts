@@ -1,7 +1,8 @@
 import app from "./app";
 import { connectDB } from "./config/db";
+import { DEFAULT_PORT } from "./constants/app";
 
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || DEFAULT_PORT;
 
 const startServer = async () => {
     await connectDB();
@@ -11,4 +12,7 @@ const startServer = async () => {
     });
 };
 
-startServer();
+startServer().catch((error) => {
+    console.error("Failed to start server:", error);
+    process.exit(1);
+});
