@@ -7,16 +7,22 @@ import {
     updateUserService,
     deleteUserService,
 } from "../services/user.service";
+import { signAuthToken } from "../utils/auth.utils";
 
 // CREATE USER
 export const createUser = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        console.log(req.body);
         const user = await createUserService(req.body);
+        const token = signAuthToken({
+            ...user,
+            _id: String((user as { _id: { toString(): string } })._id),
+        });
 
         res.status(201).json({
             success: true,
+            message: "Account created successfully",
             data: user,
+            token,
         });
     } catch (error) {
         next(error);
