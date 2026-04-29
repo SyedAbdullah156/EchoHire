@@ -8,7 +8,7 @@ import {
 } from '../controllers/company.controller';
 import { protect, restrictTo } from '../middlewares/auth.middleware';
 import { validate } from '../middlewares/validate.middleware';
-import { companySchema } from '../validations/job.validation';
+import { createCompanySchema, companyParamsSchema, updateCompanySchema } from '../validations/comapny.validation';
 import upload from '../utils/multer.config';
 
 const router = express.Router();
@@ -18,7 +18,7 @@ const router = express.Router();
  * Anyone can view companies (like a job board)
  */
 router.get("/", getAllCompanies);
-router.get("/:id", getCompanyById);
+router.get("/:id", validate(companyParamsSchema), getCompanyById);
 
 /**
  * PROTECTED ROUTES
@@ -30,12 +30,12 @@ router.use(protect);
 router.post(
     "/", 
     upload.single('logo'), 
-    validate(companySchema), 
+    validate(createCompanySchema), 
     createCompany
 );
 
 // 2. Update/Delete company (Only Admins or the Owner should do this)
-router.patch("/:id", upload.single('logo'), updateCompany);
-router.delete("/:id", restrictTo('admin'), deleteCompany);
+router.patch("/:id", upload.single('logo'), validate(updateCompanySchema), updateCompany);
+router.delete("/:id", validate(companyParamsSchema), restrictTo('admin'), deleteCompany);
 
 export default router;
