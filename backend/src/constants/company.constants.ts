@@ -1,0 +1,6 @@
+export const COMPANY_LIMITS = {
+    NAME_MIN: 2,
+    NAME_MAX: 100,
+    DESCRIPTION_MIN: 10,
+    DESCRIPTION_MAX: 2000,
+};

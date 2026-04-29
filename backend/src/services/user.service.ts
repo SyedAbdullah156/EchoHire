@@ -1,45 +1,56 @@
-type User = {
-  id: number;
-  name: string;
-  email: string;
+import { User } from "../models/user.model";
+import { TUser } from "../types/user.types";
+import { AppError } from "../utils/apperror.utls";
+
+export const createUserService = async (userData: TUser) => {
+    // Check if user already exists to prevent duplicate errors from MongoDB
+    const existingUser = await User.findOne({ email: userData.email });
+    if (existingUser) {
+        throw new AppError("Email is already registered", 400);
+    }
+    
+    const user = await User.create(userData);
+    return user;
 };
 
-type CreateUserInput = Omit<User, "id">;
-
-let users: User[] = [];
-let id = 1;
-
-// CREATE
-export const createUserService = async (data: CreateUserInput): Promise<User> => {
-  const user: User = { id: id++, ...data };
-  users.push(user);
-  return user;
+export const getAllUsersService = async () => {
+    // .select('-password') ensures we never accidentally send hashes to the client
+    const users = await User.find().select('-password');
+    return users;
 };
 
-// READ ALL
-export const getUsersService = async (): Promise<User[]> => {
-  return users;
+export const getUserByIdService = async (id: string) => {
+    const user = await User.findById(id).select('-password'); // We already did select: false in schema so here it is redundant but good practice
+    if (!user) {
+        throw new AppError("User not found", 404);
+    }
+    return user;
 };
 
-// READ ONE
-export const getUserByIdService = async (userId: number): Promise<User | undefined> => {
-  return users.find(u => u.id === userId);
+export const getUserByEmailService = async (email: string) => {
+    const user = await User.findOne({ email }).select('-password');
+    if (!user) {
+        throw new AppError("No user found with this email", 404);
+    }
+    return user;
 };
 
-// UPDATE
-export const updateUserService = async (
-  userId: number,
-  data: Partial<CreateUserInput>
-): Promise<User | undefined> => {
-  users = users.map(u =>
-    u.id === userId ? { ...u, ...data } : u
-  );
+export const updateUserService = async (id: string, updateData: Partial<TUser>) => {
+    const user = await User.findByIdAndUpdate(id, updateData, {
+        new: true,
+        runValidators: true,
+    }).select('-password');
 
-  return users.find(u => u.id === userId);
+    if (!user) {
+        throw new AppError("User not found to update", 404);
+    }
+    return user;
 };
 
-// DELETE
-export const deleteUserService = async (userId: number): Promise<{ message: string }> => {
-  users = users.filter(u => u.id !== userId);
-  return { message: "deleted" };
+export const deleteUserService = async (id: string) => {
+    const user = await User.findByIdAndDelete(id);
+    if (!user) {
+        throw new AppError("User not found to delete", 404);
+    }
+    return user;
 };
