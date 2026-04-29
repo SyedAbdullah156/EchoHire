@@ -24,7 +24,7 @@ const progressData = [
 export default function ProgressAreaChart() {
   return (
     <div className="h-[240px] w-full rounded-xl border border-white/10 bg-[#0a1223]/80 p-3 md:h-[290px]">
-      <ResponsiveContainer width="100%" height="100%">
+      <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={240}>
         <AreaChart data={progressData} margin={{ top: 12, right: 10, left: -20, bottom: 4 }}>
           <defs>
             <linearGradient id="progressGradient" x1="0" y1="0" x2="0" y2="1">
