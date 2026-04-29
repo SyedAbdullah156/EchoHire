@@ -5,11 +5,9 @@ dotenv.config();
 
 export const connectDB = async () => {
     try {
-        const uri = process.env.MONGODB_URI;
+        const uri = process.env.MONGODB_URI ?? "mongodb://127.0.0.1:27017/echohire";
 
-        if (!uri) {
-            throw new Error("MONGODB_URI is not defined in .env file");
-        }
+        mongoose.set("strictQuery", true);
 
         const conn = await mongoose.connect(uri);
 

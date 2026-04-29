@@ -37,7 +37,7 @@ const companyBodySchema = z.object({
 
     logo: z.string().optional(),
 
-    owner_id: objectIdSchema // This is must for Schema (Database saving) but here optional because it is fetched from token at the time of request and appended to the req.user in controller
+    owner_id: objectIdSchema.optional() // The controller can fill this from the authenticated user or a provided header/body value.
 });
 
 // Actual Use Cases
