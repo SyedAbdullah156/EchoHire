@@ -19,12 +19,13 @@ export const protect = (req: AuthRequest, _res: Response, next: NextFunction) =>
             const token = authorizationHeader.slice("Bearer ".length).trim();
             const payload = verifyAuthToken(token);
 
-            req.user = {
-                name: payload.name,
-                email: payload.email,
-                password: undefined,
-                role: payload.role as TUser["role"],
-            };
+                req.user = {
+                    _id: String(payload.id),
+                    name: payload.name,
+                    email: payload.email,
+                    password: undefined,
+                    role: payload.role as TUser["role"],
+                };
 
             return next();
         } catch {
