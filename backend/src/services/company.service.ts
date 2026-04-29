@@ -1,6 +1,6 @@
 import { Company } from '../models/company.model';
 import { TCompany } from '../types/company.types';
-import AppError from '../utils/AppError';
+import { AppError } from '../utils/apperror.utls';
 
 export const createCompanyService = async (payload: TCompany) => {
   return await Company.create(payload);
