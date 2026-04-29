@@ -1,4 +1,5 @@
 import express, { Request, Response } from "express";
+import cors from "cors";
 import userRoutes from "./routes/user.routes";
 import companyRoutes from "./routes/company.routes";
 import authRoutes from "./routes/auth.routes";
@@ -8,6 +9,16 @@ import { globalErrorHandler } from "./middlewares/errors.middlewares";
 const app = express();
 
 // Middlewares
+app.use(
+    cors({
+        origin: [
+            "http://localhost:3000",
+            "http://127.0.0.1:3000",
+        ],
+        methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+        allowedHeaders: ["Content-Type", "Authorization"],
+    })
+);
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }))
 

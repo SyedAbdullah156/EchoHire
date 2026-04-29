@@ -1,4 +1,3 @@
-import Navbar from "@/components/Navbar";
 import { FiCheck, FiX } from "react-icons/fi";
 
 const plans = [
@@ -52,9 +51,7 @@ const plans = [
 export default function PricingPage() {
   return (
     <main className="min-h-screen bg-[#02050d] text-white">
-      <Navbar />
-
-      <section className="mx-auto max-w-7xl px-6 pb-20 pt-32">
+      <section className="mx-auto max-w-7xl px-6 pb-20 pt-10">
         <h1 className="mb-3 text-center text-4xl font-bold tracking-[0.12em] text-white md:text-5xl">
           PRICING
         </h1>
