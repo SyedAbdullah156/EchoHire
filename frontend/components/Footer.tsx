@@ -1,5 +1,8 @@
+"use client";
+
 import Link from "next/link";
 import { FiGithub, FiInstagram, FiLinkedin, FiTwitter } from "react-icons/fi";
+import { usePathname } from "next/navigation";
 
 const productLinks = [
   { label: "AI Interview", href: "/ai-interview" },
@@ -16,6 +19,10 @@ const accountLinks = [
 ];
 
 export default function Footer() {
+  const pathname = usePathname();
+
+  if (pathname !== "/" && pathname !== "/auth" && pathname !== "/students" && pathname !== "/recruiters") return null;
+
   return (
     <footer className="border-t border-white/10 bg-[radial-gradient(circle_at_20%_0%,#0f1e3d_0%,#040915_45%,#03070f_100%)]">
       <div className="mx-auto w-full max-w-7xl px-6 py-10">

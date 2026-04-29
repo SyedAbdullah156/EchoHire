@@ -1,5 +1,4 @@
 import Link from "next/link";
-import Navbar from "@/components/Navbar";
 import DashboardSidebar from "@/components/DashboardSidebar";
 import { FiAlertCircle, FiCheckCircle, FiUploadCloud } from "react-icons/fi";
 
@@ -18,8 +17,7 @@ const improvements = [
 export default function ResumeAnalyzerPage() {
   return (
     <main className="min-h-screen bg-[#050b18] text-white">
-      <Navbar />
-      <section className="mx-auto flex max-w-[1500px] flex-col gap-5 px-4 pb-8 pt-28 lg:flex-row md:px-6">
+      <section className="mx-auto flex max-w-[1500px] flex-col gap-5 px-4 pb-8 pt-8 lg:flex-row md:px-6">
         <DashboardSidebar active="resume-analyzer" />
         <div className="flex-1">
         <header className="mb-5 rounded-2xl border border-[#243253] bg-[#0d162a] p-5 shadow-[0_0_30px_rgba(10,39,105,0.2)]">

@@ -1,5 +1,4 @@
 import Link from "next/link";
-import Navbar from "@/components/Navbar";
 import DashboardSidebar from "@/components/DashboardSidebar";
 import { FiMic, FiMonitor, FiPhoneOff, FiSend } from "react-icons/fi";
 
@@ -13,8 +12,7 @@ const questions = [
 export default function AIInterviewPage() {
   return (
     <main className="min-h-screen bg-[#0a0f1d] text-white">
-      <Navbar />
-      <section className="mx-auto flex max-w-[1500px] flex-col gap-5 px-4 pb-10 pt-28 lg:flex-row md:px-6">
+      <section className="mx-auto flex max-w-[1500px] flex-col gap-5 px-4 pb-10 pt-8 lg:flex-row md:px-6">
         <DashboardSidebar active="ai-interview" />
         <div className="grid flex-1 gap-5 md:grid-cols-[1.5fr_1fr]">
           <article className="rounded-2xl border border-[#26314d] bg-[#10172a] p-5 shadow-[0_0_30px_rgba(12,45,120,0.2)]">

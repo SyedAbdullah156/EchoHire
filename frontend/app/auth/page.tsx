@@ -61,7 +61,11 @@ export default function AuthPage() {
       }
 
       persistSession(result.token, result.data);
-      router.push("/dashboard?completeProfile=1");
+      const nextPath =
+        result?.data?.role === "recruiter"
+          ? "/recruiter-dashboard"
+          : "/dashboard?completeProfile=1";
+      router.push(nextPath);
     } catch (error) {
       setErrorMessage(error instanceof Error ? error.message : "Authentication failed");
     } finally {
