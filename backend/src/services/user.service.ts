@@ -56,6 +56,17 @@ export const updateUserService = async (id: string, updateData: Partial<TUser>) 
         ...(updateData.email ? { email: normalizeEmail(updateData.email) } : {}),
     };
 
+    if (updatePayload.email) {
+        const existingUser = await User.findOne({
+            email: updatePayload.email,
+            _id: { $ne: id },
+        });
+
+        if (existingUser) {
+            throw new AppError("Email is already registered", 400);
+        }
+    }
+
     if (updatePayload.password) {
         updatePayload.password = await bcrypt.hash(updatePayload.password, 10);
     }
