@@ -11,21 +11,26 @@ const normalizeRole = (value: string | undefined): TUser["role"] => {
     return "candidate";
 };
 
-export const protect = (req: AuthRequest, _res: Response, next: NextFunction) => {
-    const authorizationHeader = req.header("authorization") ?? req.header("Authorization");
+export const protect = (
+    req: AuthRequest,
+    _res: Response,
+    next: NextFunction,
+) => {
+    const authorizationHeader =
+        req.header("authorization") ?? req.header("Authorization");
 
     if (authorizationHeader?.startsWith("Bearer ")) {
         try {
             const token = authorizationHeader.slice("Bearer ".length).trim();
             const payload = verifyAuthToken(token);
 
-                req.user = {
-                    _id: String(payload.id),
-                    name: payload.name,
-                    email: payload.email,
-                    password: undefined,
-                    role: payload.role as TUser["role"],
-                };
+            req.user = {
+                _id: String(payload.id),
+                name: payload.name,
+                email: payload.email,
+                password: undefined,
+                role: payload.role as TUser["role"],
+            };
 
             return next();
         } catch {
@@ -55,7 +60,9 @@ export const protect = (req: AuthRequest, _res: Response, next: NextFunction) =>
 
 export const restrictTo = (...allowedRoles: TUser["role"][]) => {
     return (req: AuthRequest, res: Response, next: NextFunction) => {
-        const role = req.user?.role ?? normalizeRole(req.header("x-user-role") ?? undefined);
+        const role =
+            req.user?.role ??
+            normalizeRole(req.header("x-user-role") ?? undefined);
 
         if (!allowedRoles.includes(role)) {
             return res.status(403).json({
