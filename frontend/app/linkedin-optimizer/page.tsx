@@ -1,41 +1,137 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import DashboardSidebar from "@/components/DashboardSidebar";
 import { FiCheckCircle, FiLink2, FiUploadCloud } from "react-icons/fi";
+import { toast } from "sonner";
 
-const recommendations = [
-  "Use a stronger headline with target role + specialty keywords.",
-  "Rewrite About section with 2 measurable achievements.",
-  "Prioritize top 8 skills that match your target jobs.",
-  "Add project bullets using action + impact format.",
-];
-
-const sectionScores = [
-  { name: "Headline", score: 70 },
-  { name: "About", score: 80 },
-  { name: "Skills", score: 85 },
-  { name: "Projects", score: 60 },
-];
+type LinkedinOptimizerResult = {
+  overallScore: number;
+  issues: string[];
+  suggestedImprovements: string[];
+  improvedHeadline: string;
+};
 
 export default function LinkedinOptimizerPage() {
   const [score, setScore] = useState(0);
-  const targetScore = 82;
+  const [targetScore, setTargetScore] = useState(0);
+  const [linkedInUrl, setLinkedInUrl] = useState("");
+  const [pdfFile, setPdfFile] = useState<File | null>(null);
+  const [analysis, setAnalysis] = useState<LinkedinOptimizerResult | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
+
+  const API_BASE_URL = "http://127.0.0.1:5050";
 
   // 🔥 Count-up animation
   useEffect(() => {
-    let start = 0;
+    const startValue = 0;
+    let current = startValue;
+    setScore(startValue);
+
     const interval = setInterval(() => {
-      start += 1;
-      if (start >= targetScore) {
-        start = targetScore;
+      current += 1;
+      if (current >= targetScore) {
+        current = targetScore;
         clearInterval(interval);
       }
-      setScore(start);
+      setScore(current);
     }, 15);
     return () => clearInterval(interval);
-  }, []);
+  }, [targetScore]);
+
+  const recommendations = useMemo(() => {
+    if (!analysis) return [];
+    return analysis.suggestedImprovements?.slice(0, 8) ?? [];
+  }, [analysis]);
+
+  const issues = useMemo(() => {
+    if (!analysis) return [];
+    return analysis.issues?.slice(0, 10) ?? [];
+  }, [analysis]);
+
+  const choosePdf = () => {
+    setErrorMessage("");
+    fileInputRef.current?.click();
+  };
+
+  const onPdfChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0] ?? null;
+    if (!file) return;
+
+    if (file.type !== "application/pdf" && !file.name.toLowerCase().endsWith(".pdf")) {
+      toast.error("Please select a PDF file.");
+      event.target.value = "";
+      return;
+    }
+
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error("PDF must be 5MB or smaller.");
+      event.target.value = "";
+      return;
+    }
+
+    setPdfFile(file);
+    setLinkedInUrl("");
+    toast.success("PDF selected.");
+  };
+
+  const analyzeProfile = async () => {
+    setErrorMessage("");
+    setAnalysis(null);
+
+    if (!pdfFile) {
+      const message = "Please upload a LinkedIn PDF export first.";
+      setErrorMessage(message);
+      toast.error(message);
+      return;
+    }
+
+    setIsSubmitting(true);
+
+    try {
+      const formData = new FormData();
+      formData.append("file", pdfFile);
+
+      const endpoint = `${API_BASE_URL}/api/linkedin-optimizer/analyze-pdf`;
+      const response = await fetch(endpoint, {
+        method: "POST",
+        body: formData,
+      });
+
+      const result = await response.json().catch(() => ({}));
+
+      if (!response.ok) {
+        const serverMessage = typeof result?.message === "string" ? result.message : "";
+        const message = serverMessage
+          ? `${serverMessage} (HTTP ${response.status})`
+          : `Failed to analyze profile. (HTTP ${response.status})`;
+        throw new Error(message);
+      }
+
+      const data = (result?.data ?? null) as LinkedinOptimizerResult | null;
+      if (!data) {
+        throw new Error("Backend did not return analysis data.");
+      }
+
+      setAnalysis(data);
+      setTargetScore(Math.max(0, Math.min(100, Math.round(data.overallScore ?? 0))));
+      toast.success("Analysis complete.");
+    } catch (error) {
+      const message =
+        error instanceof Error
+          ? error.message.includes("Failed to fetch")
+            ? `Cannot reach backend at ${API_BASE_URL}. Is backend running on port 5050?`
+            : `${error.message} (API: ${API_BASE_URL})`
+          : "Failed to analyze profile.";
+      setErrorMessage(message);
+      toast.error(message);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   const getColor = () => {
     if (score >= 80) return "text-green-400";
@@ -86,9 +182,18 @@ export default function LinkedinOptimizerPage() {
                   <FiLink2 className="text-[#8ab2ff]" />
                   <input
                     placeholder="https://www.linkedin.com/in/username"
+                    value={linkedInUrl}
+                    onChange={(event) => {
+                      setLinkedInUrl(event.target.value);
+                      setPdfFile(null);
+                      setErrorMessage("");
+                    }}
                     className="w-full bg-transparent text-sm text-[#e7eeff] outline-none placeholder:text-[#6f86b2]"
                   />
                 </div>
+                <p className="mt-2 text-xs text-[#7f96c2]">
+                  PDF upload is supported now. URL analysis can be added next.
+                </p>
               </div>
 
               <div className="text-center text-xs text-[#7f96c2]">OR</div>
@@ -99,13 +204,40 @@ export default function LinkedinOptimizerPage() {
                   Upload LinkedIn PDF export
                 </p>
                 <p className="text-xs text-[#8ea4cd]">PDF format only</p>
-                <button className="mt-3 rounded-lg bg-gradient-to-r from-[#2a7df7] to-[#372e8f] px-4 py-2 text-sm font-medium hover:opacity-90">
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="application/pdf,.pdf"
+                  className="hidden"
+                  onChange={onPdfChange}
+                />
+                <button
+                  type="button"
+                  onClick={choosePdf}
+                  className="mt-3 rounded-lg bg-gradient-to-r from-[#2a7df7] to-[#372e8f] px-4 py-2 text-sm font-medium hover:opacity-90"
+                >
                   Choose PDF
                 </button>
+                {pdfFile && (
+                  <p className="mt-2 text-xs text-[#9fb1d8]">
+                    Selected: <span className="text-[#dbe7ff]">{pdfFile.name}</span>
+                  </p>
+                )}
               </div>
 
-              <button className="w-full rounded-lg bg-gradient-to-r from-[#2a7df7] to-[#372e8f] px-4 py-2 text-sm font-medium hover:opacity-90">
-                Analyze My Profile
+              {errorMessage && (
+                <p className="rounded-lg border border-red-500/40 bg-red-500/10 px-4 py-3 text-sm text-red-200">
+                  {errorMessage}
+                </p>
+              )}
+
+              <button
+                type="button"
+                disabled={isSubmitting || !pdfFile}
+                onClick={analyzeProfile}
+                className="w-full rounded-lg bg-gradient-to-r from-[#2a7df7] to-[#372e8f] px-4 py-2 text-sm font-medium hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                {isSubmitting ? "Analyzing..." : "Analyze My Profile"}
               </button>
             </div>
           </article>
@@ -161,35 +293,45 @@ export default function LinkedinOptimizerPage() {
               </p>
             </div>
 
-            {/* 📊 Section Scores */}
-            <div className="rounded-xl border border-[#2a3b61] bg-[#0a1223] p-4">
-              <p className="text-lg font-semibold text-[#dbe7ff] mb-3">
-                Section Breakdown
-              </p>
-
-              <div className="space-y-3">
-                {sectionScores.map((sec) => (
-                  <div key={sec.name}>
-                    <div className="flex justify-between text-xs text-[#9fb1d8] mb-1">
-                      <span>{sec.name}</span>
-                      <span>{sec.score}%</span>
-                    </div>
-                    <div className="w-full h-2 bg-[#1c2a4a] rounded-full overflow-hidden">
-                      <div
-                        className="h-full bg-gradient-to-r from-[#2a7df7] to-[#372e8f] transition-all duration-700"
-                        style={{ width: `${sec.score}%` }}
-                      />
-                    </div>
-                  </div>
-                ))}
+            {/* Result */}
+            {analysis?.improvedHeadline && (
+              <div className="rounded-xl border border-[#2a3b61] bg-[#0a1223] p-4">
+                <p className="text-lg font-semibold text-[#dbe7ff] mb-2">Improved Headline</p>
+                <p className="text-sm text-[#dbe7ff] leading-6">{analysis.improvedHeadline}</p>
               </div>
-            </div>
+            )}
 
             {/* Recommendations */}
             <div>
               <p className="text-xl font-semibold text-[#dbe7ff] md:text-2xl">
                 What to improve
               </p>
+              {!analysis && (
+                <p className="mt-2 text-sm text-[#9fb1d8]">
+                  Upload your LinkedIn PDF and click Analyze to get personalized issues and improvements.
+                </p>
+              )}
+
+              {analysis && issues.length > 0 && (
+                <div className="mt-3">
+                  <p className="text-sm font-semibold text-[#dbe7ff]">Issues found</p>
+                  <ul className="mt-2 space-y-2 text-sm text-[#bdc9e3] md:text-base">
+                    {issues.map((issue) => (
+                      <li
+                        key={issue}
+                        className="flex gap-2 rounded-lg border border-[#2a3b61] bg-[#101c35] p-3 hover:border-[#3f5ea8] transition"
+                      >
+                        <FiCheckCircle className="mt-0.5 text-[#2f7ef4]" />
+                        <span>{issue}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
+              {analysis && recommendations.length > 0 && (
+                <div className="mt-4">
+                  <p className="text-sm font-semibold text-[#dbe7ff]">Suggested improvements</p>
               <ul className="mt-3 space-y-2 text-sm text-[#bdc9e3] md:text-base">
                 {recommendations.map((rec) => (
                   <li
@@ -201,6 +343,8 @@ export default function LinkedinOptimizerPage() {
                   </li>
                 ))}
               </ul>
+                </div>
+              )}
             </div>
 
             <Link
