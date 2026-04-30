@@ -75,34 +75,24 @@ export const updateUserService = async (id: string, updateData: Partial<TUser>) 
         runValidators: true,
     }).select("-password");
 
-    if (!user) {
-        throw new AppError("User not found", 404);
+    const updatePayload: Record<string, any> = {};
+
+    // top-level fields
+    if (name) updatePayload.name = name;
+    if (email) updatePayload.email = email;
+
+    // nested profile fields (SAFE)
+    if (profile) {
+        for (const [key, value] of Object.entries(profile)) {
+            updatePayload[`profile.${key}`] = value;
+        }
     }
-
-    return user;
-};
-
-export const updateMyProfileService = async (
-    id: string,
-    profileData: UpdateProfileInput,
-) => {
-    const currentUser = await User.findById(id);
-    if (!currentUser) {
-        throw new AppError("User not found", 404);
-    }
-
-    const mergedProfile = {
-        ...(currentUser.profile ?? {}),
-        ...profileData,
-    };
-
+    console.log(updatePayload);
+    
     const user = await User.findByIdAndUpdate(
         id,
-        { profile: mergedProfile },
-        {
-            new: true,
-            runValidators: true,
-        },
+        { $set: updatePayload },
+        { new: true, runValidators: true },
     ).select("-password");
 
     if (!user) {

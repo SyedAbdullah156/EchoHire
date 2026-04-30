@@ -18,13 +18,21 @@ export interface TViolation {
     timestamp: Date;
 }
 
+export type TMessageRole = "ai" | "candidate";
+export type TSessionStatus = "active" | "completed" | "abandoned";
+
+export interface TMessage {
+    role: TMessageRole;
+    content: string;
+    timestamp: Date;
+}
+
 export interface TInterview {
     job_id: mongoose.Types.ObjectId;
     user_id: mongoose.Types.ObjectId;
-    rounds: TRound[];
     status: TInterviewStatus;
     cv_url?: string;
     score?: number;
     remarks?: string;
-    violations?: TViolation[];
+    messages: TMessage[];
 }
