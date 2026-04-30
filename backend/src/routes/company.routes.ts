@@ -26,7 +26,7 @@ router.get("/:id", validate(companyParamsSchema), getCompanyById);
 
 /**
  * PROTECTED ROUTES
- * It checks the JWT in the header. If the token is missing or invalid, it kills the request here. If valid, it attaches req.user (the logged-in user) to the request.
+ * It checks the JWT in the header. If the token is missing or invalid, it kills the request here. If valid, it attaches req.user (the logged-in user) to the authenticated request.
  */
 router.use(protect);
 

@@ -10,7 +10,11 @@ import {
 import { signAuthToken } from "../utils/auth.utils";
 
 // CREATE USER
-export const createUser = async (req: Request, res: Response, next: NextFunction) => {
+export const createUser = async (
+    req: Request,
+    res: Response,
+    next: NextFunction,
+) => {
     try {
         const user = await createUserService(req.body);
         const token = signAuthToken({
@@ -30,7 +34,11 @@ export const createUser = async (req: Request, res: Response, next: NextFunction
 };
 
 // GET ALL USERS
-export const getAllUsers = async (req: Request, res: Response, next: NextFunction) => {
+export const getAllUsers = async (
+    req: Request,
+    res: Response,
+    next: NextFunction,
+) => {
     try {
         const users = await getAllUsersService();
 
@@ -44,16 +52,13 @@ export const getAllUsers = async (req: Request, res: Response, next: NextFunctio
 };
 
 // GET USER BY ID
-export const getUserById = async (req: Request, res: Response, next: NextFunction) => {
+export const getUserById = async (
+    req: Request,
+    res: Response,
+    next: NextFunction,
+) => {
     try {
         const user = await getUserByIdService(req.params.id as string);
-
-        if (!user) {
-            return res.status(404).json({
-                success: false,
-                message: "User not found",
-            });
-        }
 
         res.status(200).json({
             success: true,
@@ -65,16 +70,13 @@ export const getUserById = async (req: Request, res: Response, next: NextFunctio
 };
 
 // GET USER BY EMAIL
-export const getUserByEmail = async (req: Request, res: Response, next: NextFunction) => {
+export const getUserByEmail = async (
+    req: Request,
+    res: Response,
+    next: NextFunction,
+) => {
     try {
         const user = await getUserByEmailService(req.params.email as string);
-
-        if (!user) {
-            return res.status(404).json({
-                success: false,
-                message: "User not found",
-            });
-        }
 
         res.status(200).json({
             success: true,
@@ -86,16 +88,13 @@ export const getUserByEmail = async (req: Request, res: Response, next: NextFunc
 };
 
 // UPDATE USER
-export const updateUser = async (req: Request, res: Response, next: NextFunction) => {
+export const updateUser = async (
+    req: Request,
+    res: Response,
+    next: NextFunction,
+) => {
     try {
         const user = await updateUserService(req.params.id as string, req.body);
-
-        if (!user) {
-            return res.status(404).json({
-                success: false,
-                message: "User not found",
-            });
-        }
 
         res.status(200).json({
             success: true,
@@ -107,16 +106,13 @@ export const updateUser = async (req: Request, res: Response, next: NextFunction
 };
 
 // DELETE USER
-export const deleteUser = async (req: Request, res: Response, next: NextFunction) => {
+export const deleteUser = async (
+    req: Request,
+    res: Response,
+    next: NextFunction,
+) => {
     try {
         const result = await deleteUserService(req.params.id as string);
-
-        if (!result) {
-            return res.status(404).json({
-                success: false,
-                message: "User not found",
-            });
-        }
 
         res.status(200).json({
             success: true,

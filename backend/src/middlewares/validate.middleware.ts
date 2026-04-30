@@ -15,6 +15,21 @@ export const validate = (schema: ZodSchema) => {
                 message: "Validation failed",
                 errors: result.error.flatten(),
             });
+
+            next();
+        } catch (error) {
+            if (error instanceof ZodError) {
+                return res.status(400).json({
+                    success: false,
+                    message: "Validation Error",
+                    errors: error.issues.map((err) => ({
+                        field: err.path[err.path.length - 1],
+                        message: err.message,
+                    })),
+                });
+            }
+
+            next(error);
         }
 
         next();
