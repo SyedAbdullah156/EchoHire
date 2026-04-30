@@ -92,7 +92,7 @@ function CandidateRow({ candidate, onClick }: { candidate: Candidate; onClick: (
           {candidate.name[0]}
         </div>
         <div>
-          <h3 className="text-sm font-bold text-white group-hover:text-primary transition-colors">{candidate.name}</h3>
+          <h3 className="text-sm font-bold text-foreground group-hover:text-primary transition-colors">{candidate.name}</h3>
           <p className="text-[10px] text-text-muted font-bold uppercase tracking-widest mt-0.5">{candidate.id}</p>
         </div>
       </div>
@@ -101,7 +101,7 @@ function CandidateRow({ candidate, onClick }: { candidate: Candidate; onClick: (
         <p className="text-xs font-medium text-text-secondary">{candidate.role}</p>
         <div className="flex flex-wrap gap-2 mt-2">
           {candidate.skills.slice(0, 3).map(skill => (
-            <span key={skill} className="px-2 py-0.5 rounded-md bg-white/5 border border-white/5 text-[9px] font-bold text-text-muted uppercase tracking-wider">
+            <span key={skill} className="px-2 py-0.5 rounded-md bg-surface-2 border border-border-subtle text-[9px] font-bold text-text-muted uppercase tracking-wider">
               {skill}
             </span>
           ))}
@@ -116,7 +116,7 @@ function CandidateRow({ candidate, onClick }: { candidate: Candidate; onClick: (
           }`}>
             {candidate.matchType}
           </span>
-          <p className="text-[10px] font-bold text-white mt-1.5">{candidate.score}% Match</p>
+          <p className="text-[10px] font-bold text-foreground mt-1.5">{candidate.score}% Match</p>
         </div>
         <FiArrowRight className="text-text-muted opacity-0 group-hover:opacity-100 group-hover:translate-x-1 transition-all" />
       </div>
@@ -146,17 +146,17 @@ export default function CandidateDirectory() {
         {/* --- Header & Filters --- */}
         <div className="space-y-8">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
-            <h1 className="text-3xl font-black text-white tracking-tight">Candidate Directory</h1>
+            <h1 className="text-3xl font-black text-foreground tracking-tight">Candidate Directory</h1>
             <div className="flex items-center gap-3">
               <div className="relative">
                 <FiSearch className="absolute left-4 top-1/2 -translate-y-1/2 text-text-muted" />
                 <input 
                   type="text" 
                   placeholder="Search by name or skills..."
-                  className="h-11 w-64 bg-surface-1 border border-border-medium rounded-xl pl-12 pr-4 text-xs text-white outline-none focus:border-primary/50 transition-all"
+                  className="h-11 w-64 bg-surface-1 border border-border-medium rounded-xl pl-12 pr-4 text-xs text-foreground outline-none focus:border-primary/50 transition-all"
                 />
               </div>
-              <button className="h-11 px-4 flex items-center gap-2 rounded-xl bg-surface-1 border border-border-medium text-xs font-bold text-text-muted hover:text-white transition-all">
+              <button className="h-11 px-4 flex items-center gap-2 rounded-xl bg-surface-1 border border-border-medium text-xs font-bold text-text-muted hover:text-foreground transition-all">
                 <FiFilter /> Filters
               </button>
             </div>
@@ -167,7 +167,7 @@ export default function CandidateDirectory() {
                <button 
                  key={chip}
                  className={`h-9 px-4 rounded-full text-[10px] font-bold uppercase tracking-widest transition-all ${
-                   i === 0 ? "bg-primary text-white" : "bg-surface-1 border border-border-medium text-text-muted hover:border-primary/50"
+                   i === 0 ? "bg-primary text-foreground" : "bg-surface-1 border border-border-medium text-text-muted hover:border-primary/50"
                  }`}
                >
                  {chip}
@@ -222,13 +222,13 @@ export default function CandidateDirectory() {
                     <FiUser />
                   </div>
                   <div>
-                    <h2 className="text-xl font-bold text-white">{selectedCandidate.name}</h2>
+                    <h2 className="text-xl font-bold text-foreground">{selectedCandidate.name}</h2>
                     <p className="text-[10px] font-black uppercase tracking-widest text-text-muted">{selectedCandidate.id}</p>
                   </div>
                 </div>
                 <button 
                   onClick={() => setSelectedCandidate(null)}
-                  className="h-10 w-10 rounded-xl hover:bg-white/5 flex items-center justify-center text-text-muted transition-colors"
+                  className="h-10 w-10 rounded-xl hover:bg-surface-2 flex items-center justify-center text-text-muted transition-colors"
                 >
                   <FiX />
                 </button>
@@ -244,7 +244,7 @@ export default function CandidateDirectory() {
                       <FiCpu />
                       <span className="text-xs font-black uppercase tracking-widest">AI Profile Analysis</span>
                     </div>
-                    <span className="text-3xl font-black text-white">{selectedCandidate.score}%</span>
+                    <span className="text-3xl font-black text-foreground">{selectedCandidate.score}%</span>
                   </div>
                   <div className="relative h-2 bg-surface-2 rounded-full mb-2">
                     <motion.div 
@@ -321,7 +321,7 @@ export default function CandidateDirectory() {
                       exit={{ opacity: 0, scale: 0.95 }}
                       onClick={handleRequestContact}
                       disabled={isRequesting}
-                      className="h-14 w-full rounded-2xl bg-primary text-white font-black text-xs uppercase tracking-widest flex items-center justify-center gap-3 hover:bg-primary-hover active:scale-[0.98] transition-all disabled:opacity-50"
+                      className="h-14 w-full rounded-2xl bg-primary text-foreground font-black text-xs uppercase tracking-widest flex items-center justify-center gap-3 hover:bg-primary-hover active:scale-[0.98] transition-all disabled:opacity-50"
                     >
                       {isRequesting ? "Processing..." : "Request Direct Contact"}
                       {!isRequesting && <FiMail />}

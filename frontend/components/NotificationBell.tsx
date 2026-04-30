@@ -102,13 +102,13 @@ export default function NotificationBell() {
     <div className="relative" ref={dropdownRef}>
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className={`h-12 w-12 flex items-center justify-center rounded-2xl bg-[#0d162a] border border-slate-800 transition-all relative ${
-          unreadCount > 0 ? "text-blue-500" : "text-slate-500 hover:text-white"
+        className={`h-12 w-12 flex items-center justify-center rounded-2xl bg-surface-2 border border-border-medium transition-all relative ${
+          unreadCount > 0 ? "text-primary" : "text-text-muted hover:text-foreground"
         }`}
       >
         <FiBell size={20} />
         {unreadCount > 0 && (
-          <span className="absolute top-3 right-3 h-2.5 w-2.5 rounded-full bg-blue-500 border-2 border-[#0d162a] animate-pulse" />
+          <span className="absolute top-3 right-3 h-2.5 w-2.5 rounded-full bg-primary border-2 border-[#0d162a] animate-pulse" />
         )}
       </button>
 
@@ -118,11 +118,11 @@ export default function NotificationBell() {
             initial={{ opacity: 0, y: 10, scale: 0.95 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 10, scale: 0.95 }}
-            className="absolute right-0 mt-4 w-80 sm:w-96 rounded-3xl bg-[#0d162a] border border-slate-800 shadow-2xl z-50 overflow-hidden"
+            className="absolute right-0 mt-4 w-80 sm:w-96 rounded-3xl bg-surface-2 border border-border-medium shadow-2xl z-50 overflow-hidden"
           >
-            <div className="p-6 border-b border-slate-800 flex items-center justify-between bg-surface-2/50">
+            <div className="p-6 border-b border-border-medium flex items-center justify-between bg-surface-2/50">
               <div>
-                <h4 className="text-sm font-black text-white uppercase tracking-widest">Alerts</h4>
+                <h4 className="text-sm font-black text-foreground uppercase tracking-widest">Alerts</h4>
                 <p className="text-[10px] text-text-muted font-bold mt-1">
                   {unreadCount} UNREAD NOTIFICATIONS
                 </p>
@@ -130,7 +130,7 @@ export default function NotificationBell() {
               {unreadCount > 0 && (
                 <button
                   onClick={markAllRead}
-                  className="text-[10px] font-black text-blue-500 uppercase tracking-widest hover:underline"
+                  className="text-[10px] font-black text-primary uppercase tracking-widest hover:underline"
                 >
                   Mark all as read
                 </button>
@@ -143,15 +143,15 @@ export default function NotificationBell() {
                   <div
                     key={notif._id}
                     className={`p-6 transition-colors hover:bg-surface-2/30 relative group ${
-                      !notif.read ? "bg-blue-500/5" : ""
+                      !notif.read ? "bg-primary/5" : ""
                     }`}
                   >
                     {!notif.read && (
-                      <div className="absolute left-0 top-0 bottom-0 w-1 bg-blue-500" />
+                      <div className="absolute left-0 top-0 bottom-0 w-1 bg-primary" />
                     )}
                     <div className="flex justify-between items-start gap-4">
                       <div className="space-y-1 flex-1">
-                        <p className={`text-sm font-bold ${!notif.read ? "text-white" : "text-slate-300"}`}>
+                        <p className={`text-sm font-bold ${!notif.read ? "text-foreground" : "text-slate-300"}`}>
                           {notif.title}
                         </p>
                         <p className="text-xs text-text-secondary leading-relaxed">
@@ -163,7 +163,7 @@ export default function NotificationBell() {
                       </div>
                       <button
                         onClick={() => deleteNotification(notif._id)}
-                        className="opacity-0 group-hover:opacity-100 p-2 rounded-lg hover:bg-red-500/10 text-slate-500 hover:text-red-500 transition-all"
+                        className="opacity-0 group-hover:opacity-100 p-2 rounded-lg hover:bg-red-500/10 text-text-muted hover:text-red-500 transition-all"
                       >
                         <FiTrash2 size={14} />
                       </button>
@@ -172,7 +172,7 @@ export default function NotificationBell() {
                 ))
               ) : (
                 <div className="p-12 text-center space-y-4">
-                  <div className="h-16 w-16 rounded-3xl bg-surface-2 border border-slate-800 mx-auto flex items-center justify-center text-slate-700">
+                  <div className="h-16 w-16 rounded-3xl bg-surface-2 border border-border-medium mx-auto flex items-center justify-center text-text-muted">
                     <FiBell size={32} />
                   </div>
                   <p className="text-xs font-bold text-text-muted uppercase tracking-widest">
@@ -184,7 +184,7 @@ export default function NotificationBell() {
 
             {notifications.length > 0 && (
               <div className="p-4 bg-surface-2/30 text-center">
-                <button className="text-[10px] font-black text-slate-500 uppercase tracking-widest hover:text-white transition-colors">
+                <button className="text-[10px] font-black text-text-muted uppercase tracking-widest hover:text-foreground transition-colors">
                   View All Activity
                 </button>
               </div>

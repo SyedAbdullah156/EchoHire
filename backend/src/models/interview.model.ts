@@ -20,6 +20,17 @@ const qaPairSchema = new Schema<TQAPair>(
             type: Date,
             default: Date.now,
         },
+        metadata: {
+            problem_statement: { type: String },
+            test_cases: [{
+                input: { type: String },
+                expected: { type: String },
+                _id: false
+            }],
+            initial_code: { type: String },
+            constraints: [{ type: String }],
+            examples: [{ type: String }],
+        },
     },
     { _id: false },
 );
@@ -92,7 +103,11 @@ const interviewSchema = new Schema<TInterview>(
         job_id: {
             type: Schema.Types.ObjectId,
             ref: "Job",
-            required: [true, "An interview must be linked to a specific job"],
+            required: false,
+        },
+        is_practice: {
+            type: Boolean,
+            default: false,
         },
         user_id: {
             type: Schema.Types.ObjectId,
@@ -132,6 +147,11 @@ const interviewSchema = new Schema<TInterview>(
             default: [],
         },
         assessment_token: {
+            type: String,
+            unique: true,
+            sparse: true,
+        },
+        join_code: {
             type: String,
             unique: true,
             sparse: true,

@@ -38,10 +38,12 @@ export default function RecruiterDashboard() {
   const [stats, setStats] = useState<DashboardStat[]>([]);
   const [recentCandidates, setRecentCandidates] = useState<DashboardCandidate[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchDashboardData = async () => {
       setIsLoading(true);
+      setError(null);
       try {
         const [jobsRes, interviewsRes] = await Promise.all([
           fetch("/api/jobs"),
@@ -81,9 +83,14 @@ export default function RecruiterDashboard() {
             }));
             setRecentCandidates(mapped);
           }
+        } else {
+          setError("Failed to fetch dashboard data. Please try again later.");
         }
       } catch (error) {
         console.error("Failed to fetch recruiter dashboard data:", error);
+        setError("A connection error occurred. Please check your network.");
+      } finally {
+        setIsLoading(false);
       }
     };
 
@@ -95,6 +102,21 @@ export default function RecruiterDashboard() {
       <div className="p-8 lg:p-10 flex flex-col items-center justify-center min-h-[400px] text-primary animate-pulse">
         <FiClock size={48} className="mb-4" />
         <p className="text-xs font-black uppercase tracking-widest">Synchronizing Dashboard Data...</p>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="p-8 lg:p-10 flex flex-col items-center justify-center min-h-[400px] text-red-500">
+        <FiInfo size={48} className="mb-4" />
+        <p className="text-sm font-bold">{error}</p>
+        <button 
+          onClick={() => window.location.reload()}
+          className="mt-6 px-6 py-2 bg-primary text-foreground rounded-xl text-xs font-black uppercase tracking-widest"
+        >
+          Retry
+        </button>
       </div>
     );
   }
@@ -126,15 +148,15 @@ export default function RecruiterDashboard() {
       {/* --- Page Header --- */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div className="space-y-1">
-          <h1 className="text-3xl font-black text-white tracking-tight">Overview</h1>
+          <h1 className="text-3xl font-black text-foreground tracking-tight">Overview</h1>
           <p className="text-sm text-text-muted">Welcome back, {name || "Recruiter"}. Here&apos;s what&apos;s happening today.</p>
         </div>
         <Link 
           href={isApproved ? "/recruiter/jobs/new" : "#"}
           className={`h-12 px-6 rounded-2xl text-xs font-black uppercase tracking-widest flex items-center justify-center gap-3 transition-all ${
             isApproved 
-              ? "bg-primary text-white hover:bg-primary-hover active:scale-[0.98]" 
-              : "bg-slate-800 text-slate-500 cursor-not-allowed opacity-50"
+              ? "bg-primary text-foreground hover:bg-primary-hover active:scale-[0.98]" 
+              : "bg-slate-800 text-text-muted cursor-not-allowed opacity-50"
           }`}
         >
           {isApproved ? <FiPlus /> : <FiLock />} {isApproved ? "Create New Job" : "Posting Locked"}
@@ -159,7 +181,7 @@ export default function RecruiterDashboard() {
             </div>
             <div>
               <p className="text-sm font-bold text-text-muted mb-1">{stat.label}</p>
-              <h2 className="text-3xl font-black text-white">{stat.value}</h2>
+              <h2 className="text-3xl font-black text-foreground">{stat.value}</h2>
               <p className="text-[10px] font-bold uppercase tracking-widest text-primary mt-2">{stat.sub}</p>
             </div>
           </motion.div>
@@ -172,7 +194,7 @@ export default function RecruiterDashboard() {
         {/* Candidates Table */}
         <div className="lg:col-span-2 space-y-6">
           <div className="flex items-center justify-between">
-            <h3 className="text-xl font-bold text-white">Recent Candidates</h3>
+            <h3 className="text-xl font-bold text-foreground">Recent Candidates</h3>
             <button className="text-xs font-bold text-primary uppercase tracking-widest hover:underline">View All</button>
           </div>
           
@@ -193,11 +215,11 @@ export default function RecruiterDashboard() {
                     <tr key={i} className="group hover:bg-surface-2/30 transition-colors">
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-3">
-                          <div className="h-8 w-8 rounded-lg bg-surface-2 border border-border-medium flex items-center justify-center font-bold text-xs text-white">
+                          <div className="h-8 w-8 rounded-lg bg-surface-2 border border-border-medium flex items-center justify-center font-bold text-xs text-foreground">
                             {candidate.name[0]}
                           </div>
                           <div>
-                            <p className="text-sm font-bold text-white">{candidate.name}</p>
+                            <p className="text-sm font-bold text-foreground">{candidate.name}</p>
                             <p className="text-[10px] text-text-muted">{candidate.date}</p>
                           </div>
                         </div>
@@ -211,7 +233,7 @@ export default function RecruiterDashboard() {
                               style={{ width: `${candidate.score}%` }} 
                             />
                           </div>
-                          <span className="text-xs font-black text-white">{candidate.score}%</span>
+                          <span className="text-xs font-black text-foreground">{candidate.score}%</span>
                         </div>
                       </td>
                       <td className="px-6 py-4">
@@ -223,7 +245,7 @@ export default function RecruiterDashboard() {
                         </span>
                       </td>
                       <td className="px-6 py-4 text-right">
-                        <button className="h-8 w-8 flex items-center justify-center rounded-lg hover:bg-surface-2 text-text-muted hover:text-white transition-all">
+                        <button className="h-8 w-8 flex items-center justify-center rounded-lg hover:bg-surface-2 text-text-muted hover:text-foreground transition-all">
                           <FiMoreHorizontal />
                         </button>
                       </td>
@@ -238,7 +260,7 @@ export default function RecruiterDashboard() {
         {/* Sidebar Info Cards */}
         <div className="space-y-8">
           <div className="p-8 rounded-[2.5rem] bg-surface-1 border border-border-medium space-y-6">
-            <h3 className="text-lg font-bold text-white">System Health</h3>
+            <h3 className="text-lg font-bold text-foreground">System Health</h3>
             <div className="space-y-4">
               {[
                 { label: "AI Analysis Engine", status: "Operational", color: "bg-emerald-500" },
@@ -258,15 +280,15 @@ export default function RecruiterDashboard() {
 
           <div className="p-8 rounded-[2.5rem] bg-primary relative overflow-hidden group">
             <div className="relative z-10 space-y-4">
-              <h3 className="text-lg font-black text-white leading-tight">Elevate Your Hiring with AI Insights.</h3>
-              <p className="text-sm font-medium text-white/80 leading-relaxed">
+              <h3 className="text-lg font-black text-foreground leading-tight">Elevate Your Hiring with AI Insights.</h3>
+              <p className="text-sm font-medium text-foreground/80 leading-relaxed">
                 Upgrade to Enterprise for advanced predictive candidate modeling.
               </p>
               <button className="h-10 px-6 rounded-xl bg-white text-primary text-[10px] font-black uppercase tracking-widest transition-transform group-hover:scale-105 active:scale-95">
                 Learn More
               </button>
             </div>
-            <div className="absolute -bottom-10 -right-10 h-40 w-40 bg-white/10 rounded-full blur-3xl pointer-events-none" />
+            <div className="absolute -bottom-10 -right-10 h-40 w-40 bg-surface-2 rounded-full blur-3xl pointer-events-none" />
           </div>
         </div>
 

@@ -35,13 +35,13 @@ export default function JobNotifications() {
     <motion.div 
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className="rounded-[2.5rem] border border-blue-500/10 bg-[#0d162a]/80 p-8 backdrop-blur-md"
+      className="rounded-[2.5rem] border border-blue-500/10 bg-surface-2/80 p-8 backdrop-blur-md"
     >
       <div className="flex items-center justify-between mb-6">
-        <h2 className="text-xl font-bold text-white flex items-center gap-2">
-          <FiBell className="text-blue-500" /> Job Alerts
+        <h2 className="text-xl font-bold text-foreground flex items-center gap-2">
+          <FiBell className="text-primary" /> Job Alerts
         </h2>
-        <span className="px-2 py-0.5 rounded-md bg-blue-500/10 text-[10px] font-black text-blue-500 uppercase">New</span>
+        <span className="px-2 py-0.5 rounded-md bg-primary/10 text-[10px] font-black text-primary uppercase">New</span>
       </div>
 
       <div className="space-y-4">
@@ -49,22 +49,22 @@ export default function JobNotifications() {
           <Link 
             key={job._id}
             href="/candidate/jobs"
-            className="block group p-4 rounded-2xl bg-white/[0.02] border border-white/5 hover:border-blue-500/30 transition-all"
+            className="block group p-4 rounded-2xl bg-white/[0.02] border border-border-subtle hover:border-blue-500/30 transition-all"
           >
             <div className="flex items-start justify-between">
               <div className="flex items-start gap-4">
-                <div className="h-10 w-10 rounded-xl bg-blue-500/10 flex items-center justify-center text-blue-500">
+                <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
                   <FiBriefcase />
                 </div>
                 <div>
-                  <h4 className="text-sm font-bold text-white group-hover:text-blue-400 transition-colors">{job.role}</h4>
+                  <h4 className="text-sm font-bold text-foreground group-hover:text-primary transition-colors">{job.role}</h4>
                   <p className="text-[10px] text-text-muted font-medium mt-0.5">{job.company_id?.name || "Global Hiring"}</p>
-                  <div className="flex items-center gap-1.5 mt-2 text-[9px] text-blue-500/60 font-bold uppercase tracking-widest">
+                  <div className="flex items-center gap-1.5 mt-2 text-[9px] text-primary/60 font-bold uppercase tracking-widest">
                      <FiClock /> Just Posted
                   </div>
                 </div>
               </div>
-              <FiChevronRight className="text-text-muted group-hover:text-white transition-transform group-hover:translate-x-1" />
+              <FiChevronRight className="text-text-muted group-hover:text-foreground transition-transform group-hover:translate-x-1" />
             </div>
           </Link>
         ))}
@@ -72,7 +72,7 @@ export default function JobNotifications() {
 
       <Link 
         href="/candidate/jobs"
-        className="mt-6 w-full flex items-center justify-center py-3 rounded-xl border border-white/5 text-[10px] font-black text-text-muted uppercase tracking-widest hover:bg-white/5 hover:text-white transition-all"
+        className="mt-6 w-full flex items-center justify-center py-3 rounded-xl border border-border-subtle text-[10px] font-black text-text-muted uppercase tracking-widest hover:bg-surface-2 hover:text-foreground transition-all"
       >
         View All Opportunities
       </Link>

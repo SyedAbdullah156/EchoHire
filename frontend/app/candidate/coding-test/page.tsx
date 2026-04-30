@@ -66,15 +66,26 @@ const PRACTICE_QUESTIONS = [
   }
 ];
 
+interface QAPair {
+  question: string;
+  candidate_answer?: string;
+  metadata?: {
+    problem_statement?: string;
+    test_cases?: Array<{ input: string; expected: string }>;
+  };
+}
+
+interface InterviewRound {
+  status: string;
+  type: string;
+  qa_pairs: QAPair[];
+}
+
 interface Interview {
   _id: string;
-  rounds: Array<{
-    status: string;
-    type: string;
-    problemStatement?: string;
-    testCases?: Array<{ input: string; expected: string }>;
-  }>;
+  rounds: InterviewRound[];
   job_id?: { name: string };
+  join_code?: string;
 }
 
 type PracticeQuestion = typeof PRACTICE_QUESTIONS[0];
@@ -91,6 +102,7 @@ export default function CodingTestPage() {
     active: boolean;
     problem: PracticeQuestion | null;
   }>({ active: false, problem: null });
+  const [joinCodeInput, setJoinCodeInput] = useState("");
 
 
 
@@ -120,9 +132,35 @@ export default function CodingTestPage() {
     validate();
   }, [token]);
 
+  // Start Assessment Logic
+  useEffect(() => {
+    async function startAssessment() {
+      if (!accessGranted || !interview || currentRoundIndex === -1) return;
+      const round = interview.rounds[currentRoundIndex];
+      if (round.qa_pairs.length > 0) return;
+
+      try {
+        const res = await fetch("/api/ai/start-round", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ interviewId: interview._id, roundIndex: currentRoundIndex }),
+        });
+        const result = await res.json();
+        if (res.ok) {
+          setInterview(result.interview);
+        } else {
+          toast.error(result.message || "Failed to initialize assessment.");
+        }
+      } catch {
+        toast.error("Initialization error.");
+      }
+    }
+    startAssessment();
+  }, [accessGranted, interview, currentRoundIndex]);
+
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#050b18] flex items-center justify-center">
+      <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="w-12 h-12 border-4 border-blue-500/20 border-t-blue-500 rounded-full animate-spin" />
       </div>
     );
@@ -131,22 +169,22 @@ export default function CodingTestPage() {
   // Practice Mode Layout
   if (practiceMode.active) {
     return (
-      <div className="flex flex-col h-screen bg-[#050b18] p-6 lg:p-10">
+      <div className="flex flex-col h-screen bg-background p-6 lg:p-10">
         <header className="mb-8 flex items-center justify-between">
           <div className="flex items-center gap-6">
-            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-emerald-600 font-black text-white italic">PR</div>
+            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-emerald-600 font-black text-foreground italic">PR</div>
             <div>
-              <h1 className="text-2xl font-black text-white tracking-tight flex items-center gap-3">
-                Practice Mode <span className="text-slate-600">/</span> <span className="text-emerald-500">{practiceMode.problem?.title}</span>
+              <h1 className="text-2xl font-black text-foreground tracking-tight flex items-center gap-3">
+                Practice Mode <span className="text-text-muted">/</span> <span className="text-emerald-500">{practiceMode.problem?.title}</span>
               </h1>
-              <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest flex items-center gap-1.5 mt-1">
+              <p className="text-[10px] font-bold text-text-muted uppercase tracking-widest flex items-center gap-1.5 mt-1">
                 <FiCpu className="text-emerald-500" /> Sandbox: Experimental
               </p>
             </div>
           </div>
           <button
             onClick={() => setPracticeMode({ active: false, problem: null })}
-            className="text-xs font-bold text-slate-500 hover:text-white transition-colors flex items-center gap-2"
+            className="text-xs font-bold text-text-muted hover:text-foreground transition-colors flex items-center gap-2"
           >
             <FiArrowLeft /> Back to Practice Hub
           </button>
@@ -164,19 +202,19 @@ export default function CodingTestPage() {
   }
 
   // No active assessment or practice mode -> Show Landing Page
-  if (!token && !accessGranted) {
+  if (!token && !accessGranted && !interview) {
     return (
-      <div className="min-h-screen bg-[#050b18] p-6 lg:p-12 space-y-16">
+      <div className="min-h-screen bg-background p-6 lg:p-12 space-y-16">
         <header className="flex flex-col lg:flex-row lg:items-center justify-between gap-8">
           <div className="max-w-2xl">
-            <h1 className="text-5xl font-black text-white tracking-tight leading-tight">
-              Technical <span className="text-blue-500">Assessments</span>
+            <h1 className="text-5xl font-black text-foreground tracking-tight leading-tight">
+              Technical <span className="text-primary">Assessments</span>
             </h1>
-            <p className="text-slate-400 mt-4 text-lg leading-relaxed">
+            <p className="text-text-secondary mt-4 text-lg leading-relaxed">
               Enter your unique code to begin a scheduled assessment, or sharpen your skills with our curated practice modules.
             </p>
           </div>
-          <Link href="/candidate/dashboard" className="w-fit px-8 py-4 rounded-2xl bg-[#0d162a] border border-slate-800 text-sm font-bold text-slate-400 hover:text-white transition-all flex items-center gap-2">
+          <Link href="/candidate/dashboard" className="w-fit px-8 py-4 rounded-2xl bg-surface-2 border border-border-medium text-sm font-bold text-text-secondary hover:text-foreground transition-all flex items-center gap-2">
             <FiArrowLeft /> Dashboard
           </Link>
         </header>
@@ -184,26 +222,43 @@ export default function CodingTestPage() {
         <div className="grid lg:grid-cols-3 gap-12">
           {/* Assessment Entry */}
           <div className="lg:col-span-1">
-            <div className="p-10 rounded-[3rem] bg-[#0d162a] border-2 border-blue-500/20 space-y-8 h-full">
+            <div className="p-10 rounded-[3rem] bg-surface-2 border-2 border-blue-500/20 space-y-8 h-full">
               <div className="space-y-2">
-                <div className="w-16 h-16 rounded-2xl bg-blue-500/10 flex items-center justify-center text-blue-500 border border-blue-500/20">
+                <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center text-primary border border-blue-500/20">
                   <FiShield size={32} />
                 </div>
-                <h3 className="text-2xl font-black text-white">Join Assessment</h3>
-                <p className="text-sm text-slate-400">Enter the unique code from your interview invitation email.</p>
+                <h3 className="text-2xl font-black text-foreground">Join Assessment</h3>
+                <p className="text-sm text-text-secondary">Enter the unique 8-digit **Join Code** displayed on your dashboard or in your invitation email.</p>
               </div>
 
               {/* Reuse the AccessCodeGate logic here or a simplified version */}
               <div className="space-y-4">
                 <input
                   type="text"
-                  placeholder="Enter Interview ID"
-                  className="w-full h-16 bg-[#050b18] border border-slate-800 rounded-2xl px-6 text-sm font-bold text-white outline-none focus:border-blue-500"
-                  onChange={(e) => setInterview({ _id: e.target.value, rounds: [] })}
+                  placeholder="Enter 8-digit Join Code"
+                  value={joinCodeInput}
+                  onChange={(e) => setJoinCodeInput(e.target.value.toUpperCase())}
+                  className="w-full h-16 bg-background border border-border-medium rounded-2xl px-6 text-sm font-bold text-foreground outline-none focus:border-blue-500"
                 />
                 <button
-                  onClick={() => setAccessGranted(false)} // This would trigger the gate
-                  className="w-full h-16 bg-blue-600 text-white font-black uppercase tracking-widest rounded-2xl hover:bg-blue-500 transition-all flex items-center justify-center gap-2"
+                  onClick={async () => {
+                    if (!joinCodeInput) return toast.error("Please enter a Join Code.");
+                    setLoading(true);
+                    try {
+                      const res = await fetch(`/api/coding/validate-join-code?joinCode=${joinCodeInput}`);
+                      const result = await res.json();
+                      if (res.ok) {
+                        setInterview(result.data);
+                      } else {
+                        toast.error(result.message || "Invalid Join Code.");
+                      }
+                    } catch {
+                      toast.error("Network error.");
+                    } finally {
+                      setLoading(false);
+                    }
+                  }}
+                  className="w-full h-16 bg-primary text-foreground font-black uppercase tracking-widest rounded-2xl hover:bg-primary transition-all flex items-center justify-center gap-2"
                 >
                   Continue <FiArrowRight />
                 </button>
@@ -214,9 +269,9 @@ export default function CodingTestPage() {
           {/* Practice Hub */}
           <div className="lg:col-span-2 space-y-8">
             <div className="flex items-center justify-between">
-              <h3 className="text-2xl font-black text-white">Practice Hub</h3>
+              <h3 className="text-2xl font-black text-foreground">Practice Hub</h3>
               <div className="flex items-center gap-4">
-                <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">{PRACTICE_QUESTIONS.length} MODULES AVAILABLE</span>
+                <span className="text-[10px] font-bold text-text-muted uppercase tracking-widest">{PRACTICE_QUESTIONS.length} MODULES AVAILABLE</span>
               </div>
             </div>
 
@@ -243,23 +298,26 @@ export default function CodingTestPage() {
   }
 
   const currentRound = interview?.rounds[currentRoundIndex];
+  const lastQA = currentRound?.qa_pairs[currentRound?.qa_pairs.length - 1];
+  const problemStatement = lastQA?.metadata?.problem_statement || lastQA?.question || "Solve the coding challenge to progress to the next round.";
+  const testCases = lastQA?.metadata?.test_cases || [];
 
   return (
-    <div className="flex flex-col h-screen bg-[#050b18] p-6 lg:p-10">
+    <div className="flex flex-col h-screen bg-background p-6 lg:p-10">
       <header className="mb-8 flex items-center justify-between">
         <div className="flex items-center gap-6">
-          <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-blue-600 font-black text-white italic">EH</div>
+          <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-primary font-black text-foreground italic">EH</div>
           <div>
-            <h1 className="text-2xl font-black text-white tracking-tight flex items-center gap-3">
-              {interview?.job_id?.name} <span className="text-slate-600">/</span> <span className="text-blue-500">Round {currentRoundIndex + 1}</span>
+            <h1 className="text-2xl font-black text-foreground tracking-tight flex items-center gap-3">
+              {interview?.job_id?.name} <span className="text-text-muted">/</span> <span className="text-primary">Round {currentRoundIndex + 1}</span>
             </h1>
             <div className="flex items-center gap-4 mt-1">
-              <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest flex items-center gap-1.5">
-                <FiCpu className="text-blue-500" /> Secure Sandbox Active
+              <p className="text-[10px] font-bold text-text-muted uppercase tracking-widest flex items-center gap-1.5">
+                <FiCpu className="text-primary" /> Secure Sandbox Active
               </p>
               <div className="h-1 w-1 rounded-full bg-slate-800" />
-              <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest flex items-center gap-1.5">
-                <FiClock className="text-amber-500" /> Timebound: 45m
+              <p className="text-[10px] font-bold text-text-muted uppercase tracking-widest flex items-center gap-1.5">
+                <FiClock className="text-amber-500" /> Question {currentRound?.qa_pairs.length} of 3
               </p>
             </div>
           </div>
@@ -270,23 +328,25 @@ export default function CodingTestPage() {
             {interview?.rounds.map((r, i) => (
               <div
                 key={i}
-                className={`h-2 w-8 rounded-full transition-all ${i === currentRoundIndex ? "bg-blue-500" : i < currentRoundIndex ? "bg-emerald-500" : "bg-slate-800"
+                className={`h-2 w-8 rounded-full transition-all ${i === currentRoundIndex ? "bg-primary" : i < currentRoundIndex ? "bg-emerald-500" : "bg-slate-800"
                   }`}
               />
             ))}
           </div>
-          <Link href="/candidate/dashboard" className="text-xs font-bold text-slate-500 hover:text-white transition-colors">
+          <Link href="/candidate/dashboard" className="text-xs font-bold text-text-muted hover:text-foreground transition-colors">
             Exit
           </Link>
         </div>
       </header>
 
       <div className="flex-1 min-h-0">
-        <Suspense fallback={<div className="h-full w-full bg-slate-900/20 animate-pulse rounded-[3rem]" />}>
+        <Suspense fallback={<div className="h-full w-full bg-surface-1/20 animate-pulse rounded-[3rem]" />}>
           <CodingSandbox
             language="javascript"
-            problemStatement={currentRound?.problemStatement || "Solve the coding challenge to progress to the next round."}
-            testCases={currentRound?.testCases || []}
+            problemStatement={problemStatement}
+            testCases={testCases}
+            interviewId={interview?._id}
+            roundIndex={currentRoundIndex}
             onSuccess={() => {
               // Here we would call the backend to update round status and unlock next
               toast.success("Round completed! Progress synchronized.");
@@ -302,7 +362,7 @@ export default function CodingTestPage() {
             <span className="text-[10px] font-bold text-emerald-400 uppercase tracking-widest">Candidate Verified</span>
           </div>
         </div>
-        <p className="text-[10px] text-slate-600 font-medium">Assessment ID: {interview?._id.slice(-8).toUpperCase()}</p>
+        <p className="text-[10px] text-text-muted font-medium">Assessment ID: {interview?._id.slice(-8).toUpperCase()}</p>
       </footer>
     </div>
   );

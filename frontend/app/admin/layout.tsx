@@ -22,10 +22,10 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
       <aside className="w-full lg:w-72 shrink-0 flex flex-col gap-8">
         <div className="px-4">
           <Link href="/" className="flex items-center gap-3 group">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary text-white font-black">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary text-foreground font-black">
               EH
             </div>
-            <span className="text-xl font-bold text-white">Admin<span className="text-primary">Portal</span></span>
+            <span className="text-xl font-bold text-foreground">Admin<span className="text-primary">Portal</span></span>
           </Link>
         </div>
 
@@ -40,7 +40,7 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
                 className={`flex items-center gap-3 px-4 py-3 rounded-2xl transition-all ${
                   isActive 
                     ? "bg-primary/10 text-primary border border-primary/20" 
-                    : "text-text-muted hover:text-white hover:bg-white/5 border border-transparent"
+                    : "text-text-muted hover:text-foreground hover:bg-surface-2 border border-transparent"
                 }`}
               >
                 <Icon size={18} />

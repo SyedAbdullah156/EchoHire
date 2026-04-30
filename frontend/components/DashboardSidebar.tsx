@@ -46,14 +46,14 @@ function MenuItem({ item, isActive, collapsed, onNavigate }: {
         }}
         className={`group relative flex w-full items-center rounded-2xl px-3 py-3 transition-all duration-300 ${
           collapsed ? "justify-center" : "gap-4"
-        } text-slate-400 hover:bg-rose-500/10 hover:text-rose-400`}
+        } text-text-secondary hover:bg-rose-500/10 hover:text-rose-400`}
       >
-        <div className={`flex shrink-0 items-center justify-center transition-transform duration-300 group-hover:scale-110 text-slate-500 group-hover:text-rose-400`}>
+        <div className={`flex shrink-0 items-center justify-center transition-transform duration-300 group-hover:scale-110 text-text-muted group-hover:text-rose-400`}>
           <Icon size={20} />
         </div>
 
         {!collapsed && (
-          <span className={`text-sm font-semibold tracking-wide transition-opacity duration-300 opacity-80 group-hover:text-white`}>
+          <span className={`text-sm font-semibold tracking-wide transition-opacity duration-300 opacity-80 group-hover:text-foreground`}>
             {item.label}
           </span>
         )}
@@ -69,24 +69,24 @@ function MenuItem({ item, isActive, collapsed, onNavigate }: {
         collapsed ? "justify-center" : "gap-4"
       } ${
         isActive
-          ? "bg-blue-500/10 text-blue-400"
-          : "text-slate-400 hover:bg-slate-800/40 hover:text-slate-200"
+          ? "bg-primary/10 text-primary"
+          : "text-text-secondary hover:bg-slate-800/40 hover:text-slate-200"
       }`}
     >
       {/* Active Indicator - Clean Blue line, no white glow */}
       {isActive && (
-        <div className="absolute left-0 h-6 w-1 rounded-r-full bg-blue-600" />
+        <div className="absolute left-0 h-6 w-1 rounded-r-full bg-primary" />
       )}
 
       <div className={`flex shrink-0 items-center justify-center transition-transform duration-300 group-hover:scale-110 ${
-        isActive ? "text-blue-400" : "text-slate-500 group-hover:text-slate-300"
+        isActive ? "text-primary" : "text-text-muted group-hover:text-slate-300"
       }`}>
         <Icon size={20} />
       </div>
 
       {!collapsed && (
         <span className={`text-sm font-semibold tracking-wide transition-opacity duration-300 ${
-          isActive ? "text-white" : "opacity-80"
+          isActive ? "text-primary font-bold" : "opacity-80"
         }`}>
           {item.label}
         </span>
@@ -110,7 +110,7 @@ function SidebarShell({
 }) {
   return (
     <aside
-      className={`flex flex-col border border-slate-800/60 bg-[#0f172a]/60 backdrop-blur-xl transition-all duration-500 ease-in-out ${
+      className={`flex flex-col border border-border-medium bg-surface-1/80 backdrop-blur-xl transition-all duration-500 ease-in-out ${
         collapsed ? "w-[88px]" : "w-[280px]"
       } ${
         mobile
@@ -125,13 +125,13 @@ function SidebarShell({
           onClick={onNavigate}
           className={`flex items-center gap-3 transition-all ${collapsed ? "justify-center" : ""}`}
         >
-          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-blue-600">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-primary">
             <span className="text-sm font-black text-white italic">EH</span>
           </div>
           {!collapsed && (
             <div className="min-w-0">
-              <h2 className="text-lg font-bold tracking-tight text-white">EchoHire</h2>
-              <div className="h-0.5 w-6 rounded-full bg-blue-600/50" />
+              <h2 className="text-lg font-bold tracking-tight text-foreground">EchoHire</h2>
+              <div className="h-0.5 w-6 rounded-full bg-primary/50" />
             </div>
           )}
         </Link>
@@ -140,7 +140,7 @@ function SidebarShell({
       {/* Nav Section */}
       <div className="flex-1 overflow-y-auto px-4 py-2 space-y-8">
         <div>
-          {!collapsed && <p className="px-4 mb-3 text-[10px] font-bold uppercase tracking-[0.2em] text-slate-600">Main Menu</p>}
+          {!collapsed && <p className="px-4 mb-3 text-[10px] font-bold uppercase tracking-[0.2em] text-text-muted">Main Menu</p>}
           <nav className="space-y-1">
             {mainItems.map((item) => (
               <MenuItem
@@ -155,7 +155,7 @@ function SidebarShell({
         </div>
 
         <div>
-          {!collapsed && <p className="px-4 mb-3 text-[10px] font-bold uppercase tracking-[0.2em] text-slate-600">Account</p>}
+          {!collapsed && <p className="px-4 mb-3 text-[10px] font-bold uppercase tracking-[0.2em] text-text-muted">Account</p>}
           <nav className="space-y-1">
             {accountItems.map((item) => (
               <MenuItem
@@ -175,7 +175,7 @@ function SidebarShell({
         <div className="p-6">
           <button
             onClick={onToggleCollapsed}
-            className="flex w-full items-center justify-center rounded-2xl border border-slate-800 bg-slate-900/40 py-3 text-slate-500 transition-all hover:bg-slate-800 hover:text-white"
+            className="flex w-full items-center justify-center rounded-2xl border border-border-medium bg-surface-1/40 py-3 text-text-muted transition-all hover:bg-slate-800 hover:text-foreground"
           >
             {collapsed ? <FiChevronRight /> : <div className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest"><FiChevronLeft /> Collapse</div>}
           </button>
@@ -206,9 +206,9 @@ export default function DashboardSidebar({ active }: { active: string }) {
       <div className="lg:hidden mb-4 px-2">
         <button
           onClick={() => setMobileOpen(true)}
-          className="flex items-center gap-3 rounded-2xl border border-slate-800 bg-[#0f172a] px-5 py-3 text-sm font-bold text-white"
+          className="flex items-center gap-3 rounded-2xl border border-border-medium bg-background px-5 py-3 text-sm font-bold text-foreground"
         >
-          <FiMenu className="text-blue-500" /> Menu
+          <FiMenu className="text-primary" /> Menu
         </button>
       </div>
 
@@ -233,7 +233,7 @@ export default function DashboardSidebar({ active }: { active: string }) {
             />
             <button 
                 onClick={() => setMobileOpen(false)}
-                className="absolute right-[-50px] top-6 rounded-xl bg-slate-900 border border-slate-800 p-3 text-white"
+                className="absolute right-[-50px] top-6 rounded-xl bg-surface-1 border border-border-medium p-3 text-foreground"
             >
                 <FiX size={20} />
             </button>

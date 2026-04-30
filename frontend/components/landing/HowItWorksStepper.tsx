@@ -29,7 +29,7 @@ export default function HowItWorksStepper() {
   return (
     <section className="mx-auto max-w-7xl px-6 py-10 md:py-16">
       <div className="mb-16 text-center md:mb-24">
-        <h2 className="text-3xl font-extrabold tracking-tight text-white md:text-5xl">
+        <h2 className="text-3xl font-extrabold tracking-tight text-foreground md:text-5xl">
           How EchoHire Works
         </h2>
         <p className="mx-auto mt-4 max-w-2xl text-lg text-[#98a7cb]">
@@ -47,21 +47,21 @@ export default function HowItWorksStepper() {
                 key={step.id}
                 onClick={() => setActiveStep(step.id)}
                 className={`group flex items-start gap-6 rounded-[2rem] border p-6 text-left transition-all duration-300 ${isActive
-                  ? "border-[#227dff]/30 bg-[#070d1a]"
-                  : "border-transparent hover:bg-white/5"
+                  ? "border-[#227dff]/30 bg-surface-1"
+                  : "border-transparent hover:bg-surface-2"
                   }`}
               >
                 <div
                   className={`mt-1 flex h-10 w-10 shrink-0 items-center justify-center rounded-full border transition-colors ${isActive
                     ? "border-[#227dff] bg-[#227dff]/10 text-[#227dff]"
-                    : "border-white/10 bg-transparent text-[#7f92be] group-hover:text-white"
+                    : "border-border-medium bg-transparent text-[#7f92be] group-hover:text-foreground"
                     }`}
                 >
                   <CheckCircle2 className="h-5 w-5" />
                 </div>
                 <div>
                   <h3
-                    className={`text-xl font-bold transition-colors ${isActive ? "text-white" : "text-[#7f92be] group-hover:text-white"
+                    className={`text-xl font-bold transition-colors ${isActive ? "text-foreground" : "text-[#7f92be] group-hover:text-foreground"
                       }`}
                   >
                     {step.title}
@@ -85,7 +85,7 @@ export default function HowItWorksStepper() {
         </div>
 
         {/* Right Column: Dynamic Content Window */}
-        <div className="relative flex min-h-[400px] items-center justify-center rounded-[2.5rem] border border-white/10 bg-[#070d1a] overflow-hidden">
+        <div className="relative flex min-h-[400px] items-center justify-center rounded-[2.5rem] border border-border-medium bg-surface-1 overflow-hidden">
           <AnimatePresence mode="wait">
             <motion.div
               key={activeStep}
@@ -99,10 +99,10 @@ export default function HowItWorksStepper() {
                 const ActiveIcon = steps[activeStep].icon;
                 return (
                   <>
-                    <div className="mb-8 flex h-32 w-32 items-center justify-center rounded-3xl border border-white/5 bg-[#0d162a]">
+                    <div className="mb-8 flex h-32 w-32 items-center justify-center rounded-3xl border border-border-subtle bg-surface-2">
                       <ActiveIcon className="h-16 w-16 text-[#227dff]" />
                     </div>
-                    <h4 className="text-2xl font-bold text-white mb-2">{steps[activeStep].title}</h4>
+                    <h4 className="text-2xl font-bold text-foreground mb-2">{steps[activeStep].title}</h4>
                     <p className="text-[#7f92be] max-w-md mx-auto">
                       Visual representation of the {steps[activeStep].title.toLowerCase()} process taking place within the EchoHire system.
                     </p>

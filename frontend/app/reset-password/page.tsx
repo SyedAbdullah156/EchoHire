@@ -93,7 +93,7 @@ function ResetPasswordForm() {
     }
   };
 
-  const inputClassName = "w-full min-h-[48px] rounded-xl border border-white/10 bg-[#070d1a] px-4 py-3 text-base outline-none placeholder:text-[#5c667f] transition-all focus:border-[#227dff] focus:ring-2 focus:ring-[#227dff]/30 text-[#dbe7ff]";
+  const inputClassName = "w-full min-h-[48px] rounded-xl border border-border-medium bg-surface-1 px-4 py-3 text-base outline-none placeholder:text-[#5c667f] transition-all focus:border-[#227dff] focus:ring-2 focus:ring-[#227dff]/30 text-[#dbe7ff]";
 
   return (
     <motion.div 
@@ -104,7 +104,7 @@ function ResetPasswordForm() {
     >
       <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-purple-500/5 pointer-events-none" />
       <div className="text-center space-y-2 mb-8">
-        <h1 className="text-3xl font-bold tracking-tight text-white">
+        <h1 className="text-3xl font-bold tracking-tight text-foreground">
           Create New Password
         </h1>
         <p className="text-[#98a7cb] text-base">
@@ -122,7 +122,7 @@ function ResetPasswordForm() {
             value={password}
             onChange={(event) => setPassword(event.target.value)}
             required
-            className="w-full h-[56px] rounded-xl border border-border-medium bg-surface-2 px-4 py-3 text-sm text-white outline-none placeholder:text-text-muted transition-all focus:border-primary focus:ring-4 focus:ring-primary/10"
+            className="w-full h-[56px] rounded-xl border border-border-medium bg-surface-2 px-4 py-3 text-sm text-foreground outline-none placeholder:text-text-muted transition-all focus:border-primary focus:ring-4 focus:ring-primary/10"
             placeholder="Enter your new password"
           />
           <AnimatePresence>
@@ -131,7 +131,7 @@ function ResetPasswordForm() {
               animate={{ opacity: 1, height: "auto", marginTop: 12 }}
               className="overflow-hidden"
             >
-              <div className="rounded-xl border border-white/5 bg-[#030712]/50 p-4 space-y-3">
+              <div className="rounded-xl border border-border-subtle bg-background/50 p-4 space-y-3">
                 <p className="text-xs font-semibold uppercase tracking-wider text-[#7f92be]">
                   Password rules
                 </p>
@@ -142,7 +142,7 @@ function ResetPasswordForm() {
                       className={`flex items-center gap-2.5 text-sm transition-colors ${check.valid ? "text-[#227dff]" : "text-[#7f92be]"}`}
                     >
                       <span
-                        className={`inline-flex h-4 w-4 items-center justify-center rounded-full text-[10px] ${check.valid ? "bg-[#227dff]/20 text-[#227dff]" : "bg-white/5 text-[#5c667f]"}`}
+                        className={`inline-flex h-4 w-4 items-center justify-center rounded-full text-[10px] ${check.valid ? "bg-[#227dff]/20 text-[#227dff]" : "bg-surface-2 text-[#5c667f]"}`}
                       >
                         {check.valid ? "✓" : ""}
                       </span>
@@ -164,7 +164,7 @@ function ResetPasswordForm() {
             value={confirmPassword}
             onChange={(event) => setConfirmPassword(event.target.value)}
             required
-            className="w-full h-[56px] rounded-xl border border-border-medium bg-surface-2 px-4 py-3 text-sm text-white outline-none placeholder:text-text-muted transition-all focus:border-primary focus:ring-4 focus:ring-primary/10"
+            className="w-full h-[56px] rounded-xl border border-border-medium bg-surface-2 px-4 py-3 text-sm text-foreground outline-none placeholder:text-text-muted transition-all focus:border-primary focus:ring-4 focus:ring-primary/10"
             placeholder="Confirm your new password"
           />
           {confirmPassword.length > 0 && !passwordsMatch && (
@@ -175,7 +175,7 @@ function ResetPasswordForm() {
         <button
           type="submit"
           disabled={isSubmitting || !passwordIsValid || !passwordsMatch || !token}
-          className="w-full h-[56px] rounded-xl bg-primary text-sm font-bold text-white uppercase tracking-widest transition-all hover:bg-primary-hover active:scale-[0.98] disabled:opacity-50 flex items-center justify-center gap-3 mt-8 shadow-lg shadow-primary/20"
+          className="w-full h-[56px] rounded-xl bg-primary text-sm font-bold text-foreground uppercase tracking-widest transition-all hover:bg-primary-hover active:scale-[0.98] disabled:opacity-50 flex items-center justify-center gap-3 mt-8 shadow-lg shadow-primary/20"
         >
           {isSubmitting ? "Updating Password..." : "Update Password"}
         </button>
@@ -186,7 +186,7 @@ function ResetPasswordForm() {
 
 export default function ResetPasswordPage() {
   return (
-    <main className="min-h-screen bg-[#030712] text-white selection:bg-[#227dff]/30 flex flex-col relative overflow-hidden">
+    <main className="min-h-screen bg-background text-foreground selection:bg-[#227dff]/30 flex flex-col relative overflow-hidden">
       <Navbar />
       
       {/* Animated Abstract Background */}
@@ -212,7 +212,7 @@ export default function ResetPasswordPage() {
       </div>
 
       <section className="relative z-10 flex-1 flex flex-col items-center justify-center px-6 py-24 w-full">
-        <Suspense fallback={<div className="text-white">Loading...</div>}>
+        <Suspense fallback={<div className="text-foreground">Loading...</div>}>
           <ResetPasswordForm />
         </Suspense>
       </section>

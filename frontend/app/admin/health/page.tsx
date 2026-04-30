@@ -37,7 +37,7 @@ export default function SystemHealthPage() {
   return (
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500 pb-12">
       <header>
-        <h1 className="text-3xl font-black text-white tracking-tight">System Health</h1>
+        <h1 className="text-3xl font-black text-foreground tracking-tight">System Health</h1>
         <p className="text-text-muted mt-1 font-medium">Real-time infrastructure monitoring and performance metrics.</p>
       </header>
 
@@ -49,10 +49,10 @@ export default function SystemHealthPage() {
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ delay: i * 0.05 }}
-            className="p-6 rounded-[2rem] bg-surface-2 border border-white/5 space-y-4"
+            className="p-6 rounded-[2rem] bg-surface-2 border border-border-subtle space-y-4"
           >
             <div className="flex items-center justify-between">
-              <div className="w-12 h-12 rounded-2xl bg-surface-1 border border-white/10 flex items-center justify-center text-primary">
+              <div className="w-12 h-12 rounded-2xl bg-surface-1 border border-border-medium flex items-center justify-center text-primary">
                 <comp.icon size={24} />
               </div>
               <div className={`flex items-center gap-2 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest border ${
@@ -63,10 +63,10 @@ export default function SystemHealthPage() {
             </div>
             
             <div>
-              <h3 className="text-lg font-bold text-white">{comp.name}</h3>
+              <h3 className="text-lg font-bold text-foreground">{comp.name}</h3>
               <div className="flex items-center justify-between mt-2">
                 <span className="text-xs text-text-muted font-medium">Latency</span>
-                <span className="text-sm font-bold text-white">{comp.latency}</span>
+                <span className="text-sm font-bold text-foreground">{comp.latency}</span>
               </div>
             </div>
 
@@ -82,20 +82,20 @@ export default function SystemHealthPage() {
       </div>
 
       {/* Performance Chart */}
-      <div className="p-8 rounded-[2.5rem] bg-surface-2 border border-white/5 space-y-8">
+      <div className="p-8 rounded-[2.5rem] bg-surface-2 border border-border-subtle space-y-8">
         <div className="flex items-center justify-between">
           <div>
-            <h2 className="text-xl font-bold text-white">Resource Utilization</h2>
+            <h2 className="text-xl font-bold text-foreground">Resource Utilization</h2>
             <p className="text-xs text-text-muted mt-1 font-medium">Historical CPU and Memory usage across all clusters.</p>
           </div>
           <div className="flex items-center gap-6">
             <div className="flex items-center gap-2">
               <div className="w-2.5 h-2.5 rounded-full bg-primary" />
-              <span className="text-[10px] font-bold text-white uppercase tracking-widest">CPU</span>
+              <span className="text-[10px] font-bold text-foreground uppercase tracking-widest">CPU</span>
             </div>
             <div className="flex items-center gap-2">
               <div className="w-2.5 h-2.5 rounded-full bg-purple-500" />
-              <span className="text-[10px] font-bold text-white uppercase tracking-widest">Memory</span>
+              <span className="text-[10px] font-bold text-foreground uppercase tracking-widest">Memory</span>
             </div>
           </div>
         </div>

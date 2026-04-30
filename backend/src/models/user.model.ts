@@ -50,6 +50,11 @@ const userSchema = new Schema<TUser>(
             type: Boolean,
             default: true,
         },
+        company_id: {
+            type: Schema.Types.ObjectId,
+            ref: "Company",
+            required: false,
+        },
     },
     {
         timestamps: true,

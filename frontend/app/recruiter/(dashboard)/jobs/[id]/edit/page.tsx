@@ -18,6 +18,7 @@ import {
 import Link from "next/link";
 import { toast } from "sonner";
 import { useRouter, useParams } from "next/navigation";
+import { DatePicker } from "@/components/ui/date-picker";
 
 const TECH_STACK_OPTIONS = ["React", "TypeScript", "Node.js", "Python", "Go", "AWS", "Docker", "PostgreSQL", "Next.js"];
 const SOFT_SKILLS = ["Leadership", "Communication", "Problem Solving", "Collaboration", "Critical Thinking"];
@@ -28,7 +29,7 @@ export default function EditJobPage() {
   
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
-  const [deadline, setDeadline] = useState("");
+  const [deadline, setDeadline] = useState<Date | undefined>(undefined);
   const [department, setDepartment] = useState("Engineering");
   const [location, setLocation] = useState("");
   const [salaryRange, setSalaryRange] = useState("");
@@ -50,7 +51,7 @@ export default function EditJobPage() {
           
           setTitle(job.role || "");
           setDescription(job.description || "");
-          setDeadline(job.deadline ? new Date(job.deadline).toISOString().split('T')[0] : "");
+          setDeadline(job.deadline ? new Date(job.deadline) : undefined);
           setDepartment(job.department || "Engineering");
           setLocation(job.location || "");
           setSalaryRange(job.salary_range || "");
@@ -88,6 +89,14 @@ export default function EditJobPage() {
       return toast.error("Please fill in all required fields.");
     }
 
+    if (description.length < 20) {
+      return toast.error("Description must be at least 20 characters long.");
+    }
+
+    if (selectedTech.length === 0) {
+      return toast.error("Please select at least one technology stack.");
+    }
+
     setIsUpdating(true);
     try {
       const res = await fetch(`/api/jobs/${id}`, {
@@ -114,7 +123,8 @@ export default function EditJobPage() {
         toast.success("Job Posting Updated Successfully!");
         router.push("/recruiter/jobs");
       } else {
-        toast.error(result.message || "Failed to update job.");
+        const errorMsg = result.errors?.[0]?.message || result.message || "Failed to update job.";
+        toast.error(errorMsg);
       }
     } catch (error) {
       toast.error("Failed to connect to the server.");
@@ -133,7 +143,7 @@ export default function EditJobPage() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[#050b18]">
+      <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="flex flex-col items-center gap-4 text-primary animate-pulse">
           <FiLoader size={48} className="animate-spin" />
           <p className="text-xs font-black uppercase tracking-widest">Loading Job Data...</p>
@@ -147,16 +157,16 @@ export default function EditJobPage() {
 
       {/* --- Breadcrumbs --- */}
       <nav className="mb-12 flex items-center gap-4 text-xs font-bold uppercase tracking-widest text-text-muted">
-        <Link href="/recruiter/jobs" className="hover:text-white transition-colors">Jobs</Link>
+        <Link href="/recruiter/jobs" className="hover:text-foreground transition-colors">Jobs</Link>
         <FiChevronRight className="opacity-30" />
-        <span className="text-white">Edit Posting</span>
+        <span className="text-foreground">Edit Posting</span>
       </nav>
 
       <div className="space-y-12">
 
         {/* --- Header Section --- */}
         <div className="space-y-4">
-          <h1 className="text-4xl font-black text-white tracking-tight leading-tight">
+          <h1 className="text-4xl font-black text-foreground tracking-tight leading-tight">
             Refine Your <span className="text-primary text-glow">Job Posting</span>.
           </h1>
           <p className="text-sm text-text-secondary max-w-xl leading-relaxed">
@@ -170,7 +180,7 @@ export default function EditJobPage() {
             <div className="h-10 w-10 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center text-lg">
               <FiFileText />
             </div>
-            <h2 className="text-xl font-bold text-white">Basic Details</h2>
+            <h2 className="text-xl font-bold text-foreground">Basic Details</h2>
           </div>
 
           <div className="grid md:grid-cols-2 gap-8">
@@ -182,7 +192,7 @@ export default function EditJobPage() {
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
                 placeholder="e.g. Senior Frontend Engineer"
-                className="w-full h-[52px] bg-surface-2 border border-border-medium rounded-2xl px-6 text-sm text-white outline-none focus:border-primary/50 transition-all placeholder:text-text-muted/50"
+                className="w-full h-[52px] bg-surface-2 border border-border-medium rounded-2xl px-6 text-sm text-foreground outline-none focus:border-primary/50 transition-all placeholder:text-text-muted/50"
               />
             </div>
             <div className="space-y-2">
@@ -191,7 +201,7 @@ export default function EditJobPage() {
                 id="dept"
                 value={department}
                 onChange={(e) => setDepartment(e.target.value)}
-                className="w-full h-[52px] bg-surface-2 border border-border-medium rounded-2xl px-6 text-sm text-white outline-none focus:border-primary/50 transition-all appearance-none cursor-pointer"
+                className="w-full h-[52px] bg-surface-2 border border-border-medium rounded-2xl px-6 text-sm text-foreground outline-none focus:border-primary/50 transition-all appearance-none cursor-pointer"
               >
                 <option>Engineering</option>
                 <option>Design</option>
@@ -208,7 +218,7 @@ export default function EditJobPage() {
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               placeholder="Describe the role, responsibilities, and requirements..."
-              className="w-full h-32 bg-surface-2 border border-border-medium rounded-2xl p-6 text-sm text-white outline-none focus:border-primary/50 transition-all placeholder:text-text-muted/50 resize-none"
+              className="w-full h-32 bg-surface-2 border border-border-medium rounded-2xl p-6 text-sm text-foreground outline-none focus:border-primary/50 transition-all placeholder:text-text-muted/50 resize-none"
             />
           </div>
 
@@ -223,20 +233,18 @@ export default function EditJobPage() {
                   value={location}
                   onChange={(e) => setLocation(e.target.value)}
                   placeholder="e.g. San Francisco, CA (Hybrid)"
-                  className="w-full h-[52px] bg-surface-2 border border-border-medium rounded-2xl pl-14 pr-6 text-sm text-white outline-none focus:border-primary/50 transition-all placeholder:text-text-muted/50"
+                  className="w-full h-[52px] bg-surface-2 border border-border-medium rounded-2xl pl-14 pr-6 text-sm text-foreground outline-none focus:border-primary/50 transition-all placeholder:text-text-muted/50"
                 />
               </div>
             </div>
             <div className="space-y-2">
-              <label htmlFor="deadline" className="text-[10px] font-black uppercase tracking-widest text-text-muted ml-1">
+              <label className="text-[10px] font-black uppercase tracking-widest text-text-muted ml-1">
                 Application Deadline
               </label>
-              <input
-                id="deadline"
-                type="date"
-                value={deadline}
-                onChange={(e) => setDeadline(e.target.value)}
-                className="w-full h-[52px] bg-surface-2 border border-border-medium rounded-2xl px-6 text-sm text-white outline-none focus:border-primary/50 transition-all"
+              <DatePicker 
+                date={deadline} 
+                setDate={setDeadline} 
+                placeholder="Update deadline date"
               />
             </div>
           </div>
@@ -252,7 +260,7 @@ export default function EditJobPage() {
                   value={salaryRange}
                   onChange={(e) => setSalaryRange(e.target.value)}
                   placeholder="e.g. 120k - 150k"
-                  className="w-full h-[52px] bg-surface-2 border border-border-medium rounded-2xl pl-12 pr-6 text-sm text-white outline-none focus:border-primary/50 transition-all placeholder:text-text-muted/50"
+                  className="w-full h-[52px] bg-surface-2 border border-border-medium rounded-2xl pl-12 pr-6 text-sm text-foreground outline-none focus:border-primary/50 transition-all placeholder:text-text-muted/50"
                 />
               </div>
             </div>
@@ -265,13 +273,13 @@ export default function EditJobPage() {
             <div className="h-10 w-10 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center text-lg">
               <FiCpu />
             </div>
-            <h2 className="text-xl font-bold text-white">AI Assessment Setup</h2>
+            <h2 className="text-xl font-bold text-foreground">AI Assessment Setup</h2>
           </div>
 
           <div className="space-y-6">
             <div className="flex items-center justify-between">
               <label className="text-[10px] font-black uppercase tracking-widest text-text-muted ml-1">Technical Difficulty</label>
-              <span className="px-3 py-1 rounded-lg bg-primary text-[10px] font-black text-white">{difficulty}/10</span>
+              <span className="px-3 py-1 rounded-lg bg-primary text-[10px] font-black text-foreground">{difficulty}/10</span>
             </div>
             <div className="relative h-2 bg-surface-2 rounded-full">
               <input
@@ -298,7 +306,7 @@ export default function EditJobPage() {
                 <button
                   key={tech}
                   onClick={() => toggleTech(tech)}
-                  className={`h-10 px-4 rounded-xl border text-xs font-bold transition-all active:scale-95 ${selectedTech.includes(tech) ? "border-primary bg-primary/10 text-white" : "border-border-medium text-text-muted hover:border-primary/50 hover:text-white"
+                  className={`h-10 px-4 rounded-xl border text-xs font-bold transition-all active:scale-95 ${selectedTech.includes(tech) ? "border-primary bg-primary/10 text-foreground" : "border-border-medium text-text-muted hover:border-primary/50 hover:text-foreground"
                     }`}
                 >
                   {tech}
@@ -314,7 +322,7 @@ export default function EditJobPage() {
                 <button
                   key={skill}
                   onClick={() => toggleSoftSkill(skill)}
-                  className={`h-10 px-4 rounded-xl border text-xs font-bold transition-all active:scale-95 ${selectedSoftSkills.includes(skill) ? "border-primary bg-primary/10 text-white" : "border-border-medium text-text-muted hover:border-primary/50 hover:text-white"
+                  className={`h-10 px-4 rounded-xl border text-xs font-bold transition-all active:scale-95 ${selectedSoftSkills.includes(skill) ? "border-primary bg-primary/10 text-foreground" : "border-border-medium text-text-muted hover:border-primary/50 hover:text-foreground"
                     }`}
                 >
                   {skill}
@@ -331,7 +339,7 @@ export default function EditJobPage() {
               <div className="h-10 w-10 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center text-lg">
                 <FiHelpCircle />
               </div>
-              <h2 className="text-xl font-bold text-white">Question Bank</h2>
+              <h2 className="text-xl font-bold text-foreground">Question Bank</h2>
             </div>
             <span className="text-[10px] font-black text-text-muted uppercase tracking-widest">{customQuestions.length} Custom Questions</span>
           </div>
@@ -344,11 +352,11 @@ export default function EditJobPage() {
                 onChange={(e) => setNewQuestion(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && handleAddQuestion()}
                 placeholder="Update or add specific questions..."
-                className="flex-1 h-[52px] bg-surface-2 border border-border-medium rounded-2xl px-6 text-sm text-white outline-none focus:border-primary/50 transition-all placeholder:text-text-muted/50"
+                className="flex-1 h-[52px] bg-surface-2 border border-border-medium rounded-2xl px-6 text-sm text-foreground outline-none focus:border-primary/50 transition-all placeholder:text-text-muted/50"
               />
               <button
                 onClick={handleAddQuestion}
-                className="h-[52px] px-6 rounded-2xl bg-surface-2 border border-border-medium text-white hover:border-primary transition-all flex items-center gap-2"
+                className="h-[52px] px-6 rounded-2xl bg-surface-2 border border-border-medium text-foreground hover:border-primary transition-all flex items-center gap-2"
               >
                 <FiPlus />
               </button>
@@ -362,9 +370,9 @@ export default function EditJobPage() {
                     initial={{ opacity: 0, x: -20 }}
                     animate={{ opacity: 1, x: 0 }}
                     exit={{ opacity: 0, x: 20 }}
-                    className="p-4 rounded-2xl bg-surface-2 border border-white/5 flex items-center justify-between group"
+                    className="p-4 rounded-2xl bg-surface-2 border border-border-subtle flex items-center justify-between group"
                   >
-                    <p className="text-xs text-white">{q}</p>
+                    <p className="text-xs text-foreground">{q}</p>
                     <button
                       onClick={() => removeQuestion(i)}
                       className="p-2 text-text-muted hover:text-red-500 opacity-0 group-hover:opacity-100 transition-all"
@@ -383,14 +391,14 @@ export default function EditJobPage() {
           <div className="p-4 rounded-[2rem] bg-surface-1/80 backdrop-blur-xl border border-border-medium flex items-center justify-end gap-3">
               <Link
                 href="/recruiter/jobs"
-                className="h-12 px-6 rounded-xl border border-border-medium text-xs font-bold text-white flex items-center justify-center hover:bg-surface-2 transition-all"
+                className="h-12 px-6 rounded-xl border border-border-medium text-xs font-bold text-foreground flex items-center justify-center hover:bg-surface-2 transition-all"
               >
                 Cancel Changes
               </Link>
               <button
                 onClick={handleUpdate}
                 disabled={isUpdating}
-                className="h-12 px-8 rounded-xl bg-primary text-white text-xs font-black uppercase tracking-widest flex items-center justify-center gap-3 hover:bg-primary-hover active:scale-[0.98] disabled:opacity-50 transition-all shadow-lg shadow-primary/20"
+                className="h-12 px-8 rounded-xl bg-primary text-foreground text-xs font-black uppercase tracking-widest flex items-center justify-center gap-3 hover:bg-primary-hover active:scale-[0.98] disabled:opacity-50 transition-all shadow-lg shadow-primary/20"
               >
                 {isUpdating ? "Saving..." : "Save & Update Posting"}
                 {!isUpdating && <FiCheckCircle />}

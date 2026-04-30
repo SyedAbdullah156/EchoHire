@@ -3,14 +3,14 @@ import nodemailer from "nodemailer";
 const transporter = nodemailer.createTransport({
     service: "gmail",
     auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASS,
+        user: process.env.SMTP_USER,
+        pass: process.env.SMTP_PASS,
     },
 });
 
 export const sendAssessmentLink = async (email: string, link: string) => {
     const mailOptions = {
-        from: `"EchoHire Assessments" <${process.env.EMAIL_USER}>`,
+        from: `"EchoHire Assessments" <${process.env.SMTP_USER}>`,
         to: email,
         subject: "Your Coding Assessment Link - EchoHire",
         html: `
@@ -39,7 +39,7 @@ export const sendAssessmentLink = async (email: string, link: string) => {
 
 export const sendAccessCode = async (email: string, code: string) => {
     const mailOptions = {
-        from: `"EchoHire Security" <${process.env.EMAIL_USER}>`,
+        from: `"EchoHire Security" <${process.env.SMTP_USER}>`,
         to: email,
         subject: "Your EchoHire Access Code",
         html: `

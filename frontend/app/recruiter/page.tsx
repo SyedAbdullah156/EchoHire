@@ -27,7 +27,7 @@ const recruiterHighlights = [
 
 export default function RecruitersLandingPage() {
   return (
-    <main className="bg-[#030712] text-white">
+    <main className="bg-background text-foreground">
       <Navbar />
 
       <section className="relative flex min-h-[86vh] items-center bg-[url('/mainpagepic.png')] bg-cover bg-center px-6 pt-24 md:px-20">
@@ -36,7 +36,7 @@ export default function RecruitersLandingPage() {
 
         <div className="relative z-10 w-full max-w-2xl rounded-2xl border border-white/15 bg-[#081228]/45 p-6 backdrop-blur-[2px] md:p-8">
           <p className="text-sm font-medium uppercase tracking-wider text-[#8db5ff]">For Recruiters</p>
-          <h1 className="mb-5 mt-2 text-4xl font-bold leading-tight text-white md:text-6xl">
+          <h1 className="mb-5 mt-2 text-4xl font-bold leading-tight text-foreground md:text-6xl">
             Hire with clarity.
           </h1>
           <p className="mb-8 max-w-xl text-base leading-relaxed text-[#c6d1ea] md:text-lg">
@@ -47,14 +47,14 @@ export default function RecruitersLandingPage() {
             <Link
               href="/auth"
               prefetch
-              className="flex items-center gap-2 rounded-lg bg-gradient-to-r from-blue-500 to-purple-600 px-6 py-3 text-white shadow-[0_10px_30px_rgba(59,130,246,0.35)]"
+              className="flex items-center gap-2 rounded-lg bg-gradient-to-r from-blue-500 to-purple-600 px-6 py-3 text-foreground shadow-[0_10px_30px_rgba(59,130,246,0.35)]"
             >
               Start as Recruiter <FiArrowRight />
             </Link>
             <Link
               href="/students"
               prefetch
-              className="rounded-lg border border-blue-400/70 px-6 py-3 text-white transition hover:bg-blue-500/10"
+              className="rounded-lg border border-blue-400/70 px-6 py-3 text-foreground transition hover:bg-primary/10"
             >
               I’m a Student
             </Link>
@@ -64,7 +64,7 @@ export default function RecruitersLandingPage() {
 
       <section className="mx-auto max-w-7xl px-6 pb-20 pt-12" aria-labelledby="recruiter-features-heading">
         <div className="mb-8 text-center">
-          <h2 id="recruiter-features-heading" className="text-2xl font-semibold text-white md:text-3xl">
+          <h2 id="recruiter-features-heading" className="text-2xl font-semibold text-foreground md:text-3xl">
             A tighter hiring workflow
           </h2>
           <p className="mx-auto mt-3 max-w-2xl text-sm text-[#98a7cb] md:text-base">
@@ -78,9 +78,9 @@ export default function RecruitersLandingPage() {
             return (
               <div
                 key={item.title}
-                className="rounded-2xl border border-white/10 bg-[linear-gradient(145deg,rgba(7,20,43,0.95)_0%,rgba(11,23,48,0.65)_100%)] p-5 shadow-[0_10px_40px_rgba(0,0,0,0.25)]"
+                className="rounded-2xl border border-border-medium bg-[linear-gradient(145deg,rgba(7,20,43,0.95)_0%,rgba(11,23,48,0.65)_100%)] p-5 shadow-[0_10px_40px_rgba(0,0,0,0.25)]"
               >
-                <div className="mb-4 inline-flex h-12 w-12 items-center justify-center rounded-xl border border-blue-400/30 bg-blue-500/10">
+                <div className="mb-4 inline-flex h-12 w-12 items-center justify-center rounded-xl border border-blue-400/30 bg-primary/10">
                   <Icon className="text-blue-200" size={22} />
                 </div>
                 <p className="text-lg font-semibold text-blue-200">{item.title}</p>
@@ -94,14 +94,14 @@ export default function RecruitersLandingPage() {
           <Link
             href="/auth"
             prefetch
-            className="inline-flex items-center justify-center rounded-xl bg-gradient-to-r from-[#227dff] to-[#332989] px-6 py-3 text-base font-medium text-white shadow-[0_10px_30px_rgba(39,131,255,0.25)] focus:outline-none focus:ring-2 focus:ring-blue-400"
+            className="inline-flex items-center justify-center rounded-xl bg-gradient-to-r from-[#227dff] to-[#332989] px-6 py-3 text-base font-medium text-foreground shadow-[0_10px_30px_rgba(39,131,255,0.25)] focus:outline-none focus:ring-2 focus:ring-blue-400"
           >
             Create Recruiter Account <FiArrowRight className="ml-2" />
           </Link>
           <Link
             href="/about-echohire"
             prefetch
-            className="inline-flex items-center justify-center rounded-xl border border-white/15 bg-white/5 px-6 py-3 text-base font-medium text-[#dbe7ff] transition hover:bg-white/10 focus:outline-none focus:ring-2 focus:ring-blue-400"
+            className="inline-flex items-center justify-center rounded-xl border border-white/15 bg-surface-2 px-6 py-3 text-base font-medium text-[#dbe7ff] transition hover:bg-surface-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
           >
             See How It Works <FiArrowRight className="ml-2" />
           </Link>

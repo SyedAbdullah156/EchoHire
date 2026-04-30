@@ -62,12 +62,12 @@ export default function SettingsPage() {
       <div className="flex items-center justify-between">
         <Link 
           href="/recruiter/dashboard" 
-          className="group flex items-center gap-2 text-sm font-medium text-[#9fb1d8] hover:text-white transition-all"
+          className="group flex items-center gap-2 text-sm font-medium text-text-secondary hover:text-foreground transition-all"
         >
           <ArrowLeft size={18} className="transition-transform group-hover:-translate-x-1" />
           Return to Dashboard
         </Link>
-        <div className="flex items-center gap-2 text-xs font-mono text-[#4a5d89]">
+        <div className="flex items-center gap-2 text-xs font-mono text-text-muted">
           <span>SERVER STATUS:</span>
           <span className="flex h-2 w-2 rounded-full bg-emerald-500 animate-pulse"></span>
           <span className="text-emerald-500">OPERATIONAL</span>
@@ -75,11 +75,11 @@ export default function SettingsPage() {
       </div>
 
       <header>
-        <h1 className="text-4xl font-extrabold tracking-tight text-white flex items-center gap-3">
+        <h1 className="text-4xl font-extrabold tracking-tight text-foreground flex items-center gap-3">
           <SettingsIcon className="text-primary" size={32} />
           Settings
         </h1>
-        <p className="mt-2 text-[#9fb1d8] max-w-2xl">
+        <p className="mt-2 text-text-secondary max-w-2xl">
           Manage your account preferences, security configurations, and notifications.
         </p>
       </header>
@@ -99,7 +99,7 @@ export default function SettingsPage() {
                     ? tab.danger 
                       ? "bg-red-500/10 text-red-400" 
                       : "bg-primary/10 text-primary"
-                    : "text-[#9fb1d8] hover:bg-white/5 hover:text-white"
+                    : "text-text-secondary hover:bg-surface-2 hover:text-foreground"
                 }`}
               >
                 <Icon size={18} />
@@ -122,29 +122,32 @@ export default function SettingsPage() {
             >
               {/* Account Tab */}
               {activeTab === "account" && (
-                <section className="rounded-3xl border border-[#243253] bg-[#0d162a]/80 p-8 backdrop-blur-md">
-                  <div className="mb-8 border-b border-[#243253] pb-6">
-                    <h2 className="text-2xl font-bold text-white">Profile Identity</h2>
-                    <p className="text-sm text-[#9fb1d8] mt-1">Manage your public presence and account details.</p>
+                <section className="rounded-3xl border border-border-subtle bg-surface-2/80 p-8 backdrop-blur-md">
+                  <div className="mb-8 border-b border-border-subtle pb-6">
+                    <h2 className="text-2xl font-bold text-foreground">Profile Identity</h2>
+                    <p className="text-sm text-text-secondary mt-1">Manage your public presence and account details.</p>
                   </div>
                   
-                  <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-5 rounded-2xl bg-[#050b18] border border-[#243253]">
+                  <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-5 rounded-2xl bg-background border border-border-subtle">
                     <div className="flex items-center gap-4">
                       {user?.profile?.avatarDataUrl ? (
-                        <img src={user.profile.avatarDataUrl} alt="Avatar" className="h-14 w-14 rounded-full border-2 border-[#243253] object-cover" />
+                        <img src={user.profile.avatarDataUrl} alt="Avatar" className="h-14 w-14 rounded-full border-2 border-border-subtle object-cover" />
                       ) : (
-                        <div className="h-14 w-14 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-bold text-xl">
+                        <div className="h-14 w-14 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-foreground font-bold text-xl">
                           {user?.name?.charAt(0) || "U"}
                         </div>
                       )}
                       <div>
-                        <p className="font-semibold text-white text-lg">{user?.name || "User Name"}</p>
-                        <p className="text-sm text-[#9fb1d8]">{user?.email || "user@example.com"}</p>
+                        <p className="font-semibold text-foreground text-lg">{user?.name || "User Name"}</p>
+                        <p className="text-sm text-text-secondary">{user?.email || "user@example.com"}</p>
                       </div>
                     </div>
-                    <button className="text-sm font-bold bg-white/5 border border-white/10 px-4 py-2 rounded-lg text-white hover:bg-white/10 transition-colors">
+                    <Link 
+                      href="/recruiter/profile"
+                      className="text-sm font-bold bg-surface-2 border border-border-medium px-4 py-2 rounded-lg text-foreground hover:bg-surface-2 transition-colors"
+                    >
                       Edit Profile
-                    </button>
+                    </Link>
                   </div>
                 </section>
               )}
@@ -156,10 +159,10 @@ export default function SettingsPage() {
 
               {/* Notifications Tab */}
               {activeTab === "notifications" && (
-                <section className="rounded-3xl border border-[#243253] bg-[#0d162a] p-8">
-                  <div className="mb-8 border-b border-[#243253] pb-6">
-                    <h3 className="text-2xl font-bold text-white">System Alerts</h3>
-                    <p className="text-sm text-[#9fb1d8] mt-1">Choose what you want to be notified about.</p>
+                <section className="rounded-3xl border border-border-subtle bg-surface-2 p-8">
+                  <div className="mb-8 border-b border-border-subtle pb-6">
+                    <h3 className="text-2xl font-bold text-foreground">System Alerts</h3>
+                    <p className="text-sm text-text-secondary mt-1">Choose what you want to be notified about.</p>
                   </div>
                   
                   <div className="space-y-4">
@@ -167,10 +170,10 @@ export default function SettingsPage() {
                       { id: 'email', title: 'Email Updates', desc: 'Receive daily summaries and critical alerts via email.' },
                       { id: 'push', title: 'Push Notifications', desc: 'Get instantly notified on your device.' }
                     ].map((item) => (
-                      <label key={item.id} className="flex items-start justify-between cursor-pointer group p-4 rounded-xl bg-[#050b18] border border-[#243253] hover:border-[#32466f] transition-all">
+                      <label key={item.id} className="flex items-start justify-between cursor-pointer group p-4 rounded-xl bg-background border border-border-subtle hover:border-[#32466f] transition-all">
                         <div className="pr-4">
-                          <span className="block text-sm font-bold text-white mb-1">{item.title}</span>
-                          <span className="block text-xs text-[#9fb1d8]">{item.desc}</span>
+                          <span className="block text-sm font-bold text-foreground mb-1">{item.title}</span>
+                          <span className="block text-xs text-text-secondary">{item.desc}</span>
                         </div>
                         <div className="relative inline-flex items-center shrink-0 mt-1">
                           <input type="checkbox" className="peer sr-only" defaultChecked />
@@ -189,9 +192,9 @@ export default function SettingsPage() {
                     <h3 className="text-2xl font-bold text-red-400">Danger Zone</h3>
                     <p className="text-sm text-red-200/60 mt-1">Irreversible and destructive actions.</p>
                   </div>
-                  <div className="p-5 rounded-2xl bg-[#050b18] border border-red-500/20 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                  <div className="p-5 rounded-2xl bg-background border border-red-500/20 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                     <div>
-                      <h4 className="font-bold text-white text-sm mb-1">Delete Account</h4>
+                      <h4 className="font-bold text-foreground text-sm mb-1">Delete Account</h4>
                       <p className="text-xs text-red-200/60 max-w-sm">
                         Deleting your account will permanently erase all projects, resumes, and data. This action cannot be undone.
                       </p>
@@ -199,7 +202,7 @@ export default function SettingsPage() {
                     <button 
                       onClick={() => setIsDeleteModalOpen(true)}
                       disabled={isDeleting}
-                      className="whitespace-nowrap rounded-xl bg-red-500/10 border border-red-500/50 px-6 py-2.5 text-sm font-bold text-red-400 hover:bg-red-500 hover:text-white transition-all disabled:opacity-50"
+                      className="whitespace-nowrap rounded-xl bg-red-500/10 border border-red-500/50 px-6 py-2.5 text-sm font-bold text-red-400 hover:bg-red-500 hover:text-foreground transition-all disabled:opacity-50"
                     >
                       {isDeleting ? "Deleting..." : "Delete Account"}
                     </button>

@@ -13,15 +13,11 @@ const companyBodySchema = z.object({
     description: z
         .string()
         .trim()
-        .min(
-            COMPANY_LIMITS.DESCRIPTION_MIN,
-            `Min ${COMPANY_LIMITS.DESCRIPTION_MIN} chars`,
-        )
-        .max(
-            COMPANY_LIMITS.DESCRIPTION_MAX,
-            `Max ${COMPANY_LIMITS.DESCRIPTION_MAX} chars`,
-        )
-        .optional(),
+        .min(1, "Description is too short")
+        .min(COMPANY_LIMITS.DESCRIPTION_MIN, `Min ${COMPANY_LIMITS.DESCRIPTION_MIN} chars`)
+        .max(COMPANY_LIMITS.DESCRIPTION_MAX, `Max ${COMPANY_LIMITS.DESCRIPTION_MAX} chars`)
+        .optional()
+        .or(z.literal("")),
 
     website: z
         .string()

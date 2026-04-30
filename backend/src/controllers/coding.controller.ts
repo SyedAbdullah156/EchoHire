@@ -2,8 +2,10 @@ import { Request, Response, NextFunction } from "express";
 import { AppError } from "../utils/AppError.utils";
 import { getGeminiModel } from "../config/gemini.config";
 import { Interview } from "../models/interview.model";
+import mongoose from "mongoose";
 import { sendAccessCode } from "../services/email.service";
 import { AuthRequest } from "../types/request.types";
+import * as AiService from "../services/aiInterview.services";
 
 export const executeCode = async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
@@ -116,18 +118,64 @@ export const validateToken = async (req: Request, res: Response, next: NextFunct
 };
 
 /**
+ * Validate unique join code
+ */
+export const validateJoinCode = async (req: AuthRequest, res: Response, next: NextFunction) => {
+    try {
+        const joinCodeRaw = req.query.joinCode as string;
+        const joinCode = joinCodeRaw?.trim();
+        const userId = req.user?._id;
+
+        if (!joinCode) throw new AppError("Join code is required", 400);
+
+        // Find the interview by code first
+        const interview = await Interview.findOne({ 
+            join_code: { $regex: new RegExp(`^${joinCode}$`, "i") }
+        }).populate("job_id", "name role");
+
+        if (!interview) {
+            throw new AppError("Invalid or expired join code", 404);
+        }
+
+        // Check if the current user is the owner
+        if (interview.user_id.toString() !== userId?.toString()) {
+            console.warn(`[AUTH] User ${userId} attempted to join assessment ${interview._id} owned by ${interview.user_id}`);
+            throw new AppError("This assessment belongs to a different account. Please log in as the correct candidate.", 403);
+        }
+
+        // AUTO-CORRECT: Apply to all coding rounds in the interview
+        for (let i = 0; i < interview.rounds.length; i++) {
+            if (interview.rounds[i].type === "CodingAssessment") {
+                await AiService.autoCorrectRound(interview, i);
+            }
+        }
+
+        res.status(200).json({
+            success: true,
+            data: interview
+        });
+    } catch (error) {
+        next(error);
+    }
+};
+
+/**
  * Challenge Gate: Request a unique access code
  */
 export const requestAccessCode = async (req: AuthRequest, res: Response, next: NextFunction) => {
     try {
         const userId = req.user?._id;
-        const { interviewId } = req.body;
+        const { interviewId } = req.body; // This could be _id OR join_code
 
-        const interview = await Interview.findOne({ _id: interviewId, user_id: userId });
-        if (!interview) throw new AppError("Interview not found", 404);
+        const interview = await Interview.findOne({ 
+            $or: [{ _id: mongoose.Types.ObjectId.isValid(interviewId) ? interviewId : new mongoose.Types.ObjectId() }, { join_code: interviewId }],
+            user_id: userId 
+        });
+        if (!interview) throw new AppError("Assessment not found. Please check your Join Code.", 404);
 
         // Generate 6-digit code
         const code = Math.floor(100000 + Math.random() * 900000).toString();
+        console.log(`[AUTH] ACCESS CODE GENERATED: ${code} for Assessment: ${interviewId}`);
         interview.access_code = code;
         interview.access_code_expires = new Date(Date.now() + 10 * 60 * 1000); // 10 mins
         await interview.save();
@@ -157,8 +205,11 @@ export const verifyAccessCode = async (req: AuthRequest, res: Response, next: Ne
         const userId = req.user?._id;
         const { interviewId, code } = req.body;
 
-        const interview = await Interview.findOne({ _id: interviewId, user_id: userId });
-        if (!interview) throw new AppError("Interview not found", 404);
+        const interview = await Interview.findOne({ 
+            $or: [{ _id: mongoose.Types.ObjectId.isValid(interviewId) ? interviewId : new mongoose.Types.ObjectId() }, { join_code: interviewId }],
+            user_id: userId 
+        });
+        if (!interview) throw new AppError("Assessment not found", 404);
 
         if (interview.access_code !== code) {
             throw new AppError("Invalid access code", 400);

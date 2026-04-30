@@ -8,6 +8,13 @@ export interface TQAPair {
     candidate_answer?: string;
     ai_evaluation?: string;
     timestamp: Date;
+    metadata?: {
+        problem_statement?: string;
+        test_cases?: Array<{ input: string; expected: string }>;
+        initial_code?: string;
+        constraints?: string[];
+        examples?: string[];
+    };
 }
 
 export interface TInterviewRound {
@@ -26,8 +33,9 @@ export interface TInterviewRound {
 }
 
 export interface TInterview {
-    job_id: mongoose.Types.ObjectId;
+    job_id?: mongoose.Types.ObjectId;
     user_id: mongoose.Types.ObjectId;
+    is_practice?: boolean;
     status: (typeof INTERVIEW_STATUS)[number];
     rounds: TInterviewRound[];
     tech_stack?: string;
@@ -36,6 +44,7 @@ export interface TInterview {
     remarks?: string;
     violations?: { type: (typeof VIOLATION_TYPES)[number]; timestamp: Date }[];
     assessment_token?: string;
+    join_code?: string;
     access_code?: string;
     access_code_expires?: Date;
 }

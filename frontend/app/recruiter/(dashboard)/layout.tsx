@@ -2,9 +2,11 @@
 
 import { ReactNode } from "react";
 import Link from "next/link";
-import { FiSearch, FiBell } from "react-icons/fi";
+import Image from "next/image";
+import { FiSearch } from "react-icons/fi";
 import RecruiterSidebar from "@/components/RecruiterSidebar";
 import NotificationBell from "@/components/NotificationBell";
+import { ThemeToggle } from "@/components/ThemeToggle";
 import { useUserProfile } from "@/hooks/useUserProfile";
 
 export default function RecruiterLayout({ children }: { children: ReactNode }) {
@@ -32,25 +34,30 @@ export default function RecruiterLayout({ children }: { children: ReactNode }) {
               <input 
                 type="text" 
                 placeholder="Search candidates, jobs, or analytics..." 
-                className="w-full h-12 bg-surface-1 border border-border-medium rounded-2xl pl-12 pr-4 text-sm text-white placeholder:text-text-muted focus:border-primary/50 outline-none transition-all"
+                className="w-full h-12 bg-surface-1 border border-border-medium rounded-2xl pl-12 pr-4 text-sm text-foreground placeholder:text-text-muted focus:border-primary/50 outline-none transition-all"
               />
             </div>
           </div>
           
           <div className="flex items-center gap-4 ml-8">
+            <ThemeToggle />
             <NotificationBell />
 
             {/* Avatar — profile picture or initials fallback */}
             <Link 
               href="/recruiter/profile"
-              className="h-12 w-12 rounded-2xl overflow-hidden flex items-center justify-center font-black text-white cursor-pointer active:scale-95 transition-transform border border-border-medium shrink-0"
+              className="h-12 w-12 rounded-2xl overflow-hidden flex items-center justify-center font-black text-foreground cursor-pointer active:scale-95 transition-transform border border-border-medium shrink-0"
             >
               {avatarDataUrl ? (
-                <img
-                  src={avatarDataUrl}
-                  alt={name || "Profile"}
-                  className="h-full w-full object-cover"
-                />
+                <div className="relative h-full w-full">
+                  <Image
+                    src={avatarDataUrl}
+                    alt={name || "Profile"}
+                    fill
+                    sizes="48px"
+                    className="object-cover"
+                  />
+                </div>
               ) : (
                 <span className="bg-primary h-full w-full flex items-center justify-center text-sm">
                   {initials}

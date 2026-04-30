@@ -25,9 +25,9 @@ const testimonials = [
 
 export default function TestimonialsMarquee() {
   return (
-    <section className="overflow-hidden py-24 md:py-32 bg-[#030712]">
+    <section className="overflow-hidden py-24 md:py-32 bg-background">
       <div className="mb-16 text-center px-6">
-        <h2 className="text-3xl font-extrabold tracking-tight text-white md:text-5xl">
+        <h2 className="text-3xl font-extrabold tracking-tight text-foreground md:text-5xl">
           Trusted by engineering leaders
         </h2>
       </div>
@@ -39,13 +39,13 @@ export default function TestimonialsMarquee() {
             {[...testimonials, ...testimonials].map((testimonial, i) => (
               <div
                 key={i}
-                className="w-[350px] md:w-[450px] shrink-0 rounded-3xl border border-white/10 bg-[#070d1a] p-8 flex flex-col justify-between"
+                className="w-[350px] md:w-[450px] shrink-0 rounded-3xl border border-border-medium bg-surface-1 p-8 flex flex-col justify-between"
               >
                 <p className="text-lg text-[#dbe7ff] leading-relaxed mb-8">
                   &ldquo;{testimonial.quote}&rdquo;
                 </p>
                 <div>
-                  <h4 className="font-bold text-white">{testimonial.author}</h4>
+                  <h4 className="font-bold text-foreground">{testimonial.author}</h4>
                   <p className="text-sm text-[#7f92be]">{testimonial.role}</p>
                 </div>
               </div>

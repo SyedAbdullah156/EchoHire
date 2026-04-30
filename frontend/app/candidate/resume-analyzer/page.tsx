@@ -95,7 +95,7 @@ function ScoreRing({ score }: { score: number }) {
         />
       </svg>
       <div className="absolute flex flex-col items-center">
-        <span className="text-3xl font-bold text-white">{score}</span>
+        <span className="text-3xl font-bold text-foreground">{score}</span>
         <span className="text-xs text-[#7f92be]">/ 100</span>
       </div>
     </div>
@@ -123,21 +123,21 @@ function ResultsDashboard({ result }: { result: AnalysisResult }) {
       <div className="grid gap-4 md:grid-cols-[1fr_auto]">
         
         {/* Centered Name Card with Vertical Jobs */}
-        <div className="flex flex-col items-center justify-between gap-8 rounded-2xl bg-[#0d162a] border border-white/5 px-8 py-6 sm:flex-row">
+        <div className="flex flex-col items-center justify-between gap-8 rounded-2xl bg-surface-2 border border-border-subtle px-8 py-6 sm:flex-row">
           {/* Left: Identity Section */}
           <div className="flex flex-col gap-1 text-center sm:text-left">
             <div className="flex items-center justify-center gap-2 text-[#7f92be] sm:justify-start">
               <FiUser className="w-4 h-4" />
               <span className="text-xs font-semibold uppercase tracking-widest">Candidate</span>
             </div>
-            <h2 className="text-3xl font-bold text-white md:text-4xl">
+            <h2 className="text-3xl font-bold text-foreground md:text-4xl">
               {result.candidateName}
             </h2>
           </div>
 
           {/* Right: Best-Fit Jobs (Vertical List) */}
           {result.bestFitJobs?.length > 0 && (
-            <div className="flex flex-col items-center space-y-3 sm:items-start sm:border-l sm:border-white/10 sm:pl-8">
+            <div className="flex flex-col items-center space-y-3 sm:items-start sm:border-l sm:border-border-medium sm:pl-8">
               <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#7f92be]">
                 Suggested Roles
               </p>
@@ -156,7 +156,7 @@ function ResultsDashboard({ result }: { result: AnalysisResult }) {
         </div>
 
         {/* Score Card */}
-        <div className="relative flex flex-col items-center justify-center gap-1 rounded-2xl bg-[#0d162a] border border-white/5 px-10 py-6">
+        <div className="relative flex flex-col items-center justify-center gap-1 rounded-2xl bg-surface-2 border border-border-subtle px-10 py-6">
           <div className="flex items-center gap-2 text-[#7f92be] mb-2">
             <FiAward className="w-4 h-4" />
             <span className="text-xs font-semibold uppercase tracking-widest">ATS Score</span>
@@ -176,7 +176,7 @@ function ResultsDashboard({ result }: { result: AnalysisResult }) {
 
       {/* Row 2: Top Skills + Strengths + Weaknesses */}
       <div className="grid gap-4 md:grid-cols-3">
-        <div className="rounded-2xl bg-[#070d1a] border border-white/5 px-5 py-5 space-y-4">
+        <div className="rounded-2xl bg-surface-1 border border-border-subtle px-5 py-5 space-y-4">
           <div className="flex items-center gap-2 text-[#7f92be]">
             <FiZap className="w-4 h-4" />
             <span className="text-xs font-semibold uppercase tracking-widest">Top Skills</span>
@@ -193,7 +193,7 @@ function ResultsDashboard({ result }: { result: AnalysisResult }) {
           </div>
         </div>
 
-        <div className="rounded-2xl bg-[#070d1a] border border-white/5 px-5 py-5 space-y-4">
+        <div className="rounded-2xl bg-surface-1 border border-border-subtle px-5 py-5 space-y-4">
           <div className="flex items-center gap-2 text-[#7f92be]">
             <FiCheckCircle className="w-4 h-4 text-emerald-400" />
             <span className="text-xs font-semibold uppercase tracking-widest">Strengths</span>
@@ -208,7 +208,7 @@ function ResultsDashboard({ result }: { result: AnalysisResult }) {
           </ul>
         </div>
 
-        <div className="rounded-2xl bg-[#070d1a] border border-white/5 px-5 py-5 space-y-4">
+        <div className="rounded-2xl bg-surface-1 border border-border-subtle px-5 py-5 space-y-4">
           <div className="flex items-center gap-2 text-[#7f92be]">
             <FiAlertTriangle className="w-4 h-4 text-amber-400" />
             <span className="text-xs font-semibold uppercase tracking-widest">Areas to Improve</span>
@@ -225,7 +225,7 @@ function ResultsDashboard({ result }: { result: AnalysisResult }) {
       </div>
 
       {/* Row 3: Interview Questions */}
-      <div className="rounded-2xl bg-[#0d162a] border border-white/5 px-6 py-6 space-y-4">
+      <div className="rounded-2xl bg-surface-2 border border-border-subtle px-6 py-6 space-y-4">
         <div className="flex items-center gap-2 text-[#7f92be]">
           <FiMessageSquare className="w-4 h-4 text-[#227dff]" />
           <span className="text-xs font-semibold uppercase tracking-widest">
@@ -329,7 +329,7 @@ export default function ResumeAnalyzerPage() {
   return (
     <div className="space-y-6">
       <header className="space-y-1">
-        <h1 className="text-2xl font-bold text-white md:text-3xl">
+        <h1 className="text-2xl font-bold text-foreground md:text-3xl">
           Resume Scanner & ATS Analyzer
         </h1>
         <p className="text-sm text-[#7f92be] md:text-base">
@@ -337,7 +337,7 @@ export default function ResumeAnalyzerPage() {
         </p>
       </header>
 
-      <div className="rounded-2xl bg-[#0d162a] border border-white/5 p-6 space-y-5">
+      <div className="rounded-2xl bg-surface-2 border border-border-subtle p-6 space-y-5">
         <div
           onDrop={onDrop}
           onDragOver={onDragOver}
@@ -347,8 +347,8 @@ export default function ResumeAnalyzerPage() {
             isDragging
               ? "border-[#227dff] bg-[#227dff]/5"
               : file
-              ? "border-white/10 bg-white/[0.02] cursor-default"
-              : "border-white/10 bg-[#070d1a] hover:border-[#227dff]/40 hover:bg-[#227dff]/5"
+              ? "border-border-medium bg-white/[0.02] cursor-default"
+              : "border-border-medium bg-surface-1 hover:border-[#227dff]/40 hover:bg-[#227dff]/5"
           }`}
         >
           <input
@@ -372,7 +372,7 @@ export default function ResumeAnalyzerPage() {
               >
                 <FiFileText className="w-10 h-10 text-[#227dff]" />
                 <div>
-                  <p className="font-semibold text-white">{file.name}</p>
+                  <p className="font-semibold text-foreground">{file.name}</p>
                   <p className="text-sm text-[#7f92be]">
                     {(file.size / 1024).toFixed(1)} KB · {file.type === "application/pdf" ? "PDF" : "DOCX"}
                   </p>
@@ -380,7 +380,7 @@ export default function ResumeAnalyzerPage() {
                 <button
                   type="button"
                   onClick={(e) => { e.stopPropagation(); clearFile(); }}
-                  className="flex items-center gap-1.5 rounded-lg border border-white/10 bg-white/5 px-3 py-1.5 text-sm text-[#dbe7ff] transition-colors hover:bg-white/10"
+                  className="flex items-center gap-1.5 rounded-lg border border-border-medium bg-surface-2 px-3 py-1.5 text-sm text-[#dbe7ff] transition-colors hover:bg-surface-2"
                 >
                   <FiX className="w-3.5 h-3.5" />
                   Remove
@@ -411,7 +411,7 @@ export default function ResumeAnalyzerPage() {
             <button
               type="button"
               onClick={() => inputRef.current?.click()}
-              className="min-h-[44px] rounded-xl border border-white/10 bg-white/5 px-5 py-2.5 text-sm font-medium text-[#dbe7ff] transition-colors hover:bg-white/10"
+              className="min-h-[44px] rounded-xl border border-border-medium bg-surface-2 px-5 py-2.5 text-sm font-medium text-[#dbe7ff] transition-colors hover:bg-surface-2"
             >
               Choose File
             </button>
@@ -420,7 +420,7 @@ export default function ResumeAnalyzerPage() {
             <button
               type="button"
               onClick={analyzeResume}
-              className="min-h-[44px] rounded-xl bg-gradient-to-r from-[#227dff] to-[#332989] px-6 py-2.5 text-sm font-semibold text-white transition-all hover:brightness-110 disabled:opacity-50"
+              className="min-h-[44px] rounded-xl bg-gradient-to-r from-[#227dff] to-[#332989] px-6 py-2.5 text-sm font-semibold text-foreground transition-all hover:brightness-110 disabled:opacity-50"
             >
               Analyze Resume
             </button>
@@ -429,7 +429,7 @@ export default function ResumeAnalyzerPage() {
             <button
               type="button"
               onClick={clearFile}
-              className="flex min-h-[44px] items-center gap-2 rounded-xl border border-white/10 bg-white/5 px-5 py-2.5 text-sm font-medium text-[#dbe7ff] transition-colors hover:bg-white/10"
+              className="flex min-h-[44px] items-center gap-2 rounded-xl border border-border-medium bg-surface-2 px-5 py-2.5 text-sm font-medium text-[#dbe7ff] transition-colors hover:bg-surface-2"
             >
               <FiRefreshCw className="w-4 h-4" />
               Analyze Another

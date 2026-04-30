@@ -3,9 +3,30 @@
 import { motion } from "framer-motion";
 import { FiCheckCircle, FiAward, FiChevronRight, FiHome } from "react-icons/fi";
 
+interface TQAPair {
+  question: string;
+  candidate_answer?: string;
+  ai_evaluation?: string;
+  timestamp: string | Date;
+}
+
+interface TInterviewRound {
+  type: string;
+  status: string;
+  qa_pairs: TQAPair[];
+  max_questions: number;
+  score?: number;
+  remarks?: string;
+  phase_data?: {
+    coding_complexity?: { time: string; space: string };
+    test_cases_passed?: number;
+    test_cases_total?: number;
+  };
+}
+
 type RoundFeedbackProps = {
   roundIndex: number;
-  result: any;
+  result: TInterviewRound | null;
   isLastRound: boolean;
   onNext: () => void;
   onFinish: () => void;
@@ -17,14 +38,14 @@ export default function RoundFeedback({ roundIndex, result, isLastRound, onNext,
       <motion.div 
         initial={{ opacity: 0, scale: 0.9, y: 20 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
-        className="max-w-2xl w-full p-12 rounded-[3.5rem] bg-surface-1 border border-white/10 text-center space-y-10 shadow-2xl shadow-primary/5"
+        className="max-w-2xl w-full p-12 rounded-[3.5rem] bg-surface-1 border border-border-medium text-center space-y-10 shadow-2xl shadow-primary/5"
       >
         <div className="mx-auto w-24 h-24 rounded-[2.5rem] bg-emerald-500/10 flex items-center justify-center text-emerald-500 mb-4 border border-emerald-500/20">
            <FiCheckCircle size={48} />
         </div>
         
         <div className="space-y-3">
-          <h2 className="text-4xl font-black text-white tracking-tight leading-tight">
+          <h2 className="text-4xl font-black text-foreground tracking-tight leading-tight">
             Round {roundIndex + 1} <span className="text-emerald-500">Concluded</span>
           </h2>
           <p className="text-sm text-text-muted max-w-sm mx-auto">
@@ -32,32 +53,32 @@ export default function RoundFeedback({ roundIndex, result, isLastRound, onNext,
           </p>
         </div>
 
-        <div className="grid grid-cols-2 gap-6 py-10 border-y border-white/5">
-           <div className="p-8 rounded-[2rem] bg-surface-2 border border-white/5 relative overflow-hidden group">
+        <div className="grid grid-cols-2 gap-6 py-10 border-y border-border-subtle">
+           <div className="p-8 rounded-[2rem] bg-surface-2 border border-border-subtle relative overflow-hidden group">
               <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:scale-110 transition-transform"><FiAward size={40} /></div>
               <p className="text-[10px] font-black uppercase tracking-widest text-text-muted mb-2">Technical Proficiency</p>
               <p className="text-4xl font-black text-primary">{result?.score || 0}%</p>
            </div>
            {result?.phase_data?.coding_complexity ? (
-             <div className="p-8 rounded-[2rem] bg-surface-2 border border-white/5 text-left">
+             <div className="p-8 rounded-[2rem] bg-surface-2 border border-border-subtle text-left">
                 <p className="text-[10px] font-black uppercase tracking-widest text-text-muted mb-3">System Complexity</p>
                 <div className="space-y-2">
                   <div className="flex justify-between text-[11px]">
                     <span className="text-text-muted uppercase tracking-widest">Time:</span>
-                    <span className="text-blue-400 font-mono font-bold">{result.phase_data.coding_complexity.time}</span>
+                    <span className="text-primary font-mono font-bold">{result.phase_data.coding_complexity.time}</span>
                   </div>
                   <div className="flex justify-between text-[11px]">
                     <span className="text-text-muted uppercase tracking-widest">Space:</span>
                     <span className="text-emerald-400 font-mono font-bold">{result.phase_data.coding_complexity.space}</span>
                   </div>
-                  <div className="flex justify-between text-[11px] pt-2 border-t border-white/5">
+                  <div className="flex justify-between text-[11px] pt-2 border-t border-border-subtle">
                     <span className="text-text-muted uppercase tracking-widest">Tests:</span>
-                    <span className="text-white font-bold">{result.phase_data.test_cases_passed} / {result.phase_data.test_cases_total}</span>
+                    <span className="text-foreground font-bold">{result.phase_data.test_cases_passed} / {result.phase_data.test_cases_total}</span>
                   </div>
                 </div>
              </div>
            ) : (
-             <div className="p-8 rounded-[2rem] bg-surface-2 border border-white/5">
+             <div className="p-8 rounded-[2rem] bg-surface-2 border border-border-subtle">
                 <p className="text-[10px] font-black uppercase tracking-widest text-text-muted mb-2">Outcome</p>
                 <p className="text-3xl font-black text-emerald-500 uppercase tracking-tighter">Verified</p>
              </div>
@@ -65,10 +86,10 @@ export default function RoundFeedback({ roundIndex, result, isLastRound, onNext,
         </div>
 
         <div className="text-left space-y-4">
-          <h4 className="text-[10px] font-black text-white flex items-center gap-2 uppercase tracking-widest">
+          <h4 className="text-[10px] font-black text-foreground flex items-center gap-2 uppercase tracking-widest">
              AI Feedback Report
           </h4>
-          <div className="p-8 rounded-[2.5rem] bg-surface-2/40 border border-white/5 text-sm text-text-secondary leading-relaxed italic relative">
+          <div className="p-8 rounded-[2.5rem] bg-surface-2/40 border border-border-subtle text-sm text-text-secondary leading-relaxed italic relative">
              <span className="absolute top-4 left-4 text-primary text-4xl font-serif opacity-20">“</span>
              {result?.remarks || "Excellent technical communication demonstrated throughout the assessment."}
              <span className="absolute bottom-4 right-4 text-primary text-4xl font-serif opacity-20 rotate-180">“</span>
@@ -78,7 +99,7 @@ export default function RoundFeedback({ roundIndex, result, isLastRound, onNext,
         <div className="flex flex-col sm:flex-row gap-4 pt-6">
           <button 
             onClick={onFinish}
-            className="flex-1 h-16 rounded-2xl bg-surface-2 border border-white/10 text-white font-bold hover:bg-surface-3 transition-all flex items-center justify-center gap-2 active:scale-95"
+            className="flex-1 h-16 rounded-2xl bg-surface-2 border border-border-medium text-foreground font-bold hover:bg-surface-3 transition-all flex items-center justify-center gap-2 active:scale-95"
           >
             <FiHome /> Dashboard
           </button>
@@ -86,16 +107,16 @@ export default function RoundFeedback({ roundIndex, result, isLastRound, onNext,
           {!isLastRound ? (
             <button 
               onClick={onNext}
-              className="flex-[2] h-16 rounded-2xl bg-primary text-white font-black uppercase tracking-widest hover:bg-primary-hover shadow-xl shadow-primary/20 transition-all flex items-center justify-center gap-2 active:scale-95 group"
+              className="flex-[2] h-16 rounded-2xl bg-primary text-foreground font-black uppercase tracking-widest hover:bg-primary-hover shadow-xl shadow-primary/20 transition-all flex items-center justify-center gap-2 active:scale-95 group"
             >
               Start Next Round <FiChevronRight className="group-hover:translate-x-1 transition-transform" />
             </button>
           ) : (
             <button 
               onClick={onFinish}
-              className="flex-[2] h-16 rounded-2xl bg-emerald-600 text-white font-black uppercase tracking-widest hover:bg-emerald-500 shadow-xl shadow-emerald-900/20 transition-all flex items-center justify-center gap-2 active:scale-95"
+              className="flex-[2] h-16 rounded-2xl bg-primary text-foreground font-black uppercase tracking-widest hover:bg-primary/90 shadow-xl shadow-primary/20 transition-all flex items-center justify-center gap-2 active:scale-95"
             >
-              Complete Interview
+              {roundIndex === 1 ? "Proceed to Coding Assessment" : "Complete Interview"} <FiChevronRight />
             </button>
           )}
         </div>

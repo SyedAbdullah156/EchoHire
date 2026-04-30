@@ -34,7 +34,7 @@ export default function ContactPage() {
             className="space-y-12"
           >
             <div className="space-y-4">
-              <h1 className="text-5xl md:text-6xl font-black text-white tracking-tight leading-tight">
+              <h1 className="text-5xl md:text-6xl font-black text-foreground tracking-tight leading-tight">
                 Get in <span className="text-primary text-glow">Touch</span>.
               </h1>
               <p className="text-xl text-text-secondary leading-relaxed max-w-lg">
@@ -49,7 +49,7 @@ export default function ContactPage() {
                 </div>
                 <div>
                   <p className="text-xs font-bold uppercase tracking-widest text-text-muted mb-1">Email Us</p>
-                  <p className="text-lg font-bold text-white">hello@echohire.ai</p>
+                  <p className="text-lg font-bold text-foreground">hello@echohire.ai</p>
                 </div>
               </div>
 
@@ -59,7 +59,7 @@ export default function ContactPage() {
                 </div>
                 <div>
                   <p className="text-xs font-bold uppercase tracking-widest text-text-muted mb-1">Live Support</p>
-                  <p className="text-lg font-bold text-white">Available 9am - 6pm EST</p>
+                  <p className="text-lg font-bold text-foreground">Available 9am - 6pm EST</p>
                 </div>
               </div>
 
@@ -69,7 +69,7 @@ export default function ContactPage() {
                 </div>
                 <div>
                   <p className="text-xs font-bold uppercase tracking-widest text-text-muted mb-1">Headquarters</p>
-                  <p className="text-lg font-bold text-white">San Francisco, CA</p>
+                  <p className="text-lg font-bold text-foreground">San Francisco, CA</p>
                 </div>
               </div>
             </div>
@@ -79,7 +79,7 @@ export default function ContactPage() {
                 <a
                   key={i}
                   href="#"
-                  className="h-12 w-12 rounded-full bg-surface-1 border border-border-medium flex items-center justify-center text-xl text-text-muted hover:text-white hover:border-text-muted transition-all"
+                  className="h-12 w-12 rounded-full bg-surface-1 border border-border-medium flex items-center justify-center text-xl text-text-muted hover:text-foreground hover:border-text-muted transition-all"
                 >
                   <Icon />
                 </a>
@@ -103,7 +103,7 @@ export default function ContactPage() {
                   <div className="h-20 w-20 bg-primary/10 border border-primary/20 rounded-full flex items-center justify-center mx-auto mb-8">
                     <FiSend className="text-3xl text-primary" />
                   </div>
-                  <h2 className="text-3xl font-black text-white">Message Sent!</h2>
+                  <h2 className="text-3xl font-black text-foreground">Message Sent!</h2>
                   <p className="text-text-secondary leading-relaxed max-w-xs mx-auto">
                     Thanks for reaching out. Our team will get back to you within 24 hours.
                   </p>
@@ -121,7 +121,7 @@ export default function ContactPage() {
                       <label className="text-xs font-bold uppercase tracking-widest text-text-muted ml-1">First Name</label>
                       <input
                         required
-                        className="w-full h-14 bg-surface-2 border border-border-medium rounded-2xl px-6 text-white outline-none focus:border-primary/50 transition-colors"
+                        className="w-full h-14 bg-surface-2 border border-border-medium rounded-2xl px-6 text-foreground outline-none focus:border-primary/50 transition-colors"
                         placeholder="John"
                       />
                     </div>
@@ -129,7 +129,7 @@ export default function ContactPage() {
                       <label className="text-xs font-bold uppercase tracking-widest text-text-muted ml-1">Last Name</label>
                       <input
                         required
-                        className="w-full h-14 bg-surface-2 border border-border-medium rounded-2xl px-6 text-white outline-none focus:border-primary/50 transition-colors"
+                        className="w-full h-14 bg-surface-2 border border-border-medium rounded-2xl px-6 text-foreground outline-none focus:border-primary/50 transition-colors"
                         placeholder="Doe"
                       />
                     </div>
@@ -140,7 +140,7 @@ export default function ContactPage() {
                     <input
                       required
                       type="email"
-                      className="w-full h-14 bg-surface-2 border border-border-medium rounded-2xl px-6 text-white outline-none focus:border-primary/50 transition-colors"
+                      className="w-full h-14 bg-surface-2 border border-border-medium rounded-2xl px-6 text-foreground outline-none focus:border-primary/50 transition-colors"
                       placeholder="john@example.com"
                     />
                   </div>
@@ -150,14 +150,14 @@ export default function ContactPage() {
                     <textarea
                       required
                       rows={5}
-                      className="w-full bg-surface-2 border border-border-medium rounded-2xl p-6 text-white outline-none focus:border-primary/50 transition-colors resize-none"
+                      className="w-full bg-surface-2 border border-border-medium rounded-2xl p-6 text-foreground outline-none focus:border-primary/50 transition-colors resize-none"
                       placeholder="How can we help you?"
                     />
                   </div>
 
                   <button
                     disabled={isSubmitting}
-                    className="w-full h-16 bg-primary text-white font-black uppercase tracking-widest rounded-2xl transition-all hover:bg-primary-hover active:scale-[0.98] disabled:opacity-50 flex items-center justify-center gap-3"
+                    className="w-full h-16 bg-primary text-foreground font-black uppercase tracking-widest rounded-2xl transition-all hover:bg-primary-hover active:scale-[0.98] disabled:opacity-50 flex items-center justify-center gap-3"
                   >
                     {isSubmitting ? "Sending..." : "Send Message"}
                     {!isSubmitting && <FiSend />}

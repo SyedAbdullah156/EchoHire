@@ -30,7 +30,7 @@ export default function ForbiddenPage() {
           </div>
 
           <div className="space-y-4">
-            <h1 className="text-3xl font-black text-white tracking-tight">Access Restricted</h1>
+            <h1 className="text-3xl font-black text-foreground tracking-tight">Access Restricted</h1>
             <p className="text-text-secondary leading-relaxed max-w-md mx-auto">
               You do not have the required permissions to view this zone. This incident has been logged for security review.
             </p>
@@ -40,13 +40,13 @@ export default function ForbiddenPage() {
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4">
             <Link 
               href="/"
-              className="w-full sm:w-auto h-14 px-8 rounded-2xl bg-surface-1 border border-border-medium text-white text-xs font-black uppercase tracking-widest flex items-center justify-center gap-3 transition-all hover:bg-surface-2 active:scale-95"
+              className="w-full sm:w-auto h-14 px-8 rounded-2xl bg-surface-1 border border-border-medium text-foreground text-xs font-black uppercase tracking-widest flex items-center justify-center gap-3 transition-all hover:bg-surface-2 active:scale-95"
             >
               <FiHome /> Return Home
             </Link>
             <button 
               onClick={() => window.history.back()}
-              className="w-full sm:w-auto h-14 px-8 rounded-2xl bg-primary text-white text-xs font-black uppercase tracking-widest flex items-center justify-center gap-3 transition-all hover:bg-primary-hover active:scale-95"
+              className="w-full sm:w-auto h-14 px-8 rounded-2xl bg-primary text-foreground text-xs font-black uppercase tracking-widest flex items-center justify-center gap-3 transition-all hover:bg-primary-hover active:scale-95"
             >
               <FiArrowLeft /> Go Back
             </button>

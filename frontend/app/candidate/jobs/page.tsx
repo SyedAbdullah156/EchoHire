@@ -2,24 +2,40 @@
 
 import { useState, useEffect } from "react";
 import { 
-  FiSearch, FiMapPin, FiBriefcase, FiDollarSign, 
-  FiClock, FiChevronRight, FiFilter, FiCheckCircle, 
+  FiSearch, FiMapPin, FiDollarSign, FiChevronRight, FiCheckCircle, 
   FiX, FiUploadCloud, FiZap 
 } from "react-icons/fi";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 
+interface Job {
+  _id: string;
+  role: string;
+  company_id?: { name: string };
+  type?: string;
+  location?: string;
+  salary_range?: string;
+  requirements?: string[];
+}
+
+interface Interview {
+  _id: string;
+  job_id?: { _id: string };
+  assessment_token?: string;
+  join_code?: string;
+}
+
 export default function BrowseJobsPage() {
   const router = useRouter();
-  const [jobs, setJobs] = useState<any[]>([]);
+  const [jobs, setJobs] = useState<Job[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedJob, setSelectedJob] = useState<any>(null);
+  const [selectedJob, setSelectedJob] = useState<Job | null>(null);
   const [isApplying, setIsApplying] = useState(false);
   const [cvFile, setCvFile] = useState<File | null>(null);
 
-  const [myInterviews, setMyInterviews] = useState<any[]>([]);
+  const [myInterviews, setMyInterviews] = useState<Interview[]>([]);
 
   useEffect(() => {
     async function fetchData() {
@@ -34,7 +50,7 @@ export default function BrowseJobsPage() {
         
         if (jobsRes.ok) setJobs(jobsData.data || []);
         if (interviewsRes.ok) setMyInterviews(interviewsData.data || []);
-      } catch (error) {
+      } catch {
         toast.error("Failed to load data.");
       } finally {
         setLoading(false);
@@ -65,7 +81,7 @@ export default function BrowseJobsPage() {
       } else {
         toast.error(result.message || "Application failed.");
       }
-    } catch (err) {
+    } catch {
       toast.error("Network error. Please try again.");
     } finally {
       setIsApplying(false);
@@ -82,7 +98,7 @@ export default function BrowseJobsPage() {
       {/* Header */}
       <header className="flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div className="space-y-2">
-          <h1 className="text-4xl font-black text-white tracking-tight">Browse Jobs</h1>
+          <h1 className="text-4xl font-black text-foreground tracking-tight">Browse Jobs</h1>
           <p className="text-text-muted">Find your next role and start an AI-powered interview immediately.</p>
         </div>
         
@@ -93,7 +109,7 @@ export default function BrowseJobsPage() {
             placeholder="Search roles, companies..." 
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full h-14 bg-surface-1 border border-border-medium rounded-2xl pl-12 pr-4 text-sm text-white placeholder:text-text-muted focus:border-primary/50 outline-none transition-all"
+            className="w-full h-14 bg-surface-1 border border-border-medium rounded-2xl pl-12 pr-4 text-sm text-foreground placeholder:text-text-muted focus:border-primary/50 outline-none transition-all"
           />
         </div>
       </header>
@@ -124,7 +140,7 @@ export default function BrowseJobsPage() {
                 </div>
 
                 <div className="space-y-1">
-                  <h3 className="text-xl font-bold text-white group-hover:text-primary transition-colors">{job.role}</h3>
+                  <h3 className="text-xl font-bold text-foreground group-hover:text-primary transition-colors">{job.role}</h3>
                   <p className="text-sm text-text-muted font-medium">{job.company_id?.name || "Global Tech"}</p>
                 </div>
 
@@ -136,20 +152,20 @@ export default function BrowseJobsPage() {
                     </div>
                     <div className="space-y-1">
                       <p className="text-[9px] text-text-muted uppercase font-bold tracking-tighter">Interview ID</p>
-                      <code className="text-[10px] text-white block bg-black/20 p-1.5 rounded-lg select-all">
+                      <code className="text-[10px] text-foreground block bg-black/20 p-1.5 rounded-lg select-all">
                         {myInterviews.find(i => i.job_id?._id === job._id)?._id}
                       </code>
                     </div>
                     <div className="space-y-1">
-                      <p className="text-[9px] text-text-muted uppercase font-bold tracking-tighter">Coding ID</p>
-                      <code className="text-[10px] text-white block bg-black/20 p-1.5 rounded-lg select-all">
-                        {myInterviews.find(i => i.job_id?._id === job._id)?.assessment_token}
+                      <p className="text-[9px] text-text-muted uppercase font-bold tracking-tighter">Join Code</p>
+                      <code className="text-[10px] text-primary block bg-primary/10 p-1.5 rounded-lg select-all font-black text-center">
+                        {myInterviews.find(i => i.job_id?._id === job._id)?.join_code}
                       </code>
                     </div>
                   </div>
                 ) : (
                   <>
-                    <div className="flex flex-wrap gap-4 py-4 border-y border-white/5">
+                    <div className="flex flex-wrap gap-4 py-4 border-y border-border-subtle">
                       <div className="flex items-center gap-2 text-xs text-text-secondary">
                         <FiMapPin className="text-primary" /> {job.location || "Remote"}
                       </div>
@@ -159,10 +175,10 @@ export default function BrowseJobsPage() {
                     </div>
 
                     <div className="space-y-3">
-                       <p className="text-xs font-bold text-white uppercase tracking-widest">Key Skills</p>
+                       <p className="text-xs font-bold text-foreground uppercase tracking-widest">Key Skills</p>
                        <div className="flex flex-wrap gap-2">
                           {job.requirements?.slice(0, 3).map((req: string, idx: number) => (
-                            <span key={idx} className="px-2 py-1 rounded-md bg-surface-2 text-[10px] text-text-muted border border-white/5">
+                            <span key={idx} className="px-2 py-1 rounded-md bg-surface-2 text-[10px] text-text-muted border border-border-subtle">
                               {req}
                             </span>
                           ))}
@@ -175,14 +191,14 @@ export default function BrowseJobsPage() {
               {myInterviews.find(i => i.job_id?._id === job._id) ? (
                 <button 
                   onClick={() => router.push(`/candidate/ai-interview?id=${myInterviews.find(i => i.job_id?._id === job._id)?._id}&round=0`)}
-                  className="mt-8 w-full h-14 rounded-2xl bg-emerald-600 text-white font-bold uppercase tracking-widest text-[10px] transition-all flex items-center justify-center gap-2 shadow-lg shadow-emerald-500/20"
+                  className="mt-8 w-full h-14 rounded-2xl bg-emerald-600 text-foreground font-bold uppercase tracking-widest text-[10px] transition-all flex items-center justify-center gap-2 shadow-lg shadow-emerald-500/20"
                 >
                   Resume Interview <FiChevronRight />
                 </button>
               ) : (
                 <button 
                   onClick={() => setSelectedJob(job)}
-                  className="mt-8 w-full h-14 rounded-2xl bg-surface-2 group-hover:bg-primary text-white font-bold uppercase tracking-widest text-[10px] transition-all flex items-center justify-center gap-2"
+                  className="mt-8 w-full h-14 rounded-2xl bg-surface-2 group-hover:bg-primary text-foreground font-bold uppercase tracking-widest text-[10px] transition-all flex items-center justify-center gap-2"
                 >
                   Apply Now <FiChevronRight />
                 </button>
@@ -207,11 +223,11 @@ export default function BrowseJobsPage() {
                initial={{ scale: 0.9, opacity: 0, y: 20 }}
                animate={{ scale: 1, opacity: 1, y: 0 }}
                exit={{ scale: 0.9, opacity: 0, y: 20 }}
-               className="relative w-full max-w-lg bg-surface-1 border border-white/10 rounded-[3rem] p-10 shadow-2xl"
+               className="relative w-full max-w-lg bg-surface-1 border border-border-medium rounded-[3rem] p-10 shadow-2xl"
              >
                 <button 
                   onClick={() => setSelectedJob(null)}
-                  className="absolute top-8 right-8 text-text-muted hover:text-white transition-colors"
+                  className="absolute top-8 right-8 text-text-muted hover:text-foreground transition-colors"
                 >
                   <FiX size={24} />
                 </button>
@@ -221,7 +237,7 @@ export default function BrowseJobsPage() {
                       <div className="mx-auto h-16 w-16 rounded-2xl bg-primary/10 flex items-center justify-center text-primary mb-4">
                          <FiZap size={32} />
                       </div>
-                      <h2 className="text-2xl font-black text-white">Apply for {selectedJob.role}</h2>
+                      <h2 className="text-2xl font-black text-foreground">Apply for {selectedJob.role}</h2>
                       <p className="text-sm text-text-muted">Upload your CV to start the AI evaluation process.</p>
                    </div>
 
@@ -236,7 +252,7 @@ export default function BrowseJobsPage() {
                          />
                          <label 
                            htmlFor="cv-upload"
-                           className="flex flex-col items-center justify-center w-full h-40 border-2 border-dashed border-white/10 rounded-[2rem] bg-surface-2/50 hover:border-primary/50 transition-all cursor-pointer group"
+                           className="flex flex-col items-center justify-center w-full h-40 border-2 border-dashed border-border-medium rounded-[2rem] bg-surface-2/50 hover:border-primary/50 transition-all cursor-pointer group"
                          >
                             {cvFile ? (
                               <div className="flex items-center gap-3 text-primary">
@@ -264,7 +280,7 @@ export default function BrowseJobsPage() {
                       <button 
                         type="submit"
                         disabled={isApplying || !cvFile}
-                        className="w-full h-16 rounded-2xl bg-primary text-white font-black uppercase tracking-widest hover:bg-primary-hover shadow-xl shadow-primary/20 transition-all disabled:opacity-50"
+                        className="w-full h-16 rounded-2xl bg-primary text-foreground font-black uppercase tracking-widest hover:bg-primary-hover shadow-xl shadow-primary/20 transition-all disabled:opacity-50"
                       >
                         {isApplying ? "Processing..." : "Submit Application"}
                       </button>

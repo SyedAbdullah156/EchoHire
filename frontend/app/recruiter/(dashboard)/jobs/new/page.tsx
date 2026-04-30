@@ -16,6 +16,7 @@ import {
 import Link from "next/link";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
+import { DatePicker } from "@/components/ui/date-picker";
 
 const TECH_STACK_OPTIONS = ["React", "TypeScript", "Node.js", "Python", "Go", "AWS", "Docker", "PostgreSQL", "Next.js"];
 const SOFT_SKILLS = ["Leadership", "Communication", "Problem Solving", "Collaboration", "Critical Thinking"];
@@ -24,7 +25,7 @@ export default function NewJobPage() {
   const router = useRouter();
   const [title, setTitle] = useState(""); // This is the Role
   const [description, setDescription] = useState("");
-  const [deadline, setDeadline] = useState("");
+  const [deadline, setDeadline] = useState<Date | undefined>();
   const [department, setDepartment] = useState("Engineering");
   const [location, setLocation] = useState("");
   const [salaryRange, setSalaryRange] = useState("");
@@ -51,6 +52,14 @@ export default function NewJobPage() {
       return toast.error("Please fill in all required fields.");
     }
 
+    if (description.length < 20) {
+      return toast.error("Description must be at least 20 characters long.");
+    }
+
+    if (selectedTech.length === 0) {
+      return toast.error("Please select at least one tech stack focus.");
+    }
+
     setIsPublishing(true);
     try {
       const res = await fetch("/api/jobs", {
@@ -61,19 +70,19 @@ export default function NewJobPage() {
           role: title,
           description: description,
           location: location,
-          salary_range: salaryRange,
+          salary_range: salaryRange || "Competitive",
           department: department,
           difficulty: difficulty,
           soft_skills: selectedSoftSkills,
           framework: selectedTech,
           requirements: [...selectedTech, ...selectedSoftSkills],
           custom_questions: customQuestions,
-          deadline: deadline,
+          deadline: deadline?.toISOString(),
           rounds: [
-            { type: "TechnicalScreening", max_questions: 1 },
-            { type: "FrameworkProficiency", max_questions: 3 },
-            { type: "CodingAssessment", max_questions: 1 },
-            { type: "SystemArchitecture", max_questions: 1 }
+            { type: "TechnicalScreening", max_questions: 5 },
+            { type: "FrameworkProficiency", max_questions: 5 },
+            { type: "CodingAssessment", max_questions: 5 },
+            { type: "SystemArchitecture", max_questions: 5 }
           ],
           is_active: true
         }),
@@ -84,7 +93,13 @@ export default function NewJobPage() {
         toast.success("Job Posting Published Successfully!");
         router.push("/recruiter/jobs");
       } else {
-        toast.error(result.message || "Failed to publish job.");
+        if (result.errors && Array.isArray(result.errors)) {
+          result.errors.forEach((err: { message: string }) => {
+            toast.error(err.message);
+          });
+        } else {
+          toast.error(result.message || "Failed to publish job.");
+        }
       }
     } catch (error) {
       toast.error("Failed to connect to the server.");
@@ -108,14 +123,14 @@ export default function NewJobPage() {
       <nav className="mb-12 flex items-center gap-4 text-xs font-bold uppercase tracking-widest text-text-muted">
         <Link href="/recruiter/jobs" className="hover:text-primary transition-colors">Jobs</Link>
         <FiChevronRight className="opacity-30" />
-        <span className="text-white">Create New Posting</span>
+        <span className="text-foreground">Create New Posting</span>
       </nav>
 
       <div className="space-y-12">
 
         {/* --- Header Section --- */}
         <div className="space-y-4">
-          <h1 className="text-4xl font-black text-white tracking-tight leading-tight">
+          <h1 className="text-4xl font-black text-foreground tracking-tight leading-tight">
             Design Your <span className="text-primary text-glow">Ideal Candidate</span> Profile.
           </h1>
           <p className="text-sm text-text-secondary max-w-xl leading-relaxed">
@@ -129,7 +144,7 @@ export default function NewJobPage() {
             <div className="h-10 w-10 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center text-lg">
               <FiFileText />
             </div>
-            <h2 className="text-xl font-bold text-white">Basic Details</h2>
+            <h2 className="text-xl font-bold text-foreground">Basic Details</h2>
           </div>
 
           <div className="grid md:grid-cols-2 gap-8">
@@ -141,7 +156,7 @@ export default function NewJobPage() {
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
                 placeholder="e.g. Senior Frontend Engineer"
-                className="w-full h-[52px] bg-surface-2 border border-border-medium rounded-2xl px-6 text-sm text-white outline-none focus:border-primary/50 transition-all placeholder:text-text-muted/50"
+                className="w-full h-[52px] bg-surface-2 border border-border-medium rounded-2xl px-6 text-sm text-foreground outline-none focus:border-primary/50 transition-all placeholder:text-text-muted/50"
               />
             </div>
             <div className="space-y-2">
@@ -150,7 +165,7 @@ export default function NewJobPage() {
                 id="dept"
                 value={department}
                 onChange={(e) => setDepartment(e.target.value)}
-                className="w-full h-[52px] bg-surface-2 border border-border-medium rounded-2xl px-6 text-sm text-white outline-none focus:border-primary/50 transition-all appearance-none cursor-pointer"
+                className="w-full h-[52px] bg-surface-2 border border-border-medium rounded-2xl px-6 text-sm text-foreground outline-none focus:border-primary/50 transition-all appearance-none cursor-pointer"
               >
                 <option>Engineering</option>
                 <option>Design</option>
@@ -167,7 +182,7 @@ export default function NewJobPage() {
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               placeholder="Describe the role, responsibilities, and requirements..."
-              className="w-full h-32 bg-surface-2 border border-border-medium rounded-2xl p-6 text-sm text-white outline-none focus:border-primary/50 transition-all placeholder:text-text-muted/50 resize-none"
+              className="w-full h-32 bg-surface-2 border border-border-medium rounded-2xl p-6 text-sm text-foreground outline-none focus:border-primary/50 transition-all placeholder:text-text-muted/50 resize-none"
             />
           </div>
 
@@ -182,7 +197,7 @@ export default function NewJobPage() {
                   value={location}
                   onChange={(e) => setLocation(e.target.value)}
                   placeholder="e.g. San Francisco, CA (Hybrid)"
-                  className="w-full h-[52px] bg-surface-2 border border-border-medium rounded-2xl pl-14 pr-6 text-sm text-white outline-none focus:border-primary/50 transition-all placeholder:text-text-muted/50"
+                  className="w-full h-[52px] bg-surface-2 border border-border-medium rounded-2xl pl-14 pr-6 text-sm text-foreground outline-none focus:border-primary/50 transition-all placeholder:text-text-muted/50"
                 />
               </div>
             </div>
@@ -190,12 +205,10 @@ export default function NewJobPage() {
               <label htmlFor="deadline" className="text-[10px] font-black uppercase tracking-widest text-text-muted ml-1 text-flex items-center gap-2">
                 Application Deadline
               </label>
-              <input
-                id="deadline"
-                type="date"
-                value={deadline}
-                onChange={(e) => setDeadline(e.target.value)}
-                className="w-full h-[52px] bg-surface-2 border border-border-medium rounded-2xl px-6 text-sm text-white outline-none focus:border-primary/50 transition-all"
+              <DatePicker 
+                date={deadline} 
+                setDate={setDeadline} 
+                placeholder="Select deadline date" 
               />
             </div>
           </div>
@@ -211,7 +224,7 @@ export default function NewJobPage() {
                   value={salaryRange}
                   onChange={(e) => setSalaryRange(e.target.value)}
                   placeholder="e.g. 120k - 150k"
-                  className="w-full h-[52px] bg-surface-2 border border-border-medium rounded-2xl pl-12 pr-6 text-sm text-white outline-none focus:border-primary/50 transition-all placeholder:text-text-muted/50"
+                  className="w-full h-[52px] bg-surface-2 border border-border-medium rounded-2xl pl-12 pr-6 text-sm text-foreground outline-none focus:border-primary/50 transition-all placeholder:text-text-muted/50"
                 />
               </div>
             </div>
@@ -227,14 +240,14 @@ export default function NewJobPage() {
             <div className="h-10 w-10 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center text-lg">
               <FiCpu />
             </div>
-            <h2 className="text-xl font-bold text-white">AI Assessment Setup</h2>
+            <h2 className="text-xl font-bold text-foreground">AI Assessment Setup</h2>
           </div>
 
           {/* Difficulty Slider */}
           <div className="space-y-6">
             <div className="flex items-center justify-between">
               <label className="text-[10px] font-black uppercase tracking-widest text-text-muted ml-1">Technical Difficulty</label>
-              <span className="px-3 py-1 rounded-lg bg-primary text-[10px] font-black text-white">{difficulty}/10</span>
+              <span className="px-3 py-1 rounded-lg bg-primary text-[10px] font-black text-foreground">{difficulty}/10</span>
             </div>
             <div className="relative h-2 bg-surface-2 rounded-full">
               <input
@@ -266,7 +279,7 @@ export default function NewJobPage() {
                 <button
                   key={tech}
                   onClick={() => toggleTech(tech)}
-                  className={`h-10 px-4 rounded-xl border text-xs font-bold transition-all active:scale-95 ${selectedTech.includes(tech) ? "border-primary bg-primary/10 text-white shadow-lg shadow-primary/20" : "border-border-medium text-text-muted hover:border-primary/50 hover:text-white"
+                  className={`h-10 px-4 rounded-xl border text-xs font-bold transition-all active:scale-95 ${selectedTech.includes(tech) ? "border-primary bg-primary/10 text-foreground shadow-lg shadow-primary/20" : "border-border-medium text-text-muted hover:border-primary/50 hover:text-foreground"
                     }`}
                 >
                   {tech}
@@ -282,7 +295,7 @@ export default function NewJobPage() {
                 <button
                   key={skill}
                   onClick={() => toggleSoftSkill(skill)}
-                  className={`h-10 px-4 rounded-xl border text-xs font-bold transition-all active:scale-95 ${selectedSoftSkills.includes(skill) ? "border-primary bg-primary/10 text-white shadow-lg shadow-primary/20" : "border-border-medium text-text-muted hover:border-primary/50 hover:text-white"
+                  className={`h-10 px-4 rounded-xl border text-xs font-bold transition-all active:scale-95 ${selectedSoftSkills.includes(skill) ? "border-primary bg-primary/10 text-foreground shadow-lg shadow-primary/20" : "border-border-medium text-text-muted hover:border-primary/50 hover:text-foreground"
                     }`}
                 >
                   {skill}
@@ -299,7 +312,7 @@ export default function NewJobPage() {
               <div className="h-10 w-10 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center text-lg">
                 <FiHelpCircle />
               </div>
-              <h2 className="text-xl font-bold text-white">Question Bank</h2>
+              <h2 className="text-xl font-bold text-foreground">Question Bank</h2>
             </div>
             <span className="text-[10px] font-black text-text-muted uppercase tracking-widest">{customQuestions.length} Custom Questions</span>
           </div>
@@ -316,11 +329,11 @@ export default function NewJobPage() {
                 onChange={(e) => setNewQuestion(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && handleAddQuestion()}
                 placeholder="Enter a specific question (e.g. Describe your experience with Microservices)"
-                className="flex-1 h-[52px] bg-surface-2 border border-border-medium rounded-2xl px-6 text-sm text-white outline-none focus:border-primary/50 transition-all placeholder:text-text-muted/50"
+                className="flex-1 h-[52px] bg-surface-2 border border-border-medium rounded-2xl px-6 text-sm text-foreground outline-none focus:border-primary/50 transition-all placeholder:text-text-muted/50"
               />
               <button
                 onClick={handleAddQuestion}
-                className="h-[52px] px-6 rounded-2xl bg-surface-2 border border-border-medium text-white hover:border-primary transition-all flex items-center gap-2"
+                className="h-[52px] px-6 rounded-2xl bg-surface-2 border border-border-medium text-foreground hover:border-primary transition-all flex items-center gap-2"
               >
                 <FiPlus />
               </button>
@@ -334,9 +347,9 @@ export default function NewJobPage() {
                     initial={{ opacity: 0, x: -20 }}
                     animate={{ opacity: 1, x: 0 }}
                     exit={{ opacity: 0, x: 20 }}
-                    className="p-4 rounded-2xl bg-surface-2 border border-white/5 flex items-center justify-between group"
+                    className="p-4 rounded-2xl bg-surface-2 border border-border-subtle flex items-center justify-between group"
                   >
-                    <p className="text-xs text-white">{q}</p>
+                    <p className="text-xs text-foreground">{q}</p>
                     <button
                       onClick={() => removeQuestion(i)}
                       className="p-2 text-text-muted hover:text-red-500 opacity-0 group-hover:opacity-100 transition-all"
@@ -360,14 +373,14 @@ export default function NewJobPage() {
             <div className="flex items-center gap-3 w-full sm:w-auto">
               <Link
                 href="/recruiter/dashboard"
-                className="flex-1 sm:flex-none h-12 px-6 rounded-xl border border-border-medium text-xs font-bold text-white flex items-center justify-center hover:bg-surface-2"
+                className="flex-1 sm:flex-none h-12 px-6 rounded-xl border border-border-medium text-xs font-bold text-foreground flex items-center justify-center hover:bg-surface-2"
               >
                 Save Draft
               </Link>
               <button
                 onClick={handlePublish}
                 disabled={isPublishing}
-                className="flex-1 sm:flex-none h-12 px-8 rounded-xl bg-primary text-white text-xs font-black uppercase tracking-widest flex items-center justify-center gap-3 hover:bg-primary-hover active:scale-[0.98] disabled:opacity-50 transition-all"
+                className="flex-1 sm:flex-none h-12 px-8 rounded-xl bg-primary text-foreground text-xs font-black uppercase tracking-widest flex items-center justify-center gap-3 hover:bg-primary-hover active:scale-[0.98] disabled:opacity-50 transition-all"
               >
                 {isPublishing ? "Processing..." : "Publish & Activate AI"}
                 {!isPublishing && <FiCheckCircle />}

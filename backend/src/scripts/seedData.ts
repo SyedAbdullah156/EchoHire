@@ -17,56 +17,63 @@ const seedData = async () => {
         await mongoose.connect(MONGODB_URI);
         console.log("Connected to MongoDB for seeding...");
 
-        // Clear existing data (optional, but good for a fresh seed)
-        // console.log("Clearing existing jobs, companies, and interviews...");
-        // await Job.deleteMany({});
-        // await Company.deleteMany({});
-        // await Interview.deleteMany({});
+        // Clear existing data
+        console.log("Clearing all existing data...");
+        await User.deleteMany({});
+        await Job.deleteMany({});
+        await Company.deleteMany({});
+        await Interview.deleteMany({});
 
         // 1. Ensure we have users
-        let candidate = await User.findOne({ role: "candidate" });
-        let recruiter = await User.findOne({ role: "recruiter" });
-
         const salt = await bcrypt.genSalt(10);
         const defaultPassword = await bcrypt.hash("Password123!", salt);
 
-        if (!candidate) {
-            console.log("Creating dummy candidate...");
-            candidate = await User.create({
-                name: "John Doe",
-                email: "john@example.com",
-                password: defaultPassword,
-                role: "candidate",
-                isApproved: true
-            });
-        }
+        console.log("Creating Admin user...");
+        const admin = await User.create({
+            name: "System Admin",
+            email: "admin@echohire.ai",
+            password: defaultPassword,
+            role: "admin",
+            isApproved: true
+        });
 
-        if (!recruiter) {
-            console.log("Creating dummy recruiter...");
-            recruiter = await User.create({
-                name: "Jane Smith",
-                email: "jane@example.com",
-                password: defaultPassword,
-                role: "recruiter",
-                isApproved: true
-            });
-        }
+        console.log("Creating Recruiter user...");
+        const recruiter = await User.create({
+            name: "Jane Recruiter",
+            email: "jane@example.com",
+            password: defaultPassword,
+            role: "recruiter",
+            isApproved: true
+        });
 
-        // Create a secondary candidate for more diversity
-        let candidate2 = await User.findOne({ email: "sarah@example.com" });
-        if (!candidate2) {
-            console.log("Creating second dummy candidate...");
-            candidate2 = await User.create({
-                name: "Sarah Connor",
-                email: "sarah@example.com",
-                password: defaultPassword,
-                role: "candidate",
-                isApproved: true
-            });
-        }
+        console.log("Creating Candidate users...");
+        const candidate1 = await User.create({
+            name: "John Candidate",
+            email: "john@example.com",
+            password: defaultPassword,
+            role: "candidate",
+            isApproved: true,
+            profile: {
+                targetRole: "Senior AI Engineer",
+                yearsExperience: "5",
+                coreSkills: "Python, PyTorch, LLMs"
+            }
+        } as any);
 
-        console.log(`Using Candidates: ${candidate.name}, ${candidate2.name}`);
-        console.log(`Using Recruiter: ${recruiter.name}`);
+        const candidate2 = await User.create({
+            name: "Sarah Candidate",
+            email: "sarah@example.com",
+            password: defaultPassword,
+            role: "candidate",
+            isApproved: true,
+            profile: {
+                targetRole: "Frontend Developer",
+                yearsExperience: "3",
+                coreSkills: "React, Next.js, Tailwind"
+            }
+        } as any);
+
+        console.log(`Users created: Admin, ${recruiter.name}, ${candidate1.name}, ${candidate2.name}`);
 
         // 2. Create Dummy Companies
         const companies = [
@@ -109,6 +116,26 @@ const seedData = async () => {
                 owner_id: recruiter._id,
                 size: "501-1000",
                 industry: "Aerospace"
+            },
+            {
+                name: "Neural Nexus",
+                description: "Pioneering direct brain-computer interfaces for augmented cognition.",
+                website: "https://neuralnexus.tech",
+                location: "San Francisco, CA",
+                logo: "https://logo.clearbit.com/neuralink.com",
+                owner_id: recruiter._id,
+                size: "51-200",
+                industry: "Neurotechnology"
+            },
+            {
+                name: "BioSynth Genomics",
+                description: "AI-driven synthetic biology for personalized medicine and longevity.",
+                website: "https://biosynth.io",
+                location: "Cambridge, MA",
+                logo: "https://logo.clearbit.com/modernatx.com",
+                owner_id: recruiter._id,
+                size: "100-500",
+                industry: "Biotechnology"
             }
         ];
 
@@ -188,6 +215,42 @@ const seedData = async () => {
                     { type: RoundType.FrameworkProficiency, max_questions: 4 },
                     { type: RoundType.CodingAssessment, max_questions: 1 }
                 ]
+            },
+            {
+                name: "Engineering - BCI Software Engineer",
+                role: "BCI Software Engineer",
+                description: "Develop low-latency signal processing algorithms for brain-computer interfaces.",
+                company_id: createdCompanies[4]._id,
+                is_active: true,
+                difficulty: 10,
+                framework: ["C++", "Rust", "CUDA"],
+                deadline: new Date(Date.now() + 60 * 24 * 60 * 60 * 1000),
+                location: "San Francisco, CA",
+                salary_range: "$180k - $250k",
+                requirements: ["Expert C++/Rust", "Signal processing background", "Real-time systems experience"],
+                rounds: [
+                    { type: RoundType.TechnicalScreening, max_questions: 2 },
+                    { type: RoundType.CodingAssessment, max_questions: 1 },
+                    { type: RoundType.SystemArchitecture, max_questions: 1 }
+                ]
+            },
+            {
+                name: "Data - Computational Biologist",
+                role: "Computational Biologist",
+                description: "Using machine learning to discover new genetic pathways for cellular rejuvenation.",
+                company_id: createdCompanies[5]._id,
+                is_active: true,
+                difficulty: 8,
+                framework: ["Python", "R", "TensorFlow"],
+                deadline: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+                location: "Cambridge, MA",
+                salary_range: "$160k - $210k",
+                requirements: ["Bioinformatics degree", "ML for genomics experience", "Python expertise"],
+                rounds: [
+                    { type: RoundType.TechnicalScreening, max_questions: 1 },
+                    { type: RoundType.BehavioralAnalysis, max_questions: 2 },
+                    { type: RoundType.CodingAssessment, max_questions: 1 }
+                ]
             }
         ];
 
@@ -198,16 +261,18 @@ const seedData = async () => {
         const interviews = [
             {
                 job_id: createdJobs[0]._id,
-                user_id: candidate._id,
+                user_id: candidate1._id,
                 status: "applied",
                 assessment_token: "john-token-ai",
+                join_code: "JOHNCODE",
                 rounds: createdJobs[0].rounds.map(r => ({ ...r, status: "pending", qa_pairs: [] }))
             },
             {
                 job_id: createdJobs[1]._id,
-                user_id: candidate._id,
+                user_id: candidate1._id,
                 status: "in-progress",
                 assessment_token: "john-token-backend",
+                join_code: "JOHNBKND",
                 rounds: createdJobs[1].rounds.map((r, i) => ({ 
                     ...r, 
                     status: i === 0 ? "completed" : "pending", 
@@ -220,6 +285,7 @@ const seedData = async () => {
                 user_id: candidate2._id,
                 status: "shortlisted",
                 assessment_token: "sarah-token-ai",
+                join_code: "SARAHAI",
                 score: 92,
                 rounds: createdJobs[0].rounds.map(r => ({ ...r, status: "completed", score: 90 + Math.random() * 10, qa_pairs: [] }))
             },
@@ -228,6 +294,7 @@ const seedData = async () => {
                 user_id: candidate2._id,
                 status: "applied",
                 assessment_token: "sarah-token-frontend",
+                join_code: "SARAHFRT",
                 rounds: createdJobs[3].rounds.map(r => ({ ...r, status: "pending", qa_pairs: [] }))
             }
         ];

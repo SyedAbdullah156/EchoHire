@@ -3,7 +3,7 @@ import rateLimit from "express-rate-limit";
 // Rate limiter for AI intensive routes
 export const aiRateLimiter = rateLimit({
     windowMs: 15 * 60 * 1000, // 15 minutes
-    max: 10, // Limit each IP to 10 requests per `window` (here, per 15 minutes)
+    max: 30, // Limit each IP to 30 requests per `window` (here, per 15 minutes)
     message: {
         success: false,
         message: "Too many AI requests from this IP, please try again after 15 minutes."

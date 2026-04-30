@@ -13,13 +13,13 @@ export async function GET(req: NextRequest, { params }: { params: { path: string
   const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:5050";
 
   try {
-    const response = await fetch(`${API_BASE}/api/aiInterview/${subpath}`, {
+    const response = await fetch(`${API_BASE}/api/ai-interview/${subpath}`, {
       headers: { Authorization: `Bearer ${token}` },
     });
 
     const data = await response.json();
     return NextResponse.json(data, { status: response.status });
-  } catch (error) {
+  } catch (_error) {
     return NextResponse.json({ success: false, message: "Server error" }, { status: 500 });
   }
 }
@@ -37,7 +37,7 @@ export async function POST(req: NextRequest, { params }: { params: { path: strin
   const body = await req.json().catch(() => ({}));
 
   try {
-    const response = await fetch(`${API_BASE}/api/aiInterview/${subpath}`, {
+    const response = await fetch(`${API_BASE}/api/ai-interview/${subpath}`, {
       method: "POST",
       headers: { 
         "Content-Type": "application/json",
@@ -48,7 +48,7 @@ export async function POST(req: NextRequest, { params }: { params: { path: strin
 
     const data = await response.json();
     return NextResponse.json(data, { status: response.status });
-  } catch (error) {
+  } catch (_error) {
     return NextResponse.json({ success: false, message: "Server error" }, { status: 500 });
   }
 }

@@ -147,8 +147,8 @@ function TypewriterTerminal() {
   }, []);
 
   return (
-    <div className="rounded-xl border border-white/[0.05] bg-[#030712]/95 overflow-hidden">
-      <div className="flex items-center gap-1.5 px-4 py-2.5 border-b border-white/[0.04] bg-[#070d1a]">
+    <div className="rounded-xl border border-white/[0.05] bg-background/95 overflow-hidden">
+      <div className="flex items-center gap-1.5 px-4 py-2.5 border-b border-white/[0.04] bg-surface-1">
         <div className="h-2.5 w-2.5 rounded-full bg-red-500/70" />
         <div className="h-2.5 w-2.5 rounded-full bg-yellow-400/70" />
         <div className="h-2.5 w-2.5 rounded-full bg-emerald-500/70" />
@@ -236,7 +236,7 @@ export default function HeroSection() {
                 <span key={line} className="block overflow-hidden">
                   <motion.span
                     variants={wordReveal}
-                    className="block text-white text-[52px] md:text-[66px] lg:text-[76px] leading-[0.96]"
+                    className="block text-foreground text-[52px] md:text-[66px] lg:text-[76px] leading-[0.96]"
                   >
                     {line}
                   </motion.span>
@@ -275,7 +275,7 @@ export default function HeroSection() {
             <motion.div variants={fadeUp} className="flex flex-col sm:flex-row items-start gap-3">
               <Link
                 href="/auth"
-                className="group inline-flex min-h-[52px] items-center justify-center gap-2.5 rounded-xl bg-[#227dff] px-8 py-3 text-[15px] font-semibold text-white transition-colors hover:bg-[#1a68d4] active:bg-[#1558b8] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#227dff]/60"
+                className="group inline-flex min-h-[52px] items-center justify-center gap-2.5 rounded-xl bg-[#227dff] px-8 py-3 text-[15px] font-semibold text-foreground transition-colors hover:bg-[#1a68d4] active:bg-[#1558b8] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#227dff]/60"
               >
                 Start Free Trial
                 <FiArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
@@ -307,12 +307,12 @@ export default function HeroSection() {
             transition={{ duration: 0.85, delay: 0.3, ease: [0.22, 1, 0.36, 1] }}
             className="hidden lg:flex flex-col gap-4"
           >
-            {/* Depth plane 1: `bg-[#070d1a]` wraps the terminal */}
-            <div className="rounded-[1.5rem] bg-[#070d1a] border border-white/[0.05] p-4">
+            {/* Depth plane 1: `bg-surface-1` wraps the terminal */}
+            <div className="rounded-[1.5rem] bg-surface-1 border border-white/[0.05] p-4">
               <TypewriterTerminal />
             </div>
 
-            {/* Depth plane 2: metric cards at `bg-[#0d162a]` */}
+            {/* Depth plane 2: metric cards at `bg-surface-2` */}
             <div className="grid grid-cols-3 gap-3">
               {[
                 { label: "Interviews", value: "24k+", sub: "this month",       accent: "#227dff" },
@@ -324,7 +324,7 @@ export default function HeroSection() {
                   initial={{ opacity: 0, y: 14 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.65 + i * 0.1, duration: 0.45 }}
-                  className="rounded-xl bg-[#0d162a] border border-white/[0.04] px-3 py-4 flex flex-col gap-1"
+                  className="rounded-xl bg-surface-2 border border-white/[0.04] px-3 py-4 flex flex-col gap-1"
                 >
                   <p className="text-[9px] font-bold uppercase tracking-widest text-[#4a5e80]">
                     {c.label}

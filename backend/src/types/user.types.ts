@@ -12,4 +12,5 @@ export interface TUser {
     mfaEnabled?: boolean;
     profile?: any;
     isApproved?: boolean;
+    company_id?: any;
 }

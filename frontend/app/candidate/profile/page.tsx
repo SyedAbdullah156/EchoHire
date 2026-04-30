@@ -150,19 +150,19 @@ export default function ProfilePage() {
   return (
     <div className="max-w-5xl mx-auto space-y-10">
       {/* Page Header */}
-      <header className="flex flex-col md:flex-row md:items-end justify-between gap-6 pb-8 border-b border-white/5">
+      <header className="flex flex-col md:flex-row md:items-end justify-between gap-6 pb-8 border-b border-border-subtle">
         <div className="space-y-2">
           <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.2em] text-primary">
              <FiUser /> Identity & Background
           </div>
-          <h1 className="text-4xl font-black text-white tracking-tight">Candidate Profile</h1>
+          <h1 className="text-4xl font-black text-foreground tracking-tight">Candidate Profile</h1>
           <p className="text-text-muted">Keep your professional identity updated for AI-matching accuracy.</p>
         </div>
         <div className="flex gap-3">
-           <Link href="/candidate/dashboard" className="h-12 px-6 rounded-xl border border-white/10 flex items-center gap-2 text-xs font-bold text-white hover:bg-white/5 transition-all">
+           <Link href="/candidate/dashboard" className="h-12 px-6 rounded-xl border border-border-medium flex items-center gap-2 text-xs font-bold text-foreground hover:bg-surface-2 transition-all">
              <FiArrowLeft /> Back
            </Link>
-           <button onClick={saveProfile} disabled={isSaving} className="h-12 px-8 rounded-xl bg-primary text-white font-black uppercase tracking-widest text-[10px] flex items-center gap-2 hover:bg-primary-hover shadow-lg shadow-primary/20 transition-all disabled:opacity-50">
+           <button onClick={saveProfile} disabled={isSaving} className="h-12 px-8 rounded-xl bg-primary text-foreground font-black uppercase tracking-widest text-[10px] flex items-center gap-2 hover:bg-primary-hover shadow-lg shadow-primary/20 transition-all disabled:opacity-50">
              {isSaving ? "Saving..." : <><FiSave /> Save Changes</>}
            </button>
         </div>
@@ -171,25 +171,25 @@ export default function ProfilePage() {
       <div className="grid lg:grid-cols-12 gap-10">
         {/* Sidebar: Avatar & Summary */}
         <div className="lg:col-span-4 space-y-6">
-           <div className="p-8 rounded-[3rem] bg-surface-1 border border-white/5 text-center space-y-6">
+           <div className="p-8 rounded-[3rem] bg-surface-1 border border-border-subtle text-center space-y-6">
               <div className="relative inline-block group">
-                 <div className="h-32 w-32 rounded-[2.5rem] bg-surface-2 border-2 border-white/5 overflow-hidden flex items-center justify-center text-4xl font-black text-primary">
+                 <div className="h-32 w-32 rounded-[2.5rem] bg-surface-2 border-2 border-border-subtle overflow-hidden flex items-center justify-center text-4xl font-black text-primary">
                     {previewUrl || profile.avatarDataUrl ? (
                       <img src={previewUrl || profile.avatarDataUrl} className="w-full h-full object-cover" alt="Profile" />
                     ) : (
                       profile.fullName?.[0] || "?"
                     )}
                  </div>
-                 <label className="absolute -bottom-2 -right-2 h-10 w-10 rounded-xl bg-primary text-white flex items-center justify-center cursor-pointer hover:scale-110 transition-transform shadow-xl">
+                 <label className="absolute -bottom-2 -right-2 h-10 w-10 rounded-xl bg-primary text-foreground flex items-center justify-center cursor-pointer hover:scale-110 transition-transform shadow-xl">
                     <FiCamera size={18} />
                     <input type="file" className="hidden" onChange={onAvatarChange} accept="image/*" />
                  </label>
               </div>
               <div className="space-y-1">
-                 <h3 className="text-xl font-bold text-white">{profile.fullName || "Your Name"}</h3>
+                 <h3 className="text-xl font-bold text-foreground">{profile.fullName || "Your Name"}</h3>
                  <p className="text-sm text-text-muted">{profile.targetRole || "Role not specified"}</p>
               </div>
-              <div className="pt-6 border-t border-white/5 space-y-4">
+              <div className="pt-6 border-t border-border-subtle space-y-4">
                  <div className="flex items-center gap-3 text-xs text-text-secondary">
                     <FiMail className="text-primary" /> {profile.email}
                  </div>
@@ -213,21 +213,21 @@ export default function ProfilePage() {
         <div className="lg:col-span-8 space-y-10">
            {/* Section: Personal */}
            <section className="space-y-6">
-              <h3 className="text-lg font-bold text-white px-2">Personal Information</h3>
+              <h3 className="text-lg font-bold text-foreground px-2">Personal Information</h3>
               <div className="grid md:grid-cols-2 gap-6">
                   <div className="space-y-2">
                     <label className="text-[10px] font-black uppercase tracking-widest text-text-muted px-1">Full Name</label>
-                    <input value={profile.fullName} onChange={updateField("fullName")} className={`w-full h-14 bg-surface-1 border rounded-2xl px-4 text-sm text-white outline-none focus:border-primary/40 transition-all ${fieldErrors.fullName ? 'border-rose-500/50' : 'border-white/5'}`} />
+                    <input value={profile.fullName} onChange={updateField("fullName")} className={`w-full h-14 bg-surface-1 border rounded-2xl px-4 text-sm text-foreground outline-none focus:border-primary/40 transition-all ${fieldErrors.fullName ? 'border-rose-500/50' : 'border-border-subtle'}`} />
                     {fieldErrors.fullName && <p className="text-[10px] font-bold text-rose-400 px-1">{fieldErrors.fullName}</p>}
                   </div>
                   <div className="space-y-2">
                     <label className="text-[10px] font-black uppercase tracking-widest text-text-muted px-1">Phone Number</label>
-                    <input value={profile.phone} onChange={updateField("phone")} placeholder="+92 ..." className={`w-full h-14 bg-surface-1 border rounded-2xl px-4 text-sm text-white outline-none focus:border-primary/40 transition-all ${fieldErrors.phone ? 'border-rose-500/50' : 'border-white/5'}`} />
+                    <input value={profile.phone} onChange={updateField("phone")} placeholder="+92 ..." className={`w-full h-14 bg-surface-1 border rounded-2xl px-4 text-sm text-foreground outline-none focus:border-primary/40 transition-all ${fieldErrors.phone ? 'border-rose-500/50' : 'border-border-subtle'}`} />
                     {fieldErrors.phone && <p className="text-[10px] font-bold text-rose-400 px-1">{fieldErrors.phone}</p>}
                   </div>
                   <div className="md:col-span-2 space-y-2">
                     <label className="text-[10px] font-black uppercase tracking-widest text-text-muted px-1">City & Country</label>
-                    <input value={profile.cityCountry} onChange={updateField("cityCountry")} className={`w-full h-14 bg-surface-1 border rounded-2xl px-4 text-sm text-white outline-none focus:border-primary/40 transition-all ${fieldErrors.cityCountry ? 'border-rose-500/50' : 'border-white/5'}`} />
+                    <input value={profile.cityCountry} onChange={updateField("cityCountry")} className={`w-full h-14 bg-surface-1 border rounded-2xl px-4 text-sm text-foreground outline-none focus:border-primary/40 transition-all ${fieldErrors.cityCountry ? 'border-rose-500/50' : 'border-border-subtle'}`} />
                     {fieldErrors.cityCountry && <p className="text-[10px] font-bold text-rose-400 px-1">{fieldErrors.cityCountry}</p>}
                   </div>
               </div>
@@ -235,16 +235,16 @@ export default function ProfilePage() {
 
            {/* Section: Professional */}
            <section className="space-y-6">
-              <h3 className="text-lg font-bold text-white px-2">Professional Experience</h3>
+              <h3 className="text-lg font-bold text-foreground px-2">Professional Experience</h3>
               <div className="grid md:grid-cols-2 gap-6">
                   <div className="space-y-2">
                     <label className="text-[10px] font-black uppercase tracking-widest text-text-muted px-1">Target Role</label>
-                    <input value={profile.targetRole} onChange={updateField("targetRole")} placeholder="e.g. Senior Frontend Engineer" className={`w-full h-14 bg-surface-1 border rounded-2xl px-4 text-sm text-white outline-none focus:border-primary/40 transition-all ${fieldErrors.targetRole ? 'border-rose-500/50' : 'border-white/5'}`} />
+                    <input value={profile.targetRole} onChange={updateField("targetRole")} placeholder="e.g. Senior Frontend Engineer" className={`w-full h-14 bg-surface-1 border rounded-2xl px-4 text-sm text-foreground outline-none focus:border-primary/40 transition-all ${fieldErrors.targetRole ? 'border-rose-500/50' : 'border-border-subtle'}`} />
                     {fieldErrors.targetRole && <p className="text-[10px] font-bold text-rose-400 px-1">{fieldErrors.targetRole}</p>}
                   </div>
                   <div className="space-y-2">
                     <label className="text-[10px] font-black uppercase tracking-widest text-text-muted px-1">Experience Level</label>
-                    <select value={profile.yearsExperience} onChange={updateField("yearsExperience")} className={`w-full h-14 bg-surface-1 border rounded-2xl px-4 text-sm text-white outline-none focus:border-primary/40 transition-all appearance-none ${fieldErrors.yearsExperience ? 'border-rose-500/50' : 'border-white/5'}`}>
+                    <select value={profile.yearsExperience} onChange={updateField("yearsExperience")} className={`w-full h-14 bg-surface-1 border rounded-2xl px-4 text-sm text-foreground outline-none focus:border-primary/40 transition-all appearance-none ${fieldErrors.yearsExperience ? 'border-rose-500/50' : 'border-border-subtle'}`}>
                        <option value="">Select Level</option>
                        <option>Fresh / Entry Level</option>
                        <option>1-3 Years (Junior)</option>
@@ -255,12 +255,12 @@ export default function ProfilePage() {
                   </div>
                   <div className="space-y-2">
                     <label className="text-[10px] font-black uppercase tracking-widest text-text-muted px-1">LinkedIn Profile</label>
-                    <input value={profile.linkedInUrl} onChange={updateField("linkedInUrl")} className={`w-full h-14 bg-surface-1 border rounded-2xl px-4 text-sm text-white outline-none focus:border-primary/40 transition-all ${fieldErrors.linkedInUrl ? 'border-rose-500/50' : 'border-white/5'}`} />
+                    <input value={profile.linkedInUrl} onChange={updateField("linkedInUrl")} className={`w-full h-14 bg-surface-1 border rounded-2xl px-4 text-sm text-foreground outline-none focus:border-primary/40 transition-all ${fieldErrors.linkedInUrl ? 'border-rose-500/50' : 'border-border-subtle'}`} />
                     {fieldErrors.linkedInUrl && <p className="text-[10px] font-bold text-rose-400 px-1">{fieldErrors.linkedInUrl}</p>}
                   </div>
                   <div className="space-y-2">
                     <label className="text-[10px] font-black uppercase tracking-widest text-text-muted px-1">GitHub Profile</label>
-                    <input value={profile.githubUrl} onChange={updateField("githubUrl")} className={`w-full h-14 bg-surface-1 border rounded-2xl px-4 text-sm text-white outline-none focus:border-primary/40 transition-all ${fieldErrors.githubUrl ? 'border-rose-500/50' : 'border-white/5'}`} />
+                    <input value={profile.githubUrl} onChange={updateField("githubUrl")} className={`w-full h-14 bg-surface-1 border rounded-2xl px-4 text-sm text-foreground outline-none focus:border-primary/40 transition-all ${fieldErrors.githubUrl ? 'border-rose-500/50' : 'border-border-subtle'}`} />
                     {fieldErrors.githubUrl && <p className="text-[10px] font-bold text-rose-400 px-1">{fieldErrors.githubUrl}</p>}
                   </div>
               </div>
@@ -268,16 +268,16 @@ export default function ProfilePage() {
 
            {/* Section: Academic */}
            <section className="space-y-6">
-              <h3 className="text-lg font-bold text-white px-2">Academic Background</h3>
+              <h3 className="text-lg font-bold text-foreground px-2">Academic Background</h3>
               <div className="grid md:grid-cols-2 gap-6">
                  <div className="space-y-2">
                     <label className="text-[10px] font-black uppercase tracking-widest text-text-muted px-1">Highest Degree</label>
-                    <input value={profile.degree} onChange={updateField("degree")} placeholder="BS Computer Science" className={`w-full h-14 bg-surface-1 border rounded-2xl px-4 text-sm text-white outline-none focus:border-primary/40 transition-all ${fieldErrors.degree ? 'border-rose-500/50' : 'border-white/5'}`} />
+                    <input value={profile.degree} onChange={updateField("degree")} placeholder="BS Computer Science" className={`w-full h-14 bg-surface-1 border rounded-2xl px-4 text-sm text-foreground outline-none focus:border-primary/40 transition-all ${fieldErrors.degree ? 'border-rose-500/50' : 'border-border-subtle'}`} />
                     {fieldErrors.degree && <p className="text-[10px] font-bold text-rose-400 px-1">{fieldErrors.degree}</p>}
                  </div>
                  <div className="space-y-2">
                     <label className="text-[10px] font-black uppercase tracking-widest text-text-muted px-1">University</label>
-                    <input value={profile.university} onChange={updateField("university")} className={`w-full h-14 bg-surface-1 border rounded-2xl px-4 text-sm text-white outline-none focus:border-primary/40 transition-all ${fieldErrors.university ? 'border-rose-500/50' : 'border-white/5'}`} />
+                    <input value={profile.university} onChange={updateField("university")} className={`w-full h-14 bg-surface-1 border rounded-2xl px-4 text-sm text-foreground outline-none focus:border-primary/40 transition-all ${fieldErrors.university ? 'border-rose-500/50' : 'border-border-subtle'}`} />
                     {fieldErrors.university && <p className="text-[10px] font-bold text-rose-400 px-1">{fieldErrors.university}</p>}
                  </div>
               </div>

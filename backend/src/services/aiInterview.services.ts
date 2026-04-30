@@ -1,10 +1,14 @@
 import { Interview } from "../models/interview.model";
 import { AppError } from "../utils/AppError.utils";
 import { getGeminiModel } from "../config/gemini.config";
+import { RoundType } from "../constants/roundtypes.constants";
+import { PROBLEM_BANK } from "../data/problems.data";
 
 interface GeminiResponse {
     evaluation_of_previous_answer?: string;
     next_question?: string;
+    problem_statement?: string;
+    test_cases?: Array<{ input: string; expected: string }>;
     is_complete?: boolean;
     summary?: string;
     final_score?: number;
@@ -41,7 +45,9 @@ const buildPrompt = (
     history: string,
     candidateAnswer?: string,
     customQuestions?: string[],
-    techStack?: string
+    techStack?: string,
+    jobDescription?: string,
+    jobRequirements?: string[]
 ): string => {
     const isFirst = !candidateAnswer;
     const trimmedHistory = history ? history.split("\n\n").slice(-3).join("\n\n") : "";
@@ -49,27 +55,18 @@ const buildPrompt = (
     let phaseInstructions = "";
 
     switch (roundType) {
+        case "BehavioralAnalysis":
+            phaseInstructions = isFirst
+                ? "Start the behavioral round. Greet the candidate and ask their first question regarding their experience, soft skills, or a situational 'tell me about a time' challenge."
+                : `Evaluate their behavioral response and ask question ${questionNumber} of ${maxQuestions}. Focus on leadership, conflict resolution, or team collaboration.`;
+            break;
         case "TechnicalScreening":
             phaseInstructions = isFirst 
-                ? "Greet the candidate as a Turing-Style Evaluator. Ask them to specify their primary programming language and core framework (e.g., Python/Django)."
-                : "Acknowledge their stack choice. Explain that answers are final and no external IDEs are allowed. Briefly mention that we will move to the technical quiz next.";
-            break;
-        case "FrameworkProficiency":
-            phaseInstructions = `You are in the Advanced Quiz Phase for ${techStack || "the chosen stack"}. 
-            Present Question ${questionNumber} of 3. It must be a highly technical Multiple Choice Question testing deep internals or memory management. 
-            Provide 4 options (A, B, C, D). Wait for the answer before moving to the next.`;
-            break;
-        case "CodingAssessment":
-            phaseInstructions = `Present a Medium to Hard LeetCode problem related to ${techStack || "Software Engineering"}. 
-            Provide Problem Statement, Constraints, and 2 Examples. 
-            Instruct the candidate to write code directly. You will evaluate correctness and Big O complexity later.`;
-            break;
-        case "SystemArchitecture":
-            phaseInstructions = `Present a System Design challenge: "How would you design [System] using ${techStack || "your stack"} for [Scale]?" 
-            Evaluate based on scalability, database choice, and caching.`;
+                ? `Greet the candidate for their Technical Round. Ask their first question about core computer science fundamentals or ${jobRole} specific technologies.`
+                : `Evaluate their technical answer and ask question ${questionNumber} of ${maxQuestions}. Dive deeper into their stack or architectural patterns.`;
             break;
         default:
-            phaseInstructions = `Technical interview for ${jobRole}. One question at a time.`;
+            phaseInstructions = `Professional interview for ${jobRole}. Ask one question at a time.`;
     }
 
     return `Role: Turing-Style Technical Evaluator.
@@ -82,13 +79,51 @@ ${phaseInstructions}
 
 ${!isFirst ? `Recent history:\n${trimmedHistory}\n\nCandidate answered: "${candidateAnswer}"\n\nEvaluate briefly (don't reveal correct MCQ answers yet) and proceed.` : ""}
 
-Rules: 
-1. JSON ONLY. 
-2. One question/interaction only. 
-3. ${questionNumber >= maxQuestions ? "Set is_complete: true." : "Set is_complete: false."}
-
 JSON Structure:
-{"evaluation_of_previous_answer":"...","next_question":"...","is_complete":false}`;
+{
+  "evaluation_of_previous_answer": "...",
+  "next_question": "...", 
+  "problem_statement": "...", 
+  "test_cases": [{"input": "...", "expected": "..."}], 
+  "is_complete": false
+}`;
+};
+
+export const autoCorrectRound = async (interview: any, roundIndex: number) => {
+    const round = interview.rounds[roundIndex];
+    if (!round) return;
+
+    if (round.type === "CodingAssessment" && round.qa_pairs.length > 0) {
+        const currentQA = round.qa_pairs[round.qa_pairs.length - 1];
+        const qText = (currentQA.question || "").toLowerCase();
+        const isFiller = qText.includes("objective of this phase") || 
+                        qText.includes("coding challenge") || 
+                        qText.includes("technological context");
+        
+        if (isFiller) {
+            console.log(`[AUTO-CORRECT] Filler detected in Assessment: ${interview._id}, Round: ${roundIndex}. Swapping...`);
+            const questionIndex = round.qa_pairs.length - 1;
+            let difficulty: "Easy" | "Medium" | "Hard" = "Easy";
+            if (questionIndex === 1) difficulty = "Medium";
+            if (questionIndex >= 2) difficulty = "Hard";
+
+            const filteredProblems = PROBLEM_BANK.filter(p => p.difficulty === difficulty);
+            const randomProblem = filteredProblems[Math.floor(Math.random() * filteredProblems.length)] || PROBLEM_BANK[0];
+
+            currentQA.question = randomProblem.problem_statement;
+            currentQA.metadata = {
+                problem_statement: randomProblem.problem_statement,
+                test_cases: randomProblem.test_cases,
+                initial_code: randomProblem.initial_code,
+                constraints: randomProblem.constraints,
+                examples: randomProblem.examples
+            };
+            
+            interview.markModified("rounds");
+            await interview.save();
+            console.log(`[AUTO-CORRECT] Successfully swapped filler for: ${randomProblem.title}`);
+        }
+    }
 };
 
 export const startRoundService = async (
@@ -111,7 +146,53 @@ export const startRoundService = async (
 
     const jobRole = interview.job_id?.role || "Software Engineering";
     const customQuestions = interview.job_id?.custom_questions || [];
-    const prompt = buildPrompt(jobRole, round.type, 1, round.max_questions, "", undefined, customQuestions, interview.tech_stack);
+    const jobDescription = interview.job_id?.description;
+    const jobRequirements = interview.job_id?.requirements;
+    
+    // For CodingAssessment, we override max_questions to 3 if it's the standard flow
+    const maxQuestions = round.type === "CodingAssessment" ? 3 : round.max_questions;
+
+    // For CodingAssessment, we pull from the static PROBLEM_BANK with progressive difficulty
+    if (round.type === "CodingAssessment") {
+        const questionIndex = round.qa_pairs.length; // 0 for first question
+        let difficulty: "Easy" | "Medium" | "Hard" = "Easy";
+        if (questionIndex === 1) difficulty = "Medium";
+        if (questionIndex >= 2) difficulty = "Hard";
+
+        const filteredProblems = PROBLEM_BANK.filter(p => p.difficulty === difficulty);
+        const randomProblem = filteredProblems[Math.floor(Math.random() * filteredProblems.length)] || PROBLEM_BANK[0];
+        
+        interview.rounds[roundIndex].qa_pairs.push({
+            question: randomProblem.problem_statement,
+            timestamp: new Date(),
+            metadata: {
+                problem_statement: randomProblem.problem_statement,
+                test_cases: randomProblem.test_cases,
+                initial_code: randomProblem.initial_code,
+                constraints: randomProblem.constraints,
+                examples: randomProblem.examples
+            }
+        });
+
+        interview.rounds[roundIndex].status = "in-progress";
+        interview.status = "in-progress";
+        interview.markModified("rounds");
+        await interview.save();
+        return { interview, round: interview.rounds[roundIndex], roundIndex };
+    }
+
+    const prompt = buildPrompt(
+        jobRole, 
+        round.type, 
+        1, 
+        maxQuestions, 
+        "", 
+        undefined, 
+        customQuestions, 
+        interview.tech_stack,
+        jobDescription,
+        jobRequirements
+    );
 
     const model = getGeminiModel(true);
     const result = await model.generateContent(prompt);
@@ -128,8 +209,12 @@ export const startRoundService = async (
     }
 
     interview.rounds[roundIndex].qa_pairs.push({
-        question: aiData.next_question,
+        question: aiData.next_question || aiData.problem_statement || "Next challenge",
         timestamp: new Date(),
+        metadata: {
+            problem_statement: aiData.problem_statement,
+            test_cases: aiData.test_cases
+        }
     });
 
     interview.rounds[roundIndex].status = "in-progress";
@@ -181,7 +266,9 @@ export const answerInRoundService = async (
         history,
         candidateAnswer || "The candidate provided a voice response.",
         customQuestions,
-        interview.tech_stack
+        interview.tech_stack,
+        interview.job_id?.description,
+        interview.job_id?.requirements
     );
 
     const model = getGeminiModel(true);
@@ -219,10 +306,36 @@ export const answerInRoundService = async (
         return { interview, round: interview.rounds[roundIndex], roundIndex };
     }
 
-    interview.rounds[roundIndex].qa_pairs.push({
-        question: aiData.next_question,
-        timestamp: new Date(),
-    });
+    if (currentRound.type === "CodingAssessment") {
+        const questionIndex = currentRound.qa_pairs.length; // 1 for second question
+        let difficulty: "Easy" | "Medium" | "Hard" = "Easy";
+        if (questionIndex === 1) difficulty = "Medium";
+        if (questionIndex >= 2) difficulty = "Hard";
+
+        const filteredProblems = PROBLEM_BANK.filter(p => p.difficulty === difficulty);
+        const randomProblem = filteredProblems[Math.floor(Math.random() * filteredProblems.length)] || PROBLEM_BANK[0];
+
+        interview.rounds[roundIndex].qa_pairs.push({
+            question: randomProblem.problem_statement,
+            timestamp: new Date(),
+            metadata: {
+                problem_statement: randomProblem.problem_statement,
+                test_cases: randomProblem.test_cases,
+                initial_code: randomProblem.initial_code,
+                constraints: randomProblem.constraints,
+                examples: randomProblem.examples
+            }
+        });
+    } else {
+        interview.rounds[roundIndex].qa_pairs.push({
+            question: aiData.next_question || aiData.problem_statement || "Next challenge",
+            timestamp: new Date(),
+            metadata: {
+                problem_statement: aiData.problem_statement,
+                test_cases: aiData.test_cases
+            }
+        });
+    }
 
     interview.markModified("rounds");
     await interview.save();
@@ -243,7 +356,9 @@ export const getRoundService = async (
     const round = interview.rounds[roundIndex];
     if (!round) throw new AppError("Round not found", 404);
 
-    return { interview, round, roundIndex };
+    await autoCorrectRound(interview, roundIndex);
+
+    return { interview, round: interview.rounds[roundIndex], roundIndex };
 };
 
 const _finalizeRound = async (interview: any, roundIndex: number) => {
@@ -343,6 +458,7 @@ export const answerInRoundStreamingService = async (
     const history = formatHistory(currentRound.qa_pairs);
     const jobRole = interview.job_id?.role || "Software Engineering";
     const customQuestions = interview.job_id?.custom_questions || [];
+    const jobRequirements = interview.job_id?.requirements || [];
 
     // Capture Tech Stack in Phase 1
     if (currentRound.type === "TechnicalScreening" && !interview.tech_stack && candidateAnswer) {
@@ -370,7 +486,8 @@ Rules:
 STRICT FORMAT: 
 [EVALUATION] your feedback here
 [QUESTION] your next question here
-[COMPLETE] ${currentQuestionIndex + 1 >= maxQuestions ? "true" : "false"}`;
+[COMPLETE] ${currentQuestionIndex + 1 >= maxQuestions ? "true" : "false"}
+[CONTEXT] Job Role: ${jobRole}, Stack: ${interview.tech_stack || "N/A"}, Requirements: ${jobRequirements?.join(", ") || "N/A"}`;
 
     const model = getGeminiModel(false);
     const parts: any[] = [prompt];
@@ -411,9 +528,37 @@ STRICT FORMAT:
         currentRound.qa_pairs.push({
             question: nextQuestion,
             timestamp: new Date(),
+            metadata: {
+                problem_statement: nextQuestion, // Fallback for streaming
+            }
         });
     }
 
     interview.markModified("rounds");
     await interview.save();
+};
+
+export const startPracticeService = async (userId: string, category: string) => {
+    // Map categories to RoundTypes
+    let roundType: RoundType = RoundType.TechnicalScreening;
+    if (category === "Behavioral") roundType = RoundType.BehavioralAnalysis;
+    if (category === "System Design") roundType = RoundType.SystemArchitecture;
+    if (category === "Frontend" || category === "Backend") roundType = RoundType.FrameworkProficiency;
+
+    const practiceInterview = await Interview.create({
+        user_id: userId,
+        is_practice: true,
+        status: "in-progress",
+        tech_stack: category,
+        rounds: [
+            {
+                type: roundType,
+                status: "pending",
+                max_questions: 5,
+                qa_pairs: [],
+            },
+        ],
+    });
+
+    return practiceInterview;
 };

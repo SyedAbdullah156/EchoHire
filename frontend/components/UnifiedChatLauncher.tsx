@@ -66,10 +66,10 @@ export default function UnifiedChatLauncher() {
               initial={{ opacity: 0, y: 20, scale: 0.9, filter: "blur(10px)" }}
               animate={{ opacity: 1, y: 0, scale: 1, filter: "blur(0px)" }}
               exit={{ opacity: 0, y: 20, scale: 0.9, filter: "blur(10px)" }}
-              className="mb-4 flex flex-col gap-3 rounded-[2rem] border border-white/10 bg-[#0d162a]/90 p-3 backdrop-blur-2xl shadow-2xl shadow-black/50"
+              className="mb-4 flex flex-col gap-3 rounded-[2rem] border border-border-medium bg-surface-2/90 p-3 backdrop-blur-2xl shadow-2xl shadow-black/50"
             >
-              <div className="px-3 py-2 border-b border-white/5 mb-1">
-                <p className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500">How can we help?</p>
+              <div className="px-3 py-2 border-b border-border-subtle mb-1">
+                <p className="text-[10px] font-black uppercase tracking-[0.2em] text-text-muted">How can we help?</p>
               </div>
 
               <button
@@ -78,14 +78,14 @@ export default function UnifiedChatLauncher() {
                   setSupportOpen(false);
                   setMenuOpen(false);
                 }}
-                className="group flex w-[240px] items-center gap-4 rounded-2xl p-4 text-left transition-all hover:bg-blue-600/10 border border-transparent hover:border-blue-500/30"
+                className="group flex w-[240px] items-center gap-4 rounded-2xl p-4 text-left transition-all hover:bg-primary/10 border border-transparent hover:border-blue-500/30"
               >
-                <div className="h-10 w-10 rounded-xl bg-blue-500/20 text-blue-400 flex items-center justify-center group-hover:scale-110 transition-transform">
+                <div className="h-10 w-10 rounded-xl bg-primary/20 text-primary flex items-center justify-center group-hover:scale-110 transition-transform">
                   <FiCpu size={20} />
                 </div>
                 <div>
-                  <p className="text-sm font-bold text-white leading-none">AI Career Coach</p>
-                  <p className="mt-1 text-[10px] text-slate-500 font-medium uppercase tracking-wider">Instant Guidance</p>
+                  <p className="text-sm font-bold text-foreground leading-none">AI Career Coach</p>
+                  <p className="mt-1 text-[10px] text-text-muted font-medium uppercase tracking-wider">Instant Guidance</p>
                 </div>
               </button>
 
@@ -101,8 +101,8 @@ export default function UnifiedChatLauncher() {
                   <FiUser size={20} />
                 </div>
                 <div>
-                  <p className="text-sm font-bold text-white leading-none">Live Support</p>
-                  <p className="mt-1 text-[10px] text-slate-500 font-medium uppercase tracking-wider">Talk to a Human</p>
+                  <p className="text-sm font-bold text-foreground leading-none">Live Support</p>
+                  <p className="mt-1 text-[10px] text-text-muted font-medium uppercase tracking-wider">Talk to a Human</p>
                 </div>
               </button>
             </motion.div>
@@ -115,7 +115,7 @@ export default function UnifiedChatLauncher() {
           whileTap={{ scale: 0.95 }}
           className={`flex h-[64px] w-[64px] items-center justify-center rounded-full bg-gradient-to-br transition-all duration-500 shadow-2xl ${
             menuOpen 
-              ? "from-slate-800 to-slate-900 border border-white/10" 
+              ? "from-slate-800 to-slate-900 border border-border-medium" 
               : "from-[#227dff] to-[#332989] shadow-[#227dff]/30"
           }`}
           aria-label="Open chat options"
@@ -123,11 +123,11 @@ export default function UnifiedChatLauncher() {
           <AnimatePresence mode="wait">
             {menuOpen ? (
               <motion.div key="close" initial={{ rotate: -90 }} animate={{ rotate: 0 }} exit={{ rotate: 90 }}>
-                <FiX className="h-6 w-6 text-white" />
+                <FiX className="h-6 w-6 text-foreground" />
               </motion.div>
             ) : (
               <motion.div key="open" initial={{ rotate: 90 }} animate={{ rotate: 0 }} exit={{ rotate: -90 }}>
-                <FiMessageSquare className="h-6 w-6 text-white" />
+                <FiMessageSquare className="h-6 w-6 text-foreground" />
               </motion.div>
             )}
           </AnimatePresence>

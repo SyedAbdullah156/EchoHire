@@ -148,3 +148,28 @@ export const answerInRoundStreaming = async (
         }
     }
 };
+
+export const startPracticeSession = async (
+    req: AuthRequest,
+    res: Response,
+    next: NextFunction,
+) => {
+    try {
+        if (!req.user?._id) throw new AppError("Unauthorized", 401);
+        const { category } = req.body;
+        if (!category) throw new AppError("Category is required", 400);
+
+        const data = await AiService.startPracticeService(
+            req.user._id.toString(),
+            category
+        );
+
+        res.status(201).json({
+            success: true,
+            message: "Practice session created",
+            data,
+        });
+    } catch (error) {
+        next(error);
+    }
+};

@@ -34,7 +34,7 @@ export default function SupportChat({
       {showLauncher && (
         <button
           onClick={() => setIsOpen(true)}
-          className="fixed bottom-8 right-8 z-[90] flex h-14 w-14 items-center justify-center rounded-[1.25rem] bg-primary text-white transition-all hover:scale-105 active:scale-95 shadow-xl shadow-primary/20"
+          className="fixed bottom-8 right-8 z-[90] flex h-14 w-14 items-center justify-center rounded-[1.25rem] bg-primary text-foreground transition-all hover:scale-105 active:scale-95 shadow-xl shadow-primary/20"
           aria-label="Open support chat"
         >
           <FiMessageCircle size={24} />

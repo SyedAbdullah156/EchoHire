@@ -7,10 +7,25 @@
   --primary-hover: #1a68d4;
   --surface-1: #070d1a;
   --surface-2: #0d162a;
-  --text-secondary: #98a7cb;
-  --text-muted: #7f92be;
+  --text-secondary: #9fb1d8;
+  --text-muted: #6b7da5;
   --border-subtle: rgba(255, 255, 255, 0.05);
   --border-medium: rgba(255, 255, 255, 0.1);
+  --card-bg: rgba(13, 22, 42, 0.8);
+}
+
+.light {
+  --background: #ffffff;
+  --foreground: #020617;
+  --primary: #2563eb;
+  --primary-hover: #1d4ed8;
+  --surface-1: #f8fafc;
+  --surface-2: #f1f5f9;
+  --text-secondary: #475569;
+  --text-muted: #64748b;
+  --border-subtle: rgba(0, 0, 0, 0.05);
+  --border-medium: rgba(0, 0, 0, 0.1);
+  --card-bg: #ffffff;
 }
 
 @theme inline {
@@ -24,6 +39,7 @@
   --color-text-muted: var(--text-muted);
   --color-border-subtle: var(--border-subtle);
   --color-border-medium: var(--border-medium);
+  --color-card-bg: var(--card-bg);
   
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);

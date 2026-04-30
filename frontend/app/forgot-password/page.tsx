@@ -51,7 +51,7 @@ export default function ForgotPasswordPage() {
   };
 
   return (
-    <main className="min-h-screen bg-[#030712] text-white selection:bg-[#227dff]/30 flex flex-col relative overflow-hidden">
+    <main className="min-h-screen bg-background text-foreground selection:bg-[#227dff]/30 flex flex-col relative overflow-hidden">
       <Navbar />
       
       {/* Animated Abstract Background */}
@@ -81,10 +81,10 @@ export default function ForgotPasswordPage() {
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, ease: "easeOut" }}
-          className="w-full max-w-lg bg-[linear-gradient(145deg,rgba(7,20,43,0.7)_0%,rgba(11,23,48,0.5)_100%)] backdrop-blur-2xl border border-white/10 rounded-[2rem] p-8 md:p-12 flex flex-col"
+          className="w-full max-w-lg bg-[linear-gradient(145deg,rgba(7,20,43,0.7)_0%,rgba(11,23,48,0.5)_100%)] backdrop-blur-2xl border border-border-medium rounded-[2rem] p-8 md:p-12 flex flex-col"
         >
           <div className="text-center space-y-2 mb-8">
-            <h1 className="text-3xl font-bold tracking-tight text-white">
+            <h1 className="text-3xl font-bold tracking-tight text-foreground">
               Reset Password
             </h1>
             <p className="text-[#98a7cb] text-base">
@@ -105,7 +105,7 @@ export default function ForgotPasswordPage() {
                   onChange={(event) => setEmail(event.target.value)}
                   type="email"
                   required
-                  className="w-full min-h-[48px] rounded-xl border border-white/10 bg-[#070d1a] px-4 py-3 text-base outline-none placeholder:text-[#5c667f] transition-all focus:border-[#227dff] focus:ring-2 focus:ring-[#227dff]/30 text-[#dbe7ff]"
+                  className="w-full min-h-[48px] rounded-xl border border-border-medium bg-surface-1 px-4 py-3 text-base outline-none placeholder:text-[#5c667f] transition-all focus:border-[#227dff] focus:ring-2 focus:ring-[#227dff]/30 text-[#dbe7ff]"
                   placeholder="Enter your email"
                 />
               </div>
@@ -113,7 +113,7 @@ export default function ForgotPasswordPage() {
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="block w-full min-h-[48px] rounded-xl bg-gradient-to-r from-[#227dff] to-[#332989] py-3 text-center text-base font-medium text-white transition-all hover:brightness-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#227dff] disabled:opacity-50 disabled:cursor-not-allowed"
+                className="block w-full min-h-[48px] rounded-xl bg-gradient-to-r from-[#227dff] to-[#332989] py-3 text-center text-base font-medium text-foreground transition-all hover:brightness-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#227dff] disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {isSubmitting ? "Sending..." : "Send Reset Link"}
               </button>
@@ -121,7 +121,7 @@ export default function ForgotPasswordPage() {
           ) : (
             <button
               onClick={() => setIsSent(false)}
-              className="block w-full min-h-[48px] rounded-xl border border-white/10 bg-[#030712]/50 py-3 text-center text-base font-medium text-[#dbe7ff] transition-colors hover:bg-white/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#227dff]"
+              className="block w-full min-h-[48px] rounded-xl border border-border-medium bg-background/50 py-3 text-center text-base font-medium text-[#dbe7ff] transition-colors hover:bg-surface-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#227dff]"
             >
               Try another email
             </button>

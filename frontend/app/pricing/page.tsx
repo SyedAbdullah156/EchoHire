@@ -81,7 +81,7 @@ export default function PricingPage() {
             variants={fadeInUp}
             className="flex items-center justify-center gap-6 pt-6"
           >
-            <span className={`text-sm font-bold tracking-wide transition-colors ${billingCycle === "monthly" ? "text-white" : "text-text-muted"}`}>Monthly</span>
+            <span className={`text-sm font-bold tracking-wide transition-colors ${billingCycle === "monthly" ? "text-foreground" : "text-text-muted"}`}>Monthly</span>
             <button
               onClick={() => setBillingCycle(billingCycle === "monthly" ? "annually" : "monthly")}
               className="group relative h-9 w-16 rounded-full bg-surface-1 border border-border-medium p-1.5 transition-all hover:border-primary/50"
@@ -92,7 +92,7 @@ export default function PricingPage() {
                 className="h-full aspect-square rounded-full bg-primary"
               />
             </button>
-            <span className={`text-sm font-bold tracking-wide transition-colors ${billingCycle === "annually" ? "text-white" : "text-text-muted"}`}>
+            <span className={`text-sm font-bold tracking-wide transition-colors ${billingCycle === "annually" ? "text-foreground" : "text-text-muted"}`}>
               Annually <span className="ml-1 text-[10px] bg-primary/20 text-primary px-1.5 py-0.5 rounded-md">-20%</span>
             </span>
           </motion.div>
@@ -118,7 +118,7 @@ export default function PricingPage() {
               }`}
             >
               {plan.featured && (
-                <div className="absolute -top-4 left-1/2 -translate-x-1/2 rounded-full bg-primary px-6 py-1.5 text-xs font-black uppercase tracking-widest text-white">
+                <div className="absolute -top-4 left-1/2 -translate-x-1/2 rounded-full bg-primary px-6 py-1.5 text-xs font-black uppercase tracking-widest text-foreground">
                   Most Popular
                 </div>
               )}
@@ -126,7 +126,7 @@ export default function PricingPage() {
               <div className="mb-6">
                 <div className="flex items-center gap-5 mb-5">
                   <div className={`flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl border text-2xl ${
-                    plan.featured ? "bg-primary/10 border-primary/20 text-primary" : "bg-white/5 border-border-medium text-text-secondary"
+                    plan.featured ? "bg-primary/10 border-primary/20 text-primary" : "bg-surface-2 border-border-medium text-text-secondary"
                   }`}>
                     {plan.icon}
                   </div>
@@ -165,7 +165,7 @@ export default function PricingPage() {
               <div className="flex-1 space-y-3.5 mb-6">
                 {plan.perks.map((perk) => (
                   <div key={perk} className="flex items-start gap-4">
-                    <div className={`mt-1 flex h-5 w-5 shrink-0 items-center justify-center rounded-full ${plan.featured ? "bg-primary text-white" : "bg-white/10 text-text-muted"}`}>
+                    <div className={`mt-1 flex h-5 w-5 shrink-0 items-center justify-center rounded-full ${plan.featured ? "bg-primary text-foreground" : "bg-surface-2 text-text-muted"}`}>
                       <FiCheck size={12} strokeWidth={4} />
                     </div>
                     <span className="text-sm font-medium text-foreground/80 leading-snug">{perk}</span>
@@ -175,8 +175,8 @@ export default function PricingPage() {
 
               <button className={`w-full rounded-2xl py-4 font-black uppercase tracking-widest transition-all active:scale-[0.98] ${
                 plan.featured
-                  ? "bg-primary text-white hover:bg-primary-hover"
-                  : "bg-white/5 border border-border-medium text-white hover:bg-white/10"
+                  ? "bg-primary text-foreground hover:bg-primary-hover"
+                  : "bg-surface-2 border border-border-medium text-foreground hover:bg-surface-2"
               }`}>
                 {plan.buttonText}
               </button>

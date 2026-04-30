@@ -6,8 +6,8 @@ import { usePathname } from "next/navigation";
 import { FiMenu, FiX } from "react-icons/fi";
 import { motion, AnimatePresence, Variants } from "framer-motion";
 
-import { useUserRole } from "@/hooks/useUserRole";
 import { useAuth } from "@/context/AuthContext";
+import { ThemeToggle } from "./ThemeToggle";
 
 const navLinks = [
   { label: "Home", href: "/" },
@@ -63,9 +63,9 @@ export default function Navbar() {
         {/* Logo Section */}
         <Link href="/" className="flex items-center gap-3 group transition-transform active:scale-95">
           <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary transition-colors group-hover:bg-primary-hover">
-            <span className="text-base font-black text-white">EH</span>
+            <span className="text-base font-black text-foreground">EH</span>
           </div>
-          <span className="text-2xl font-bold tracking-tight text-white">
+          <span className="text-2xl font-bold tracking-tight text-foreground transition-colors">
             Echo<span className="text-primary">Hire</span>
           </span>
         </Link>
@@ -76,7 +76,7 @@ export default function Navbar() {
             <Link
               key={link.href}
               href={link.href}
-              className={`text-sm font-semibold tracking-wide transition-colors ${pathname === link.href ? "text-primary" : "text-text-secondary hover:text-white"
+              className={`text-sm font-semibold tracking-wide transition-colors ${pathname === link.href ? "text-primary" : "text-text-secondary hover:text-foreground"
                 }`}
             >
               {link.label}
@@ -86,10 +86,11 @@ export default function Navbar() {
 
         {/* Desktop Actions */}
         <div className="hidden items-center gap-6 lg:flex">
+          <ThemeToggle />
           {!loading && user ? (
             <Link
               href={user.role === "recruiter" ? "/recruiter/dashboard" : "/candidate/dashboard"}
-              className="rounded-xl bg-primary px-7 py-3 text-sm font-bold text-white transition-all hover:bg-primary-hover active:scale-95"
+              className="rounded-xl bg-primary px-7 py-3 text-sm font-bold text-foreground transition-all hover:bg-primary-hover active:scale-95"
             >
               Dashboard
             </Link>
@@ -97,13 +98,13 @@ export default function Navbar() {
             <>
               <Link
                 href="/auth"
-                className="text-sm font-bold text-text-secondary hover:text-white transition-colors"
+                className="text-sm font-bold text-text-secondary hover:text-foreground transition-colors"
               >
                 Sign In
               </Link>
               <Link
                 href="/auth"
-                className="rounded-xl bg-primary px-7 py-3 text-sm font-bold text-white transition-all hover:bg-primary-hover active:scale-95"
+                className="rounded-xl bg-primary px-7 py-3 text-sm font-bold text-foreground transition-all hover:bg-primary-hover active:scale-95"
               >
                 Get Started
               </Link>
@@ -112,13 +113,16 @@ export default function Navbar() {
         </div>
 
         {/* Mobile Toggle */}
-        <button
-          onClick={() => setIsOpen(!isOpen)}
-          className="lg:hidden p-2 rounded-xl bg-white/5 border border-border-medium text-white transition-colors hover:bg-white/10"
-          aria-label="Toggle menu"
-        >
-          {isOpen ? <FiX size={24} /> : <FiMenu size={24} />}
-        </button>
+        <div className="flex items-center gap-4 lg:hidden">
+          <ThemeToggle />
+          <button
+            onClick={() => setIsOpen(!isOpen)}
+            className="p-2 rounded-xl bg-surface-2 border border-border-medium text-foreground transition-colors hover:bg-surface-1"
+            aria-label="Toggle menu"
+          >
+            {isOpen ? <FiX size={24} /> : <FiMenu size={24} />}
+          </button>
+        </div>
       </div>
 
       {/* Mobile Menu Overlay */}
@@ -145,7 +149,7 @@ export default function Navbar() {
                     <Link
                       href={link.href}
                       onClick={() => setIsOpen(false)}
-                      className={`block py-3 text-xl font-bold transition-colors ${pathname === link.href ? "text-primary" : "text-text-muted hover:text-white"
+                      className={`block py-3 text-xl font-bold transition-colors ${pathname === link.href ? "text-primary" : "text-text-muted hover:text-foreground"
                         }`}
                     >
                       {link.label}
@@ -156,14 +160,14 @@ export default function Navbar() {
                   <Link
                     href="/auth"
                     onClick={() => setIsOpen(false)}
-                    className="w-full rounded-2xl bg-primary py-4 text-center font-bold text-white transition-colors hover:bg-primary-hover"
+                    className="w-full rounded-2xl bg-primary py-4 text-center font-bold text-foreground transition-colors hover:bg-primary-hover"
                   >
                     Get Started
                   </Link>
                   <Link
                     href="/auth"
                     onClick={() => setIsOpen(false)}
-                    className="w-full rounded-2xl border border-border-medium bg-white/5 py-4 text-center font-bold text-white hover:bg-white/10 transition-colors"
+                    className="w-full rounded-2xl border border-border-medium bg-surface-2 py-4 text-center font-bold text-foreground hover:bg-surface-2 transition-colors"
                   >
                     Sign In
                   </Link>

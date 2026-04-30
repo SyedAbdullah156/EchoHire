@@ -114,10 +114,10 @@ export default function SecuritySettings() {
 
   return (
     <>
-      <section className="rounded-3xl border border-[#243253] bg-[#0d162a] p-8">
+      <section className="rounded-3xl border border-border-subtle bg-surface-2 p-8">
         <div className="flex items-center gap-3 mb-6">
           <ShieldCheck className="text-emerald-400" size={24} />
-          <h3 className="text-xl font-bold text-white">Security Status</h3>
+          <h3 className="text-xl font-bold text-foreground">Security Status</h3>
         </div>
         <div className="space-y-4">
           <button 
@@ -126,10 +126,10 @@ export default function SecuritySettings() {
           >
             <span className="text-sm text-slate-300">Google Authenticator (MFA)</span>
             <div className="flex items-center gap-2">
-              <span className={`text-[10px] font-bold px-2 py-1 rounded ${mfaActive ? "text-emerald-500 bg-emerald-500/10" : "text-slate-500 bg-slate-500/10"}`}>
+              <span className={`text-[10px] font-bold px-2 py-1 rounded ${mfaActive ? "text-emerald-500 bg-emerald-500/10" : "text-text-muted bg-slate-500/10"}`}>
                 {mfaActive ? "ACTIVE" : "INACTIVE"}
               </span>
-              <ChevronRight size={16} className="text-[#4a5d89] group-hover:text-white" />
+              <ChevronRight size={16} className="text-text-muted group-hover:text-foreground" />
             </div>
           </button>
           <button 
@@ -137,7 +137,7 @@ export default function SecuritySettings() {
             className="w-full flex items-center justify-between p-4 rounded-xl bg-[#0a1223] border border-[#32466f] hover:border-blue-500 transition-all group"
           >
             <span className="text-sm text-slate-300">Update Password</span>
-            <ChevronRight size={16} className="text-[#4a5d89] group-hover:text-white" />
+            <ChevronRight size={16} className="text-text-muted group-hover:text-foreground" />
           </button>
         </div>
       </section>
@@ -145,38 +145,38 @@ export default function SecuritySettings() {
       {/* Update Password Modal */}
       {showPasswordModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
-          <div className="w-full max-w-md rounded-3xl bg-[#0d162a] border border-[#243253] p-8 space-y-6">
+          <div className="w-full max-w-md rounded-3xl bg-surface-2 border border-border-subtle p-8 space-y-6">
             <div className="flex items-center justify-between">
-              <h4 className="text-xl font-bold text-white flex items-center gap-2">
-                <Key size={20} className="text-blue-400" /> Change Password
+              <h4 className="text-xl font-bold text-foreground flex items-center gap-2">
+                <Key size={20} className="text-primary" /> Change Password
               </h4>
-              <button onClick={() => setShowPasswordModal(false)} className="p-2 hover:bg-white/5 rounded-full"><X size={20} /></button>
+              <button onClick={() => setShowPasswordModal(false)} className="p-2 hover:bg-surface-2 rounded-full"><X size={20} /></button>
             </div>
             <form onSubmit={handleUpdatePassword} className="space-y-4">
               <div className="space-y-2">
-                <label className="text-xs font-bold uppercase tracking-widest text-slate-500">Current Password</label>
+                <label className="text-xs font-bold uppercase tracking-widest text-text-muted">Current Password</label>
                 <input 
                   type="password" required value={oldPassword} onChange={(e) => setOldPassword(e.target.value)}
-                  className="w-full bg-[#050b18] border border-[#243253] rounded-xl px-4 py-3 text-sm text-white outline-none focus:border-blue-500"
+                  className="w-full bg-background border border-border-subtle rounded-xl px-4 py-3 text-sm text-foreground outline-none focus:border-blue-500"
                 />
               </div>
               <div className="space-y-2">
-                <label className="text-xs font-bold uppercase tracking-widest text-slate-500">New Password</label>
+                <label className="text-xs font-bold uppercase tracking-widest text-text-muted">New Password</label>
                 <input 
                   type="password" required value={newPassword} onChange={(e) => setNewPassword(e.target.value)}
-                  className="w-full bg-[#050b18] border border-[#243253] rounded-xl px-4 py-3 text-sm text-white outline-none focus:border-blue-500"
+                  className="w-full bg-background border border-border-subtle rounded-xl px-4 py-3 text-sm text-foreground outline-none focus:border-blue-500"
                 />
               </div>
               <div className="space-y-2">
-                <label className="text-xs font-bold uppercase tracking-widest text-slate-500">Confirm New Password</label>
+                <label className="text-xs font-bold uppercase tracking-widest text-text-muted">Confirm New Password</label>
                 <input 
                   type="password" required value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)}
-                  className="w-full bg-[#050b18] border border-[#243253] rounded-xl px-4 py-3 text-sm text-white outline-none focus:border-blue-500"
+                  className="w-full bg-background border border-border-subtle rounded-xl px-4 py-3 text-sm text-foreground outline-none focus:border-blue-500"
                 />
               </div>
               <button 
                 type="submit" disabled={isSubmitting}
-                className="w-full py-3 rounded-xl bg-blue-600 text-white font-bold hover:bg-blue-500 transition-all disabled:opacity-50 mt-4"
+                className="w-full py-3 rounded-xl bg-primary text-foreground font-bold hover:bg-primary transition-all disabled:opacity-50 mt-4"
               >
                 {isSubmitting ? "Updating..." : "Update Password"}
               </button>
@@ -188,12 +188,12 @@ export default function SecuritySettings() {
       {/* MFA Modal */}
       {showMFAModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
-          <div className="w-full max-w-md rounded-3xl bg-[#0d162a] border border-[#243253] p-8 space-y-6">
+          <div className="w-full max-w-md rounded-3xl bg-surface-2 border border-border-subtle p-8 space-y-6">
             <div className="flex items-center justify-between">
-              <h4 className="text-xl font-bold text-white flex items-center gap-2">
+              <h4 className="text-xl font-bold text-foreground flex items-center gap-2">
                 <Shield size={20} className="text-emerald-400" /> Multi-Factor Auth
               </h4>
-              <button onClick={() => setShowMFAModal(false)} className="p-2 hover:bg-white/5 rounded-full"><X size={20} /></button>
+              <button onClick={() => setShowMFAModal(false)} className="p-2 hover:bg-surface-2 rounded-full"><X size={20} /></button>
             </div>
 
             {mfaActive ? (
@@ -202,12 +202,12 @@ export default function SecuritySettings() {
                    <ShieldCheck size={40} />
                 </div>
                 <div className="space-y-2">
-                  <p className="text-white font-bold">MFA is currently active</p>
-                  <p className="text-xs text-slate-400">Your account is protected by an additional security layer.</p>
+                  <p className="text-foreground font-bold">MFA is currently active</p>
+                  <p className="text-xs text-text-secondary">Your account is protected by an additional security layer.</p>
                 </div>
                 <button 
                   onClick={disableMFA} disabled={isSubmitting}
-                  className="w-full py-3 rounded-xl bg-red-500/10 border border-red-500/30 text-red-400 font-bold hover:bg-red-500 hover:text-white transition-all flex items-center justify-center gap-2"
+                  className="w-full py-3 rounded-xl bg-red-500/10 border border-red-500/30 text-red-400 font-bold hover:bg-red-500 hover:text-foreground transition-all flex items-center justify-center gap-2"
                 >
                   <Trash2 size={18} /> Disable MFA
                 </button>
@@ -220,12 +220,12 @@ export default function SecuritySettings() {
                        <Smartphone size={40} />
                     </div>
                     <div className="space-y-2">
-                      <p className="text-white font-bold">Secure your account</p>
-                      <p className="text-xs text-slate-400">Use Google Authenticator or Authy to scan a QR code and generate secure login codes.</p>
+                      <p className="text-foreground font-bold">Secure your account</p>
+                      <p className="text-xs text-text-secondary">Use Google Authenticator or Authy to scan a QR code and generate secure login codes.</p>
                     </div>
                     <button 
                       onClick={setupMFA} disabled={isSubmitting}
-                      className="w-full py-3 rounded-xl bg-emerald-600 text-white font-bold hover:bg-emerald-500 transition-all"
+                      className="w-full py-3 rounded-xl bg-emerald-600 text-foreground font-bold hover:bg-emerald-500 transition-all"
                     >
                       {isSubmitting ? "Initializing..." : "Start Setup"}
                     </button>
@@ -238,20 +238,20 @@ export default function SecuritySettings() {
                       <QRCodeSVG value={mfaSecret} size={200} />
                     </div>
                     <div className="space-y-2">
-                      <p className="text-xs font-bold uppercase tracking-widest text-slate-500">Step 1: Scan the QR code</p>
-                      <p className="text-xs text-slate-400 leading-relaxed">Open your authenticator app and scan this code. Then, enter the 6-digit code below to verify.</p>
+                      <p className="text-xs font-bold uppercase tracking-widest text-text-muted">Step 1: Scan the QR code</p>
+                      <p className="text-xs text-text-secondary leading-relaxed">Open your authenticator app and scan this code. Then, enter the 6-digit code below to verify.</p>
                     </div>
                     <div className="space-y-2">
-                      <label className="text-xs font-bold uppercase tracking-widest text-slate-500 text-center block">Verification Code</label>
+                      <label className="text-xs font-bold uppercase tracking-widest text-text-muted text-center block">Verification Code</label>
                       <input 
                         type="text" maxLength={6} placeholder="000000"
                         value={mfaCode} onChange={(e) => setMfaCode(e.target.value)}
-                        className="w-full bg-[#050b18] border border-[#243253] rounded-xl px-4 py-4 text-center text-2xl font-black tracking-[0.5em] text-white outline-none focus:border-emerald-500"
+                        className="w-full bg-background border border-border-subtle rounded-xl px-4 py-4 text-center text-2xl font-black tracking-[0.5em] text-foreground outline-none focus:border-emerald-500"
                       />
                     </div>
                     <button 
                       onClick={verifyMFA} disabled={isSubmitting || mfaCode.length !== 6}
-                      className="w-full py-3 rounded-xl bg-emerald-600 text-white font-bold hover:bg-emerald-500 transition-all disabled:opacity-50"
+                      className="w-full py-3 rounded-xl bg-emerald-600 text-foreground font-bold hover:bg-emerald-500 transition-all disabled:opacity-50"
                     >
                       {isSubmitting ? "Verifying..." : "Enable MFA"}
                     </button>

@@ -36,7 +36,7 @@ export default function QuizInterface({ question, onAnswer, isSubmitting }: Quiz
       </div>
 
       <div className="space-y-6">
-        <h2 className="text-xl font-bold text-white leading-relaxed">{questionText}</h2>
+        <h2 className="text-xl font-bold text-foreground leading-relaxed">{questionText}</h2>
 
         <div className="grid gap-3">
           {options.map((opt) => {
@@ -49,13 +49,13 @@ export default function QuizInterface({ question, onAnswer, isSubmitting }: Quiz
                 disabled={isSubmitting}
                 className={`w-full p-4 rounded-2xl border text-left transition-all flex items-center justify-between group ${
                   isSelected 
-                    ? "bg-primary/20 border-primary text-white" 
-                    : "bg-surface-2 border-white/5 text-text-muted hover:border-primary/40 hover:bg-surface-1"
+                    ? "bg-primary/20 border-primary text-foreground" 
+                    : "bg-surface-2 border-border-subtle text-text-muted hover:border-primary/40 hover:bg-surface-1"
                 }`}
               >
                 <span className="text-sm font-medium">{opt}</span>
                 <div className={`h-6 w-6 rounded-lg border flex items-center justify-center transition-all ${
-                  isSelected ? "bg-primary border-primary text-white" : "border-white/10 group-hover:border-primary/40"
+                  isSelected ? "bg-primary border-primary text-foreground" : "border-border-medium group-hover:border-primary/40"
                 }`}>
                   {isSelected && <FiCheck size={14} />}
                 </div>
@@ -68,7 +68,7 @@ export default function QuizInterface({ question, onAnswer, isSubmitting }: Quiz
       <button
         onClick={handleSubmit}
         disabled={!selectedOption || isSubmitting}
-        className="w-full h-14 bg-primary text-white font-black uppercase tracking-widest rounded-2xl hover:bg-primary-hover active:scale-[0.98] transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+        className="w-full h-14 bg-primary text-foreground font-black uppercase tracking-widest rounded-2xl hover:bg-primary-hover active:scale-[0.98] transition-all disabled:opacity-50 flex items-center justify-center gap-2"
       >
         {isSubmitting ? "Processing..." : "Submit Answer"} <FiChevronRight />
       </button>

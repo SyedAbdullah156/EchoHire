@@ -7,6 +7,7 @@ import {
     answerInRoundStreaming,
     voiceAnswer,
     getRound,
+    startPracticeSession,
 } from "../controllers/aiInterview.controller";
 import { z } from "zod";
 import upload from "../config/multer.config";
@@ -14,8 +15,6 @@ import { interviewRoundParamsSchema } from "../validations/interview.validation"
 import { aiRateLimiter } from "../middlewares/rateLimit.middleware";
 
 const router = Router();
-
-router.use(aiRateLimiter);
 
 const answerSchema = z.object({
     body: z
@@ -33,12 +32,14 @@ router.use(protect, restrictTo("candidate"));
 
 router.post(
     "/:interviewId/rounds/:roundIndex/start", 
+    aiRateLimiter,
     validate(interviewRoundParamsSchema),
     startRound
 );
 
 router.post(
     "/:interviewId/rounds/:roundIndex/answer",
+    aiRateLimiter,
     validate(interviewRoundParamsSchema),
     validate(answerSchema),
     answerInRound,
@@ -46,6 +47,7 @@ router.post(
 
 router.post(
     "/:interviewId/rounds/:roundIndex/answer-stream",
+    aiRateLimiter,
     validate(interviewRoundParamsSchema),
     validate(answerSchema),
     answerInRoundStreaming,
@@ -53,6 +55,7 @@ router.post(
 
 router.post(
     "/:interviewId/rounds/:roundIndex/voice-answer",
+    aiRateLimiter,
     validate(interviewRoundParamsSchema),
     upload.single("audio"),
     voiceAnswer,
@@ -63,5 +66,7 @@ router.get(
     validate(interviewRoundParamsSchema),
     getRound
 );
+
+router.post("/practice", aiRateLimiter, startPracticeSession);
 
 export default router;

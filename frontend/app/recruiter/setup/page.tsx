@@ -100,7 +100,7 @@ export default function RecruiterSetupPage() {
         {[1, 2, 3].map((s) => (
           <div key={s} className="flex items-center gap-3">
             <div className={`h-8 w-8 rounded-full border-2 flex items-center justify-center text-xs font-bold transition-all ${
-              step >= s ? "bg-primary border-primary text-white" : "bg-transparent border-border-medium text-text-muted"
+              step >= s ? "bg-primary border-primary text-foreground" : "bg-transparent border-border-medium text-text-muted"
             }`}>
               {step > s ? <FiCheck /> : s}
             </div>
@@ -122,7 +122,7 @@ export default function RecruiterSetupPage() {
               className="p-10 space-y-8"
             >
               <div className="space-y-2">
-                <h2 className="text-3xl font-black text-white tracking-tight">Personal Details</h2>
+                <h2 className="text-3xl font-black text-foreground tracking-tight">Personal Details</h2>
                 <p className="text-sm text-text-secondary leading-relaxed">Tell us a bit about yourself to personalize your recruiter profile.</p>
               </div>
 
@@ -142,7 +142,7 @@ export default function RecruiterSetupPage() {
                     value={formData.firstName}
                     onChange={(e) => setFormData({...formData, firstName: e.target.value})}
                     placeholder="Jane"
-                    className="w-full h-12 bg-surface-2 border border-border-medium rounded-2xl px-5 text-sm text-white outline-none focus:border-primary/50 transition-all"
+                    className="w-full h-12 bg-surface-2 border border-border-medium rounded-2xl px-5 text-sm text-foreground outline-none focus:border-primary/50 transition-all"
                   />
                 </div>
                 <div className="space-y-2">
@@ -152,7 +152,7 @@ export default function RecruiterSetupPage() {
                     value={formData.lastName}
                     onChange={(e) => setFormData({...formData, lastName: e.target.value})}
                     placeholder="Doe"
-                    className="w-full h-12 bg-surface-2 border border-border-medium rounded-2xl px-5 text-sm text-white outline-none focus:border-primary/50 transition-all"
+                    className="w-full h-12 bg-surface-2 border border-border-medium rounded-2xl px-5 text-sm text-foreground outline-none focus:border-primary/50 transition-all"
                   />
                 </div>
               </div>
@@ -164,14 +164,14 @@ export default function RecruiterSetupPage() {
                   value={formData.jobTitle}
                   onChange={(e) => setFormData({...formData, jobTitle: e.target.value})}
                   placeholder="e.g. Talent Acquisition Manager"
-                  className="w-full h-12 bg-surface-2 border border-border-medium rounded-2xl px-5 text-sm text-white outline-none focus:border-primary/50 transition-all"
+                  className="w-full h-12 bg-surface-2 border border-border-medium rounded-2xl px-5 text-sm text-foreground outline-none focus:border-primary/50 transition-all"
                 />
               </div>
 
               <button 
                 onClick={handleNext}
                 disabled={!formData.firstName || !formData.lastName || !formData.jobTitle}
-                className="w-full h-14 bg-primary text-white font-black uppercase tracking-widest rounded-2xl transition-all hover:bg-primary-hover active:scale-[0.98] disabled:opacity-50 flex items-center justify-center gap-3"
+                className="w-full h-14 bg-primary text-foreground font-black uppercase tracking-widest rounded-2xl transition-all hover:bg-primary-hover active:scale-[0.98] disabled:opacity-50 flex items-center justify-center gap-3"
               >
                 Continue <FiArrowRight />
               </button>
@@ -188,7 +188,7 @@ export default function RecruiterSetupPage() {
               className="p-10 space-y-8"
             >
               <div className="space-y-2">
-                <h2 className="text-3xl font-black text-white tracking-tight">Your Company</h2>
+                <h2 className="text-3xl font-black text-foreground tracking-tight">Your Company</h2>
                 <p className="text-sm text-text-secondary leading-relaxed">Search for your company to link it to your profile.</p>
               </div>
 
@@ -200,7 +200,7 @@ export default function RecruiterSetupPage() {
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     placeholder="Search company name..."
-                    className="w-full h-14 bg-surface-2 border border-border-medium rounded-2xl pl-14 pr-5 text-sm text-white outline-none focus:border-primary/50 transition-all"
+                    className="w-full h-14 bg-surface-2 border border-border-medium rounded-2xl pl-14 pr-5 text-sm text-foreground outline-none focus:border-primary/50 transition-all"
                   />
                   {isSearching && <FiLoader className="absolute right-5 top-1/2 -translate-y-1/2 animate-spin text-primary" />}
                 </div>
@@ -216,7 +216,7 @@ export default function RecruiterSetupPage() {
                       }}
                       className={`w-full p-4 rounded-2xl border transition-all flex items-center justify-between ${
                         formData.companyId === company._id 
-                          ? "bg-primary/10 border-primary text-white" 
+                          ? "bg-primary/10 border-primary text-foreground" 
                           : "bg-surface-2 border-border-subtle text-text-secondary hover:border-primary/30"
                       }`}
                     >
@@ -233,14 +233,14 @@ export default function RecruiterSetupPage() {
               <div className="flex gap-4">
                 <button 
                   onClick={handleBack}
-                  className="w-14 h-14 bg-surface-2 border border-border-medium rounded-2xl flex items-center justify-center text-white hover:bg-surface-1 transition-all"
+                  className="w-14 h-14 bg-surface-2 border border-border-medium rounded-2xl flex items-center justify-center text-foreground hover:bg-surface-1 transition-all"
                 >
                   <FiArrowLeft />
                 </button>
                 <button 
                   onClick={handleNext}
                   disabled={!formData.companyId}
-                  className="flex-1 h-14 bg-primary text-white font-black uppercase tracking-widest rounded-2xl transition-all hover:bg-primary-hover active:scale-[0.98] disabled:opacity-50 flex items-center justify-center gap-3"
+                  className="flex-1 h-14 bg-primary text-foreground font-black uppercase tracking-widest rounded-2xl transition-all hover:bg-primary-hover active:scale-[0.98] disabled:opacity-50 flex items-center justify-center gap-3"
                 >
                   Continue <FiArrowRight />
                 </button>
@@ -258,7 +258,7 @@ export default function RecruiterSetupPage() {
               className="p-10 space-y-8"
             >
               <div className="space-y-2">
-                <h2 className="text-3xl font-black text-white tracking-tight">Preferences</h2>
+                <h2 className="text-3xl font-black text-foreground tracking-tight">Preferences</h2>
                 <p className="text-sm text-text-secondary leading-relaxed">Choose how you want to stay updated on your candidates.</p>
               </div>
 
@@ -270,7 +270,7 @@ export default function RecruiterSetupPage() {
                 ].map((pref) => (
                   <div key={pref.key} className="flex items-center justify-between p-5 bg-surface-2 border border-border-subtle rounded-2xl">
                     <div className="space-y-1">
-                      <p className="text-sm font-bold text-white">{pref.label}</p>
+                      <p className="text-sm font-bold text-foreground">{pref.label}</p>
                       <p className="text-[10px] text-text-muted">{pref.desc}</p>
                     </div>
                     <button 
@@ -294,14 +294,14 @@ export default function RecruiterSetupPage() {
               <div className="flex gap-4">
                 <button 
                   onClick={handleBack}
-                  className="w-14 h-14 bg-surface-2 border border-border-medium rounded-2xl flex items-center justify-center text-white hover:bg-surface-1 transition-all"
+                  className="w-14 h-14 bg-surface-2 border border-border-medium rounded-2xl flex items-center justify-center text-foreground hover:bg-surface-1 transition-all"
                 >
                   <FiArrowLeft />
                 </button>
                 <button 
                   onClick={handleSubmit}
                   disabled={isSubmitting}
-                  className="flex-1 h-14 bg-primary text-white font-black uppercase tracking-widest rounded-2xl transition-all hover:bg-primary-hover active:scale-[0.98] disabled:opacity-50 flex items-center justify-center gap-3"
+                  className="flex-1 h-14 bg-primary text-foreground font-black uppercase tracking-widest rounded-2xl transition-all hover:bg-primary-hover active:scale-[0.98] disabled:opacity-50 flex items-center justify-center gap-3"
                 >
                   {isSubmitting ? "Saving..." : "Finish Setup"}
                   {!isSubmitting && <FiCheck />}

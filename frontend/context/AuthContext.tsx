@@ -18,6 +18,7 @@ export type User = {
   email: string;
   role: "candidate" | "recruiter" | "admin";
   profile?: UserProfile;
+  company_id?: string;
   isApproved?: boolean;
   mfaEnabled?: boolean;
   createdAt?: string;

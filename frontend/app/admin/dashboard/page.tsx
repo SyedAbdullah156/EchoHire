@@ -37,7 +37,7 @@ export default function AdminDashboardOverview() {
   }, []);
 
   const stats = [
-    { label: "Active Users", value: statsData?.totalUsers?.toLocaleString() || "...", icon: FiUsers, color: "text-blue-500", bg: "bg-blue-500/10" },
+    { label: "Active Users", value: statsData?.totalUsers?.toLocaleString() || "...", icon: FiUsers, color: "text-primary", bg: "bg-primary/10" },
     { label: "System Health", value: statsData?.systemHealth || "...", icon: FiActivity, color: "text-emerald-500", bg: "bg-emerald-500/10" },
     { label: "Open Tickets", value: statsData?.openTickets?.toString() || "...", icon: FiMessageSquare, color: "text-amber-500", bg: "bg-amber-500/10" },
     { label: "API Latency", value: statsData?.apiLatency || "...", icon: FiServer, color: "text-purple-500", bg: "bg-purple-500/10" },
@@ -54,7 +54,7 @@ export default function AdminDashboardOverview() {
   return (
     <div className="space-y-8 pb-12">
       <header>
-        <h1 className="text-3xl font-black text-white tracking-tight">System Overview</h1>
+        <h1 className="text-3xl font-black text-foreground tracking-tight">System Overview</h1>
         <p className="text-text-muted mt-1 font-medium">Real-time metrics and system alerts for EchoHire.</p>
       </header>
 
@@ -68,13 +68,13 @@ export default function AdminDashboardOverview() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: i * 0.1 }}
-              className="p-6 rounded-[2rem] bg-surface-2 border border-white/5 hover:border-white/10 transition-all"
+              className="p-6 rounded-[2rem] bg-surface-2 border border-border-subtle hover:border-border-medium transition-all"
             >
               <div className={`w-12 h-12 rounded-2xl ${stat.bg} ${stat.color} flex items-center justify-center mb-4`}>
                 <Icon size={24} />
               </div>
               <p className="text-sm font-bold text-text-muted uppercase tracking-widest">{stat.label}</p>
-              <h3 className="text-3xl font-black text-white mt-1 tracking-tighter">{stat.value}</h3>
+              <h3 className="text-3xl font-black text-foreground mt-1 tracking-tighter">{stat.value}</h3>
             </motion.div>
           );
         })}
@@ -83,9 +83,9 @@ export default function AdminDashboardOverview() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Recent Alerts */}
         <div className="lg:col-span-2 space-y-6">
-          <div className="p-8 rounded-[2rem] bg-surface-2 border border-white/5 space-y-6">
+          <div className="p-8 rounded-[2rem] bg-surface-2 border border-border-subtle space-y-6">
             <div className="flex items-center justify-between">
-              <h2 className="text-xl font-bold text-white flex items-center gap-3">
+              <h2 className="text-xl font-bold text-foreground flex items-center gap-3">
                 <FiAlertTriangle className="text-amber-500" />
                 Critical Alerts
               </h2>
@@ -98,13 +98,13 @@ export default function AdminDashboardOverview() {
                 { title: "Failed Login Attempts", time: "15m ago", severity: "medium", desc: "Detected unusual activity from 192.168.1.45." },
                 { title: "API Deprecation Warning", time: "1h ago", severity: "low", desc: "v1.2 endpoints will be retired on June 1st." },
               ]).map((alert: { title: string; time: string; severity: string; desc: string; }, i: number) => (
-                <div key={i} className="p-4 rounded-2xl bg-surface-1 border border-white/5 flex items-start gap-4 hover:bg-white/[0.02] transition-colors">
-                  <div className={`mt-1 h-2 w-2 rounded-full shrink-0 ${alert.severity === 'high' ? 'bg-rose-500' : alert.severity === 'medium' ? 'bg-amber-500' : 'bg-blue-500'
+                <div key={i} className="p-4 rounded-2xl bg-surface-1 border border-border-subtle flex items-start gap-4 hover:bg-white/[0.02] transition-colors">
+                  <div className={`mt-1 h-2 w-2 rounded-full shrink-0 ${alert.severity === 'high' ? 'bg-rose-500' : alert.severity === 'medium' ? 'bg-amber-500' : 'bg-primary'
                     }`} />
                   <div className="flex-1">
                     <div className="flex justify-between items-center mb-1">
-                      <h4 className="text-sm font-bold text-white">{alert.title}</h4>
-                      <span className="text-[10px] font-bold text-slate-500">{alert.time}</span>
+                      <h4 className="text-sm font-bold text-foreground">{alert.title}</h4>
+                      <span className="text-[10px] font-bold text-text-muted">{alert.time}</span>
                     </div>
                     <p className="text-xs text-text-muted leading-relaxed">{alert.desc}</p>
                   </div>
@@ -116,8 +116,8 @@ export default function AdminDashboardOverview() {
 
         {/* Quick Links */}
         <div className="space-y-6">
-          <div className="p-8 rounded-[2rem] bg-surface-2 border border-white/5 space-y-6">
-            <h2 className="text-xl font-bold text-white">Direct Actions</h2>
+          <div className="p-8 rounded-[2rem] bg-surface-2 border border-border-subtle space-y-6">
+            <h2 className="text-xl font-bold text-foreground">Direct Actions</h2>
             <div className="grid gap-4">
               <NextLink
                 href="/admin/dashboard/ticketing"
@@ -125,15 +125,15 @@ export default function AdminDashboardOverview() {
               >
                 <div className="flex items-center gap-3">
                   <FiMessageSquare className="text-primary" />
-                  <span className="text-sm font-bold text-white">Support Tickets</span>
+                  <span className="text-sm font-bold text-foreground">Support Tickets</span>
                 </div>
                 <FiTrendingUp className="text-primary opacity-0 group-hover:opacity-100 transition-all" />
               </NextLink>
 
-              <button className="flex items-center justify-between p-4 rounded-2xl bg-white/5 border border-white/10 hover:bg-white/10 transition-all">
+              <button className="flex items-center justify-between p-4 rounded-2xl bg-surface-2 border border-border-medium hover:bg-surface-2 transition-all">
                 <div className="flex items-center gap-3">
-                  <FiServer className="text-slate-400" />
-                  <span className="text-sm font-bold text-white">Server Logs</span>
+                  <FiServer className="text-text-secondary" />
+                  <span className="text-sm font-bold text-foreground">Server Logs</span>
                 </div>
               </button>
             </div>

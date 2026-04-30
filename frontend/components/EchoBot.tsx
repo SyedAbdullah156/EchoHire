@@ -64,15 +64,15 @@ function MessageBubble({ message }: { message: Message }) {
       className={`flex ${isUser ? "justify-end" : "justify-start"}`}
     >
       {!isUser && (
-        <div className="mr-2 flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-[#227dff] to-[#332989] text-xs font-bold text-white">
+        <div className="mr-2 flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-[#227dff] to-[#332989] text-xs font-bold text-foreground">
           E
         </div>
       )}
       <div
         className={`max-w-[82%] rounded-2xl px-4 py-2.5 text-sm leading-relaxed ${
           isUser
-            ? "rounded-br-sm bg-[#227dff] text-white"
-            : "rounded-bl-sm bg-[#0d162a] text-[#bdc9e3] border border-white/5"
+            ? "rounded-br-sm bg-[#227dff] text-foreground"
+            : "rounded-bl-sm bg-surface-2 text-[#bdc9e3] border border-border-subtle"
         }`}
       >
         {isUser ? (
@@ -90,10 +90,10 @@ function MessageBubble({ message }: { message: Message }) {
 function TypingIndicator() {
   return (
     <div className="flex justify-start">
-      <div className="mr-2 flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-[#227dff] to-[#332989] text-xs font-bold text-white">
+      <div className="mr-2 flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-[#227dff] to-[#332989] text-xs font-bold text-foreground">
         E
       </div>
-      <div className="flex items-center gap-1.5 rounded-2xl rounded-bl-sm bg-[#0d162a] border border-white/5 px-4 py-3">
+      <div className="flex items-center gap-1.5 rounded-2xl rounded-bl-sm bg-surface-2 border border-border-subtle px-4 py-3">
         {[0, 1, 2].map((i) => (
           <motion.div
             key={i}
@@ -240,16 +240,16 @@ export default function EchoBot({ showLauncher = true, isOpen: controlledOpen, o
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 20, scale: 0.95 }}
             transition={{ duration: 0.2, ease: "easeOut" }}
-            className="fixed bottom-[88px] right-5 z-50 flex w-[360px] flex-col rounded-[1.5rem] border border-white/10 bg-[#070d1a] overflow-hidden"
+            className="fixed bottom-[88px] right-5 z-50 flex w-[360px] flex-col rounded-[1.5rem] border border-border-medium bg-surface-1 overflow-hidden"
             style={{ maxHeight: "calc(100vh - 120px)", height: "540px" }}
           >
             {/* Header */}
-            <div className="flex items-center gap-3 border-b border-white/5 bg-[#0d162a] px-5 py-4">
+            <div className="flex items-center gap-3 border-b border-border-subtle bg-surface-2 px-5 py-4">
               <div className="flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br from-[#227dff] to-[#332989]">
-                <FiMessageSquare className="h-4 w-4 text-white" />
+                <FiMessageSquare className="h-4 w-4 text-foreground" />
               </div>
               <div className="flex-1">
-                <p className="text-sm font-semibold text-white">EchoBot</p>
+                <p className="text-sm font-semibold text-foreground">EchoBot</p>
                 <div className="flex items-center gap-1.5">
                   <div className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
                   <p className="text-xs text-[#7f92be]">AI Career Coach · Online</p>
@@ -257,14 +257,14 @@ export default function EchoBot({ showLauncher = true, isOpen: controlledOpen, o
               </div>
               <button
                 onClick={resetChat}
-                className="flex h-8 w-8 items-center justify-center rounded-lg text-[#7f92be] transition-colors hover:bg-white/5 hover:text-white"
+                className="flex h-8 w-8 items-center justify-center rounded-lg text-[#7f92be] transition-colors hover:bg-surface-2 hover:text-foreground"
                 title="Clear chat"
               >
                 <FiRefreshCw className="h-3.5 w-3.5" />
               </button>
               <button
                 onClick={() => setIsOpen(false)}
-                className="flex h-8 w-8 items-center justify-center rounded-lg text-[#7f92be] transition-colors hover:bg-white/5 hover:text-white"
+                className="flex h-8 w-8 items-center justify-center rounded-lg text-[#7f92be] transition-colors hover:bg-surface-2 hover:text-foreground"
               >
                 <FiX className="h-4 w-4" />
               </button>
@@ -290,7 +290,7 @@ export default function EchoBot({ showLauncher = true, isOpen: controlledOpen, o
                       <button
                         key={prompt}
                         onClick={() => sendMessage(prompt)}
-                        className="rounded-xl border border-white/5 bg-[#0d162a] px-3 py-2.5 text-left text-xs text-[#98a7cb] transition-colors hover:border-[#227dff]/30 hover:bg-[#227dff]/5 hover:text-[#dbe7ff]"
+                        className="rounded-xl border border-border-subtle bg-surface-2 px-3 py-2.5 text-left text-xs text-[#98a7cb] transition-colors hover:border-[#227dff]/30 hover:bg-[#227dff]/5 hover:text-[#dbe7ff]"
                       >
                         {prompt}
                       </button>
@@ -304,8 +304,8 @@ export default function EchoBot({ showLauncher = true, isOpen: controlledOpen, o
             </div>
 
             {/* Input */}
-            <div className="border-t border-white/5 bg-[#0d162a] px-4 py-3">
-              <div className="flex items-end gap-2 rounded-xl border border-white/10 bg-[#070d1a] px-3 py-2 focus-within:border-[#227dff]/40">
+            <div className="border-t border-border-subtle bg-surface-2 px-4 py-3">
+              <div className="flex items-end gap-2 rounded-xl border border-border-medium bg-surface-1 px-3 py-2 focus-within:border-[#227dff]/40">
                 <textarea
                   ref={inputRef}
                   value={input}
@@ -325,7 +325,7 @@ export default function EchoBot({ showLauncher = true, isOpen: controlledOpen, o
                 <button
                   onClick={() => sendMessage()}
                   disabled={!input.trim() || isLoading}
-                  className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-[#227dff] text-white transition-all hover:bg-[#1a68d4] disabled:opacity-40 disabled:cursor-not-allowed"
+                  className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-[#227dff] text-foreground transition-all hover:bg-[#1a68d4] disabled:opacity-40 disabled:cursor-not-allowed"
                 >
                   {isLoading ? (
                     <FiLoader className="h-3.5 w-3.5 animate-spin" />
@@ -348,7 +348,7 @@ export default function EchoBot({ showLauncher = true, isOpen: controlledOpen, o
           onClick={() => setIsOpen(!isOpen)}
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
-          className="fixed bottom-5 right-5 z-50 flex h-[56px] w-[56px] items-center justify-center rounded-full bg-gradient-to-br from-[#227dff] to-[#332989] text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#227dff]"
+          className="fixed bottom-5 right-5 z-50 flex h-[56px] w-[56px] items-center justify-center rounded-full bg-gradient-to-br from-[#227dff] to-[#332989] text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#227dff]"
           aria-label="Open EchoBot chat"
         >
           <AnimatePresence mode="wait">

@@ -22,15 +22,15 @@ const features: Feature[] = [
     visual: (
       <div className="w-full h-full p-10 font-mono text-sm space-y-6">
         <div className="flex gap-4">
-          <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-white shrink-0 font-bold">AI</div>
+          <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-foreground shrink-0 font-bold">AI</div>
           <div className="bg-surface-2 border border-border-medium p-5 rounded-3xl rounded-tl-none shadow-xl">
-            <p className="text-white leading-relaxed">
+            <p className="text-foreground leading-relaxed">
               {"\"That's an interesting approach to the caching layer. Why did you choose a **Redlock** implementation over a simple TTL for this specific distributed scenario?\""}
             </p>
           </div>
         </div>
         <div className="flex gap-4 justify-end">
-          <div className="bg-primary/10 border border-primary/20 p-5 rounded-3xl rounded-tr-none text-white max-w-[85%]">
+          <div className="bg-primary/10 border border-primary/20 p-5 rounded-3xl rounded-tr-none text-foreground max-w-[85%]">
             <p className="leading-relaxed">
               {"\"Since we're dealing with critical transaction data across multiple nodes, Redlock ensures mutual exclusion that a standard TTL-based cache wouldn't guarantee during split-brain scenarios.\""}
             </p>
@@ -47,7 +47,7 @@ const features: Feature[] = [
     color: "bg-emerald-500/10 text-emerald-400 border-emerald-500/20",
     visual: (
       <div className="w-full h-full bg-surface-2 overflow-hidden flex flex-col">
-        <div className="h-10 border-b border-border-subtle bg-white/5 flex items-center px-6 gap-3">
+        <div className="h-10 border-b border-border-subtle bg-surface-2 flex items-center px-6 gap-3">
           <div className="flex gap-2">
             <div className="w-3 h-3 rounded-full bg-red-500/40" />
             <div className="w-3 h-3 rounded-full bg-yellow-500/40" />
@@ -92,13 +92,13 @@ const features: Feature[] = [
           <div className="flex justify-between items-end">
             <div>
               <span className="block text-[10px] text-text-muted uppercase tracking-[0.2em] mb-1">Overall Competency</span>
-              <span className="text-3xl font-black text-white">Top 2%</span>
+              <span className="text-3xl font-black text-foreground">Top 2%</span>
             </div>
             <div className="text-right">
               <span className="text-primary font-bold">98/100</span>
             </div>
           </div>
-          <div className="h-3 w-full bg-white/5 rounded-full overflow-hidden">
+          <div className="h-3 w-full bg-surface-2 rounded-full overflow-hidden">
             <motion.div
               initial={{ width: 0 }}
               whileInView={{ width: "98%" }}
@@ -111,7 +111,7 @@ const features: Feature[] = [
         <div className="grid grid-cols-2 gap-6">
           {[
             { label: "Code Quality", value: "84%", color: "text-emerald-400" },
-            { label: "Architecture", value: "92%", color: "text-blue-400" },
+            { label: "Architecture", value: "92%", color: "text-primary" },
             { label: "Efficiency", value: "89%", color: "text-purple-400" },
             { label: "Communication", value: "95%", color: "text-primary" },
           ].map((stat, i) => (
@@ -193,7 +193,7 @@ export default function FeaturesPage() {
                   {feature.description}
                 </p>
                 <div className="flex gap-6 pt-6">
-                  <button className="group px-8 py-4 rounded-2xl bg-white/5 border border-border-medium font-bold text-white hover:bg-white/10 transition-all flex items-center gap-3">
+                  <button className="group px-8 py-4 rounded-2xl bg-surface-2 border border-border-medium font-bold text-foreground hover:bg-surface-2 transition-all flex items-center gap-3">
                     Deep Dive
                     <ArrowRight size={20} className="group-hover:translate-x-1 transition-transform" />
                   </button>

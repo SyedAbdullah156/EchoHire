@@ -2,6 +2,8 @@
 
 import Link from "next/link";
 import DashboardSidebar from "@/components/DashboardSidebar";
+import RecruiterSidebar from "@/components/RecruiterSidebar";
+import { useAuth } from "@/context/AuthContext";
 import { 
   ArrowLeft, 
   HelpCircle, 
@@ -36,7 +38,7 @@ const FAQ_DATA = [
   },
   {
     category: "For Candidates",
-    icon: <User size={18} className="text-blue-400" />,
+    icon: <User size={18} className="text-primary" />,
     items: [
       {
         question: "How can I improve my ATS score?",
@@ -83,6 +85,7 @@ const FAQ_DATA = [
 ];
 
 export default function FAQPage() {
+  const { user } = useAuth();
   const [searchQuery, setSearchQuery] = useState("");
 
   const filteredFaqs = FAQ_DATA.map(category => ({
@@ -94,16 +97,20 @@ export default function FAQPage() {
   })).filter(category => category.items.length > 0);
 
   return (
-    <main className="min-h-screen bg-[#050b18] text-[#e2e8f0] flex flex-col lg:flex-row p-4 lg:p-8 gap-8 antialiased">
-      <DashboardSidebar active="support" />
+    <main className="min-h-screen bg-background text-[#e2e8f0] flex flex-col lg:flex-row p-4 lg:p-8 gap-8 antialiased">
+      {user?.role === "recruiter" ? (
+        <RecruiterSidebar />
+      ) : (
+        <DashboardSidebar active="support" />
+      )}
 
       <div className="flex-1 flex flex-col min-w-0 space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
-        <div className="bg-[#050b18]/80 backdrop-blur-md border-b border-slate-800/60 pb-6 mb-2 rounded-3xl">
+        <div className="bg-background/80 backdrop-blur-md border-b border-border-medium/60 pb-6 mb-2 rounded-3xl">
           {/* Breadcrumb Navigation */}
-          <nav className="flex items-center text-sm text-[#9fb1d8] mb-6 px-2">
+          <nav className="flex items-center text-sm text-text-secondary mb-6 px-2">
             <Link 
               href="/support" 
-              className="group flex items-center gap-2 hover:text-white transition-colors"
+              className="group flex items-center gap-2 hover:text-foreground transition-colors"
             >
               <ArrowLeft size={16} className="transition-transform group-hover:-translate-x-1" /> 
               Back to Support
@@ -112,11 +119,11 @@ export default function FAQPage() {
 
           <header className="px-2">
             <div className="flex items-center gap-3 mb-2">
-              <HelpCircle className="text-blue-500" size={28} />
-              <span className="text-xs font-bold uppercase tracking-widest text-[#4a5d89]">Knowledge Base</span>
+              <HelpCircle className="text-primary" size={28} />
+              <span className="text-xs font-bold uppercase tracking-widest text-text-muted">Knowledge Base</span>
             </div>
-            <h1 className="text-4xl lg:text-5xl font-extrabold tracking-tight text-white leading-tight">Frequently Asked Questions</h1>
-            <p className="mt-4 text-lg text-[#9fb1d8] max-w-2xl leading-relaxed">
+            <h1 className="text-4xl lg:text-5xl font-extrabold tracking-tight text-foreground leading-tight">Frequently Asked Questions</h1>
+            <p className="mt-4 text-lg text-text-secondary max-w-2xl leading-relaxed">
               Find quick answers to common questions about EchoHire&apos;s features, security, and process.
             </p>
           </header>
@@ -125,13 +132,13 @@ export default function FAQPage() {
         <div className="px-2 space-y-12">
           {/* Search Bar */}
           <div className="relative max-w-2xl">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-[#4a5d89]" size={20} />
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-text-muted" size={20} />
             <input 
               type="text" 
               placeholder="Search for answers..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full rounded-2xl border border-[#243253] bg-[#0d162a] py-4 pl-12 pr-4 text-white placeholder-[#4a5d89] transition-all focus:border-blue-500 focus:outline-none focus:ring-4 focus:ring-blue-500/10 shadow-lg"
+              className="w-full rounded-2xl border border-border-subtle bg-surface-2 py-4 pl-12 pr-4 text-foreground placeholder-[#4a5d89] transition-all focus:border-blue-500 focus:outline-none focus:ring-4 focus:ring-blue-500/10 shadow-lg"
             />
           </div>
 
@@ -139,9 +146,9 @@ export default function FAQPage() {
             {filteredFaqs.length > 0 ? (
               filteredFaqs.map((category, idx) => (
                 <section key={idx} className="space-y-6">
-                  <div className="flex items-center gap-3 border-b border-slate-800/60 pb-3">
+                  <div className="flex items-center gap-3 border-b border-border-medium/60 pb-3">
                     {category.icon}
-                    <h2 className="text-xl font-bold text-white tracking-tight">{category.category}</h2>
+                    <h2 className="text-xl font-bold text-foreground tracking-tight">{category.category}</h2>
                   </div>
 
                   <Accordion.Root type="single" collapsible className="space-y-4">
@@ -149,21 +156,21 @@ export default function FAQPage() {
                       <Accordion.Item 
                         key={itemIdx} 
                         value={`${idx}-${itemIdx}`}
-                        className="group overflow-hidden rounded-2xl border border-[#243253] bg-[#0d162a]/50 backdrop-blur-sm transition-all hover:border-[#32466f]"
+                        className="group overflow-hidden rounded-2xl border border-border-subtle bg-surface-2/50 backdrop-blur-sm transition-all hover:border-[#32466f]"
                       >
                         <Accordion.Header>
                           <Accordion.Trigger className="flex w-full items-center justify-between p-5 text-left transition-all">
-                            <span className="text-base font-semibold text-slate-200 group-hover:text-white group-data-[state=open]:text-blue-400">
+                            <span className="text-base font-semibold text-slate-200 group-hover:text-foreground group-data-[state=open]:text-primary">
                               {item.question}
                             </span>
                             <ChevronDown 
                               size={18} 
-                              className="text-slate-500 transition-transform duration-300 group-data-[state=open]:rotate-180 group-data-[state=open]:text-blue-400" 
+                              className="text-text-muted transition-transform duration-300 group-data-[state=open]:rotate-180 group-data-[state=open]:text-primary" 
                             />
                           </Accordion.Trigger>
                         </Accordion.Header>
-                        <Accordion.Content className="overflow-hidden text-sm text-[#9fb1d8] data-[state=closed]:animate-accordion-up data-[state=open]:animate-accordion-down">
-                          <div className="p-5 pt-0 leading-relaxed border-t border-slate-800/30 mt-2">
+                        <Accordion.Content className="overflow-hidden text-sm text-text-secondary data-[state=closed]:animate-accordion-up data-[state=open]:animate-accordion-down">
+                          <div className="p-5 pt-0 leading-relaxed border-t border-border-medium/30 mt-2">
                             {item.answer}
                           </div>
                         </Accordion.Content>
@@ -174,10 +181,10 @@ export default function FAQPage() {
               ))
             ) : (
               <div className="text-center py-12">
-                <p className="text-[#4a5d89] text-lg">No results found for &quot;{searchQuery}&quot;</p>
+                <p className="text-text-muted text-lg">No results found for &quot;{searchQuery}&quot;</p>
                 <button 
                   onClick={() => setSearchQuery("")}
-                  className="mt-4 text-blue-400 hover:underline font-semibold"
+                  className="mt-4 text-primary hover:underline font-semibold"
                 >
                   Clear search
                 </button>
@@ -188,14 +195,14 @@ export default function FAQPage() {
 
         <footer className="mt-12 px-2 pb-12">
           <div className="rounded-[2.5rem] bg-gradient-to-br from-blue-600/10 to-purple-600/10 p-8 lg:p-12 border border-blue-500/20 text-center relative overflow-hidden group">
-            <div className="absolute inset-0 bg-blue-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
-            <h3 className="text-2xl font-bold text-white mb-4 relative z-10">Still have questions?</h3>
-            <p className="text-[#9fb1d8] max-w-xl mx-auto mb-8 relative z-10">
+            <div className="absolute inset-0 bg-primary/5 opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
+            <h3 className="text-2xl font-bold text-foreground mb-4 relative z-10">Still have questions?</h3>
+            <p className="text-text-secondary max-w-xl mx-auto mb-8 relative z-10">
               Can&apos;t find the answer you&apos;re looking for? Please chat with our friendly team.
             </p>
             <button 
               onClick={() => window.dispatchEvent(new Event("open-support-chat"))}
-              className="inline-flex items-center justify-center rounded-xl bg-blue-600 px-8 py-3.5 text-sm font-bold text-white shadow-xl shadow-blue-500/20 transition-all hover:bg-blue-500 hover:scale-105 active:scale-95 relative z-10 cursor-pointer"
+              className="inline-flex items-center justify-center rounded-xl bg-primary px-8 py-3.5 text-sm font-bold text-foreground shadow-xl shadow-blue-500/20 transition-all hover:bg-primary hover:scale-105 active:scale-95 relative z-10 cursor-pointer"
             >
               Contact Support
             </button>

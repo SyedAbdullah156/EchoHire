@@ -309,9 +309,9 @@ export default function AIInterviewPage() {
         return (
             <div className="flex flex-col items-center justify-center min-h-[60vh] text-center p-10">
                 <FiAlertCircle size={48} className="text-rose-500 mb-4" />
-                <h2 className="text-2xl font-bold text-white mb-2">No Interview ID</h2>
-                <p className="text-slate-400 mb-6 max-w-sm">
-                    Add <code className="text-blue-400">?id=YOUR_ID</code> to the URL.
+                <h2 className="text-2xl font-bold text-foreground mb-2">No Interview ID</h2>
+                <p className="text-text-secondary mb-6 max-w-sm">
+                    Add <code className="text-primary">?id=YOUR_ID</code> to the URL.
                 </p>
             </div>
         );
@@ -319,18 +319,18 @@ export default function AIInterviewPage() {
 
     return (
         <div className="space-y-5 p-4 md:p-6">
-            <header className="flex flex-col md:flex-row md:items-center justify-between gap-4 rounded-3xl border border-slate-800 bg-slate-900/60 p-5 backdrop-blur-md">
+            <header className="flex flex-col md:flex-row md:items-center justify-between gap-4 rounded-3xl border border-border-medium bg-surface-1/60 p-5 backdrop-blur-md">
                 <div>
-                    <div className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-blue-500 mb-1">
+                    <div className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-primary mb-1">
                         <span className="relative flex h-2 w-2">
                             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75" />
-                            <span className="relative inline-flex h-2 w-2 rounded-full bg-blue-500" />
+                            <span className="relative inline-flex h-2 w-2 rounded-full bg-primary" />
                         </span>
                         Live Interview
                     </div>
-                    <h1 className="text-xl font-bold text-white">Session #{interviewId.slice(-6)}</h1>
+                    <h1 className="text-xl font-bold text-foreground">Session #{interviewId.slice(-6)}</h1>
                     {roundData && (
-                        <p className="text-xs text-slate-500 mt-0.5">
+                        <p className="text-xs text-text-muted mt-0.5">
                             Round {Number(roundIndex) + 1} · {roundData.type} · {roundData.qa_pairs.length}/{roundData.max_questions} questions
                         </p>
                     )}
@@ -339,9 +339,9 @@ export default function AIInterviewPage() {
                 <div className="flex items-center gap-3 flex-wrap">
                     {roundData && (
                         <div className="flex flex-col gap-1 w-28 hidden md:flex">
-                            <div className="text-[10px] text-slate-500 text-right">{progress}%</div>
+                            <div className="text-[10px] text-text-muted text-right">{progress}%</div>
                             <div className="h-1 bg-slate-800 rounded-full overflow-hidden">
-                                <div className="h-full bg-blue-500 rounded-full transition-all duration-500" style={{ width: `${progress}%` }} />
+                                <div className="h-full bg-primary rounded-full transition-all duration-500" style={{ width: `${progress}%` }} />
                             </div>
                         </div>
                     )}
@@ -350,8 +350,8 @@ export default function AIInterviewPage() {
                         onClick={() => { setVoiceMode((v) => !v); stopSpeaking(); }}
                         className={`flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-bold transition-all ${
                             voiceMode
-                                ? "bg-blue-600/20 border border-blue-500/40 text-blue-400"
-                                : "bg-slate-800 border border-slate-700 text-slate-400"
+                                ? "bg-primary/20 border border-blue-500/40 text-primary"
+                                : "bg-slate-800 border border-slate-700 text-text-secondary"
                         }`}
                         title="Toggle voice mode"
                     >
@@ -360,25 +360,25 @@ export default function AIInterviewPage() {
                     </button>
 
                     <div className="relative">
-                        <FiLock className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" size={11} />
+                        <FiLock className="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted" size={11} />
                         <input
                             type="password"
                             placeholder="Auth Token"
                             value={token}
                             onChange={(e) => { setToken(e.target.value); localStorage.setItem("interview-token", e.target.value); }}
-                            className="pl-8 pr-3 py-2 bg-slate-800 border border-slate-700 rounded-xl text-xs text-white outline-none focus:border-blue-500 w-40 transition-all"
+                            className="pl-8 pr-3 py-2 bg-slate-800 border border-slate-700 rounded-xl text-xs text-foreground outline-none focus:border-blue-500 w-40 transition-all"
                         />
                     </div>
 
                     {!roundStarted && !isLoading && token && (
-                        <button onClick={handleStartRound} className="bg-blue-600 hover:bg-blue-500 px-5 py-2 rounded-xl text-white font-bold text-xs uppercase tracking-widest transition-all">
+                        <button onClick={handleStartRound} className="bg-primary hover:bg-primary px-5 py-2 rounded-xl text-foreground font-bold text-xs uppercase tracking-widest transition-all">
                             Start
                         </button>
                     )}
 
                     {isLoading && (
-                        <div className="flex items-center gap-2 text-xs text-slate-400">
-                            <FiLoader className="animate-spin text-blue-500" size={13} />
+                        <div className="flex items-center gap-2 text-xs text-text-secondary">
+                            <FiLoader className="animate-spin text-primary" size={13} />
                             {loadingState === "starting" ? "Starting..." : loadingState === "answering" ? "AI thinking..." : "Loading..."}
                         </div>
                     )}
@@ -397,40 +397,40 @@ export default function AIInterviewPage() {
                     <FiCheckCircle className="text-emerald-400 shrink-0" size={20} />
                     <div>
                         <p className="font-bold text-emerald-400">Round Complete · Score: {roundData?.score ?? "–"}/100</p>
-                        {roundData?.remarks && <p className="text-xs text-slate-400 mt-1 leading-relaxed">{roundData.remarks}</p>}
+                        {roundData?.remarks && <p className="text-xs text-text-secondary mt-1 leading-relaxed">{roundData.remarks}</p>}
                     </div>
                 </div>
             )}
 
             <div className="grid gap-5 lg:grid-cols-12">
                 <div className="lg:col-span-8 space-y-5">
-                    <div className="relative aspect-video overflow-hidden rounded-3xl border border-slate-800 bg-slate-950 shadow-2xl">
+                    <div className="relative aspect-video overflow-hidden rounded-3xl border border-border-medium bg-slate-950 shadow-2xl">
                         <video ref={videoRef} autoPlay muted playsInline
                             className={`h-full w-full object-cover transition-opacity duration-700 ${isVideoOff ? "opacity-0" : "opacity-100"}`}
                         />
                         {isVideoOff && (
-                            <div className="absolute inset-0 flex flex-col items-center justify-center bg-slate-900/50 backdrop-blur-sm">
+                            <div className="absolute inset-0 flex flex-col items-center justify-center bg-surface-1/50 backdrop-blur-sm">
                                 <div className="w-20 h-20 rounded-3xl bg-slate-800 flex items-center justify-center mb-3 border border-slate-700">
-                                    <FiVideoOff className="text-3xl text-slate-500" />
+                                    <FiVideoOff className="text-3xl text-text-muted" />
                                 </div>
-                                <p className="text-xs font-bold text-slate-500 uppercase tracking-widest">Camera Off</p>
+                                <p className="text-xs font-bold text-text-muted uppercase tracking-widest">Camera Off</p>
                             </div>
                         )}
 
-                        <div className="absolute top-4 right-4 px-3 py-2 rounded-xl border border-white/5 bg-slate-950/80 backdrop-blur-md">
+                        <div className="absolute top-4 right-4 px-3 py-2 rounded-xl border border-border-subtle bg-slate-950/80 backdrop-blur-md">
                             <div className="flex items-center gap-2">
                                 <div className={`flex gap-0.5 transition-opacity ${isSpeaking ? "opacity-100" : "opacity-30"}`}>
                                     {[0, 100, 200].map((d) => (
-                                        <span key={d} className="w-0.5 h-3 bg-blue-500 rounded-full animate-pulse" style={{ animationDelay: `${d}ms` }} />
+                                        <span key={d} className="w-0.5 h-3 bg-primary rounded-full animate-pulse" style={{ animationDelay: `${d}ms` }} />
                                     ))}
                                 </div>
-                                <p className="text-[9px] font-black text-blue-400 uppercase tracking-widest">
+                                <p className="text-[9px] font-black text-primary uppercase tracking-widest">
                                     {isSpeaking ? "AI Speaking" : isListening ? "Listening..." : "AI Ready"}
                                 </p>
                             </div>
                         </div>
 
-                        <div className="absolute bottom-5 left-1/2 -translate-x-1/2 flex items-center gap-3 px-5 py-3 rounded-2xl border border-white/5 bg-slate-950/70 backdrop-blur-xl">
+                        <div className="absolute bottom-5 left-1/2 -translate-x-1/2 flex items-center gap-3 px-5 py-3 rounded-2xl border border-border-subtle bg-slate-950/70 backdrop-blur-xl">
                             <button
                                 onMouseDown={handleMicPress}
                                 onMouseUp={handleMicRelease}
@@ -439,7 +439,7 @@ export default function AIInterviewPage() {
                                 disabled={!canAnswer || !sttSupported}
                                 className={`p-3 rounded-xl transition-all disabled:opacity-40 select-none ${
                                     isListening
-                                        ? "bg-rose-500 text-white scale-110 ring-4 ring-rose-500/30"
+                                        ? "bg-rose-500 text-foreground scale-110 ring-4 ring-rose-500/30"
                                         : "bg-slate-800 text-slate-300 hover:bg-slate-700"
                                 }`}
                                 title="Hold to speak"
@@ -465,7 +465,7 @@ export default function AIInterviewPage() {
                         </div>
                     </div>
 
-                    <div className="rounded-3xl border border-blue-500/10 bg-slate-900/40 p-8 relative overflow-hidden min-h-[130px]">
+                    <div className="rounded-3xl border border-blue-500/10 bg-surface-1/40 p-8 relative overflow-hidden min-h-[130px]">
                         <div className="absolute top-0 right-0 p-8 opacity-[0.03] rotate-12">
                             <FiMessageSquare size={100} />
                         </div>
@@ -475,19 +475,19 @@ export default function AIInterviewPage() {
                                 {Array.from({ length: 5 }).map((_, i) => (
                                     <span
                                         key={i}
-                                        className="w-1 bg-blue-500 rounded-full animate-pulse"
+                                        className="w-1 bg-primary rounded-full animate-pulse"
                                         style={{
                                             height: `${8 + (i % 3) * 6}px`,
                                             animationDelay: `${i * 100}ms`,
                                         }}
                                     />
                                 ))}
-                                <span className="ml-2 text-[10px] text-blue-400 font-bold uppercase tracking-widest">Speaking</span>
+                                <span className="ml-2 text-[10px] text-primary font-bold uppercase tracking-widest">Speaking</span>
                             </div>
                         )}
 
-                        <h4 className="text-[10px] font-black text-blue-500 uppercase tracking-widest mb-3">AI Question</h4>
-                        <p className="text-xl font-bold text-white leading-relaxed">
+                        <h4 className="text-[10px] font-black text-primary uppercase tracking-widest mb-3">AI Question</h4>
+                        <p className="text-xl font-bold text-foreground leading-relaxed">
                             {streamingText
                                 ? streamingText.replace(/\[EVALUATION\][\s\S]*?\[QUESTION\]/g, "").trim() ||
                                   "AI is formulating the next question..."
@@ -496,22 +496,22 @@ export default function AIInterviewPage() {
                     </div>
 
                         {voiceMode && textAnswer.trim() && !isLoading && (
-                            <div className="rounded-2xl border border-blue-500/20 bg-blue-500/5 p-5 animate-in fade-in slide-in-from-bottom-2">
+                            <div className="rounded-2xl border border-blue-500/20 bg-primary/5 p-5 animate-in fade-in slide-in-from-bottom-2">
                                 <div className="flex items-center justify-between mb-2">
                                     <div className="flex items-center gap-2">
-                                        <span className="w-2 h-2 bg-blue-500 rounded-full" />
-                                        <span className="text-[10px] font-bold text-blue-400 uppercase tracking-widest">Review your answer</span>
+                                        <span className="w-2 h-2 bg-primary rounded-full" />
+                                        <span className="text-[10px] font-bold text-primary uppercase tracking-widest">Review your answer</span>
                                     </div>
                                     <div className="flex items-center gap-2">
                                         <button
                                             onClick={() => { setTextAnswer(""); resetTranscript(); }}
-                                            className="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-400 text-[9px] font-bold uppercase transition-all"
+                                            className="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-text-secondary text-[9px] font-bold uppercase transition-all"
                                         >
                                             Clear
                                         </button>
                                         <button
                                             onClick={() => submitAnswer(textAnswer)}
-                                            className="flex items-center gap-2 px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-[10px] uppercase tracking-widest transition-all"
+                                            className="flex items-center gap-2 px-4 py-2 rounded-xl bg-primary hover:bg-primary text-foreground font-bold text-[10px] uppercase tracking-widest transition-all"
                                         >
                                             <FiSend size={12} /> Submit Now
                                         </button>
@@ -530,43 +530,43 @@ export default function AIInterviewPage() {
                                 <span className="text-[10px] font-bold text-rose-400 uppercase tracking-widest">Listening — release mic to submit</span>
                             </div>
                             <p className="text-sm text-slate-300 leading-relaxed min-h-[20px]">
-                                {transcript || <span className="text-slate-600 italic">Start speaking...</span>}
+                                {transcript || <span className="text-text-muted italic">Start speaking...</span>}
                             </p>
                         </div>
                     )}
                 </div>
 
                 <div className="lg:col-span-4 space-y-5">
-                    <div className="rounded-3xl border border-slate-800 bg-slate-900/40 p-5 h-[380px] flex flex-col">
+                    <div className="rounded-3xl border border-border-medium bg-surface-1/40 p-5 h-[380px] flex flex-col">
                         <div className="flex items-center gap-3 mb-4">
-                            <div className="p-2 rounded-lg bg-blue-500/10 text-blue-500">
+                            <div className="p-2 rounded-lg bg-primary/10 text-primary">
                                 <FiLayers size={13} />
                             </div>
-                            <h3 className="font-bold text-white text-sm">Question Log</h3>
+                            <h3 className="font-bold text-foreground text-sm">Question Log</h3>
                             {roundData && (
-                                <span className="ml-auto text-[10px] text-slate-500 font-mono">
+                                <span className="ml-auto text-[10px] text-text-muted font-mono">
                                     {roundData.qa_pairs.length}/{roundData.max_questions}
                                 </span>
                             )}
                         </div>
                         <div ref={questionLogRef} className="flex-1 overflow-y-auto space-y-2 pr-1">
                             {!roundData?.qa_pairs.length ? (
-                                <p className="text-xs text-slate-600 p-2">No questions yet.</p>
+                                <p className="text-xs text-text-muted p-2">No questions yet.</p>
                             ) : (
                                 roundData.qa_pairs.map((qa, i) => (
                                     <div key={i} className={`p-3 rounded-2xl border transition-all ${
                                         !qa.candidate_answer
-                                            ? "border-blue-500/30 bg-blue-500/5"
-                                            : "border-slate-800/50 bg-slate-900/30"
+                                            ? "border-blue-500/30 bg-primary/5"
+                                            : "border-border-medium/50 bg-surface-1/30"
                                     }`}>
                                         <div className="flex gap-2">
-                                            <span className="text-[10px] font-mono font-bold text-slate-600 mt-0.5 shrink-0">
+                                            <span className="text-[10px] font-mono font-bold text-text-muted mt-0.5 shrink-0">
                                                 {String(i + 1).padStart(2, "0")}
                                             </span>
                                             <div className="space-y-1.5 min-w-0">
                                                 <p className="text-xs text-slate-300 leading-relaxed">{qa.question}</p>
                                                 {qa.candidate_answer && (
-                                                    <p className="text-[10px] text-slate-500 border-l-2 border-slate-700 pl-2 leading-relaxed">
+                                                    <p className="text-[10px] text-text-muted border-l-2 border-slate-700 pl-2 leading-relaxed">
                                                         {qa.candidate_answer.length > 60
                                                             ? qa.candidate_answer.slice(0, 60) + "..."
                                                             : qa.candidate_answer}
@@ -580,10 +580,10 @@ export default function AIInterviewPage() {
                         </div>
                     </div>
 
-                    <div className="rounded-3xl border border-slate-800 bg-slate-900/40 p-5">
+                    <div className="rounded-3xl border border-border-medium bg-surface-1/40 p-5">
                         <div className="flex items-center justify-between mb-3">
-                            <h3 className="font-bold text-white text-sm">Text Fallback</h3>
-                            <span className="text-[10px] text-slate-600">Ctrl+Enter to send</span>
+                            <h3 className="font-bold text-foreground text-sm">Text Fallback</h3>
+                            <span className="text-[10px] text-text-muted">Ctrl+Enter to send</span>
                         </div>
                         <textarea
                             value={voiceMode ? transcript : textAnswer}
@@ -593,14 +593,14 @@ export default function AIInterviewPage() {
                             onKeyDown={(e) => {
                                 if (e.key === "Enter" && e.ctrlKey && !voiceMode) submitAnswer(textAnswer);
                             }}
-                            className={`w-full h-28 bg-slate-950/50 border border-slate-800 rounded-2xl p-3 text-xs text-slate-200 outline-none focus:border-blue-500/50 transition-all resize-none placeholder:text-slate-600 disabled:opacity-40 ${voiceMode ? "cursor-not-allowed" : ""}`}
+                            className={`w-full h-28 bg-slate-950/50 border border-border-medium rounded-2xl p-3 text-xs text-slate-200 outline-none focus:border-blue-500/50 transition-all resize-none placeholder:text-text-muted disabled:opacity-40 ${voiceMode ? "cursor-not-allowed" : ""}`}
                             placeholder={voiceMode ? "Hold mic button to speak..." : "Type your answer..."}
                         />
                         {!voiceMode && (
                             <button
                                 onClick={() => submitAnswer(textAnswer)}
                                 disabled={!canAnswer || !textAnswer.trim()}
-                                className="w-full mt-3 flex items-center justify-center gap-2 py-3 rounded-2xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-[10px] uppercase tracking-widest transition-all disabled:opacity-40 disabled:cursor-not-allowed"
+                                className="w-full mt-3 flex items-center justify-center gap-2 py-3 rounded-2xl bg-primary hover:bg-primary text-foreground font-bold text-[10px] uppercase tracking-widest transition-all disabled:opacity-40 disabled:cursor-not-allowed"
                             >
                                 {loadingState === "answering"
                                     ? <FiLoader className="animate-spin" size={13} />
@@ -609,7 +609,7 @@ export default function AIInterviewPage() {
                             </button>
                         )}
                         {voiceMode && (
-                            <p className="text-center text-[10px] text-slate-600 mt-3">
+                            <p className="text-center text-[10px] text-text-muted mt-3">
                                 Switch to text mode using the "Voice On" button above
                             </p>
                         )}

@@ -108,7 +108,7 @@ function FloatingInput({
               onBlur?.();
             }}
             required={required}
-            className={`w-full h-full bg-transparent border-none outline-none px-4 pt-4 text-sm text-white placeholder:opacity-0 focus:ring-0 ${isPassword ? "pr-12" : ""}`}
+            className={`w-full h-full bg-transparent border-none outline-none px-4 pt-4 text-sm text-foreground placeholder:opacity-0 focus:ring-0 ${isPassword ? "pr-12" : ""}`}
           />
         </div>
         {/* Eye toggle — only on password fields */}
@@ -117,7 +117,7 @@ function FloatingInput({
             type="button"
             tabIndex={-1}
             onClick={() => setShowPassword((v) => !v)}
-            className="pr-4 pl-2 flex items-center text-text-muted hover:text-white transition-colors shrink-0"
+            className="pr-4 pl-2 flex items-center text-text-muted hover:text-foreground transition-colors shrink-0"
             aria-label={showPassword ? "Hide password" : "Show password"}
           >
             {showPassword ? <FiEyeOff size={18} /> : <FiEye size={18} />}
@@ -357,9 +357,9 @@ function AuthContent() {
           <div className="relative z-10">
             <Link href="/" className="flex items-center gap-3 active:scale-95 transition-transform w-fit">
               <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary">
-                <span className="text-base font-black text-white">EH</span>
+                <span className="text-base font-black text-foreground">EH</span>
               </div>
-              <span className="text-2xl font-bold tracking-tight text-white">
+              <span className="text-2xl font-bold tracking-tight text-foreground">
                 Echo<span className="text-primary">Hire</span>
               </span>
             </Link>
@@ -378,7 +378,7 @@ function AuthContent() {
                 <div className="h-12 w-12 rounded-2xl bg-surface-2 border border-border-medium flex items-center justify-center text-xl">
                   {TESTIMONIALS[activeTestimonial].icon}
                 </div>
-                <h2 className="text-4xl font-extrabold text-white leading-tight tracking-tight">
+                <h2 className="text-4xl font-extrabold text-foreground leading-tight tracking-tight">
                   {TESTIMONIALS[activeTestimonial].quote}
                 </h2>
                 <div className="flex items-center gap-4">
@@ -386,7 +386,7 @@ function AuthContent() {
                     {TESTIMONIALS[activeTestimonial].author[0]}
                   </div>
                   <div>
-                    <p className="text-sm font-bold text-white uppercase tracking-wider">{TESTIMONIALS[activeTestimonial].author}</p>
+                    <p className="text-sm font-bold text-foreground uppercase tracking-wider">{TESTIMONIALS[activeTestimonial].author}</p>
                     <p className="text-xs text-text-muted">{TESTIMONIALS[activeTestimonial].role}</p>
                   </div>
                 </div>
@@ -424,9 +424,9 @@ function AuthContent() {
             <div className="lg:hidden mb-12">
               <Link href="/" className="flex items-center gap-3">
                 <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary">
-                  <span className="text-base font-black text-white">EH</span>
+                  <span className="text-base font-black text-foreground">EH</span>
                 </div>
-                <span className="text-2xl font-bold tracking-tight text-white">EchoHire</span>
+                <span className="text-2xl font-bold tracking-tight text-foreground">EchoHire</span>
               </Link>
             </div>
 
@@ -444,7 +444,7 @@ function AuthContent() {
                 >
                   {/* Header */}
                   <div className="space-y-2 text-center lg:text-left">
-                    <h1 className="text-3xl font-black text-white tracking-tight">
+                    <h1 className="text-3xl font-black text-foreground tracking-tight">
                       {mode === "signin" ? "Access Workspace" : mode === "signup" ? "Build Your Profile" : mode === "mfa" ? "Verify Identity" : "Passwordless Login"}
                     </h1>
                     <p className="text-sm text-text-secondary leading-relaxed">
@@ -540,7 +540,7 @@ function AuthContent() {
                                 onClick={() => setRole(r)}
                                 className={`h-11 rounded-xl border text-xs font-bold uppercase tracking-widest transition-all
                               ${role === r
-                                    ? "bg-primary border-primary text-white"
+                                    ? "bg-primary border-primary text-foreground"
                                     : "bg-surface-2 border-border-medium text-text-muted hover:border-text-muted"
                                   }
                             `}
@@ -563,7 +563,7 @@ function AuthContent() {
                           placeholder="000000"
                           value={mfaCode}
                           onChange={(e) => setMfaCode(e.target.value.replace(/\D/g, ""))}
-                          className="w-full bg-surface-2 border border-border-medium rounded-xl px-4 py-4 text-center text-2xl font-black tracking-[0.5em] text-white outline-none focus:border-primary transition-all"
+                          className="w-full bg-surface-2 border border-border-medium rounded-xl px-4 py-4 text-center text-2xl font-black tracking-[0.5em] text-foreground outline-none focus:border-primary transition-all"
                           autoFocus
                         />
                         {errors.mfaCode && <p className="text-[10px] text-red-500 mt-1 ml-1">{errors.mfaCode}</p>}
@@ -573,7 +573,7 @@ function AuthContent() {
                     <button
                       type="submit"
                       disabled={isSubmitting}
-                      className="w-full h-[56px] rounded-xl bg-primary text-sm font-bold text-white uppercase tracking-widest transition-all hover:bg-primary-hover active:scale-[0.98] disabled:opacity-50 flex items-center justify-center gap-3"
+                      className="w-full h-[56px] rounded-xl bg-primary text-sm font-bold text-foreground uppercase tracking-widest transition-all hover:bg-primary-hover active:scale-[0.98] disabled:opacity-50 flex items-center justify-center gap-3"
                     >
                       {isSubmitting 
                         ? "Authenticating..." 
@@ -607,8 +607,8 @@ function AuthContent() {
                       >
                         <div className="absolute inset-0 bg-gradient-to-r from-blue-500/5 via-transparent to-rose-500/5 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
                         <FcGoogle size={24} className="relative z-10" />
-                        <span className="relative z-10 text-sm font-bold text-white tracking-wide">Continue with Google</span>
-                        <div className="absolute inset-0 border border-white/0 group-hover:border-white/10 rounded-xl transition-colors" />
+                        <span className="relative z-10 text-sm font-bold text-foreground tracking-wide">Continue with Google</span>
+                        <div className="absolute inset-0 border border-white/0 group-hover:border-border-medium rounded-xl transition-colors" />
                       </motion.button>
                     </div>
                   </div>
@@ -628,7 +628,7 @@ function AuthContent() {
                     {(mode === "magic" || mode === "mfa") && (
                       <button
                         onClick={() => setMode("signin")}
-                        className="mt-4 text-xs font-bold text-text-muted hover:text-white uppercase tracking-widest transition-colors flex items-center justify-center gap-2 mx-auto"
+                        className="mt-4 text-xs font-bold text-text-muted hover:text-foreground uppercase tracking-widest transition-colors flex items-center justify-center gap-2 mx-auto"
                       >
                         <FiArrowLeft /> Back to Password Login
                       </button>

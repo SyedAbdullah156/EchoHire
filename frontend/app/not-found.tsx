@@ -56,7 +56,7 @@ export default function NotFound() {
           </div>
 
           <div className="space-y-4">
-            <h2 className="text-3xl md:text-4xl font-bold text-white tracking-tight">
+            <h2 className="text-3xl md:text-4xl font-bold text-foreground tracking-tight">
               Page <span className="text-primary text-glow">Not Found</span>
             </h2>
             <p className="text-text-secondary text-lg leading-relaxed max-w-md mx-auto">
@@ -68,13 +68,13 @@ export default function NotFound() {
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4">
             <Link 
               href="/"
-              className="w-full sm:w-auto h-14 px-8 rounded-2xl bg-primary text-white font-black uppercase tracking-widest text-xs flex items-center justify-center gap-3 transition-all hover:bg-primary-hover hover:scale-105 active:scale-[0.98]"
+              className="w-full sm:w-auto h-14 px-8 rounded-2xl bg-primary text-foreground font-black uppercase tracking-widest text-xs flex items-center justify-center gap-3 transition-all hover:bg-primary-hover hover:scale-105 active:scale-[0.98]"
             >
               <FiHome /> Back to Home
             </Link>
             <button 
               onClick={() => window.history.back()}
-              className="w-full sm:w-auto h-14 px-8 rounded-2xl bg-surface-1 border border-border-medium text-white font-black uppercase tracking-widest text-xs flex items-center justify-center gap-3 transition-all hover:bg-surface-2 hover:border-text-muted"
+              className="w-full sm:w-auto h-14 px-8 rounded-2xl bg-surface-1 border border-border-medium text-foreground font-black uppercase tracking-widest text-xs flex items-center justify-center gap-3 transition-all hover:bg-surface-2 hover:border-text-muted"
             >
               <FiArrowLeft /> Go Back
             </button>
@@ -82,9 +82,9 @@ export default function NotFound() {
 
           {/* Quick Links */}
           <div className="pt-12 flex flex-wrap justify-center gap-x-8 gap-y-4 opacity-50 grayscale hover:grayscale-0 transition-all duration-700">
-             <Link href="/candidate/resume-analyzer" className="text-[10px] font-black uppercase tracking-widest text-white hover:text-primary transition-colors">Resume Analyzer</Link>
-             <Link href="/candidate/linkedin-optimizer" className="text-[10px] font-black uppercase tracking-widest text-white hover:text-primary transition-colors">LinkedIn Optimizer</Link>
-             <Link href="/pricing" className="text-[10px] font-black uppercase tracking-widest text-white hover:text-primary transition-colors">Pricing</Link>
+             <Link href="/candidate/resume-analyzer" className="text-[10px] font-black uppercase tracking-widest text-foreground hover:text-primary transition-colors">Resume Analyzer</Link>
+             <Link href="/candidate/linkedin-optimizer" className="text-[10px] font-black uppercase tracking-widest text-foreground hover:text-primary transition-colors">LinkedIn Optimizer</Link>
+             <Link href="/pricing" className="text-[10px] font-black uppercase tracking-widest text-foreground hover:text-primary transition-colors">Pricing</Link>
           </div>
         </motion.div>
       </main>

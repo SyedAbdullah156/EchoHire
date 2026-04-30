@@ -4,6 +4,7 @@ import Footer from "@/components/Footer";
 import UnifiedChatLauncher from "@/components/UnifiedChatLauncher";
 import { Toaster } from "sonner";
 import { AuthProvider } from "@/context/AuthContext";
+import { ThemeProvider } from "@/components/ThemeProvider";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -34,12 +35,14 @@ export default function RootLayout({
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col" suppressHydrationWarning>
-        <Toaster richColors position="top-right" closeButton toastOptions={{ style: { background: '#0d162a', color: '#eaf0ff', border: '1px solid #243253' } }} />
-        <AuthProvider>
-          <div className="flex-1">{children}</div>
-          <Footer />
-          <UnifiedChatLauncher />
-        </AuthProvider>
+        <ThemeProvider attribute="class" defaultTheme="dark" enableSystem={false}>
+          <Toaster richColors position="top-right" closeButton />
+          <AuthProvider>
+            <div className="flex-1">{children}</div>
+            <Footer />
+            <UnifiedChatLauncher />
+          </AuthProvider>
+        </ThemeProvider>
       </body>
     </html>
   );

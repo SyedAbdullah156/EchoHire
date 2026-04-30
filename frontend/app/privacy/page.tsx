@@ -19,21 +19,21 @@ export default function PrivacyPage() {
         >
           {/* Header */}
           <div className="space-y-4 border-b border-border-medium pb-12">
-            <h1 className="text-5xl font-black text-white tracking-tight">Privacy Policy</h1>
+            <h1 className="text-5xl font-black text-foreground tracking-tight">Privacy Policy</h1>
             <p className="text-text-muted text-sm font-bold uppercase tracking-widest">Last Updated: {lastUpdated}</p>
           </div>
 
           {/* Content */}
           <div className="prose prose-invert max-w-none space-y-10">
             <section className="space-y-4">
-              <h2 className="text-2xl font-bold text-white">1. Introduction</h2>
+              <h2 className="text-2xl font-bold text-foreground">1. Introduction</h2>
               <p className="text-text-secondary leading-relaxed">
                 {"EchoHire (\"we,\" \"our,\" or \"us\") is committed to protecting your privacy. This Privacy Policy explains how your personal information is collected, used, and disclosed by EchoHire. By using our platform, you signify that you have read, understood, and agree to our collection, storage, use, and disclosure of your personal information as described in this Privacy Policy."}
               </p>
             </section>
 
             <section className="space-y-4">
-              <h2 className="text-2xl font-bold text-white">2. Information We Collect</h2>
+              <h2 className="text-2xl font-bold text-foreground">2. Information We Collect</h2>
               <p className="text-text-secondary leading-relaxed">
                 We collect information that you provide directly to us when you:
               </p>
@@ -46,7 +46,7 @@ export default function PrivacyPage() {
             </section>
 
             <section className="space-y-4">
-              <h2 className="text-2xl font-bold text-white">3. How We Use Your Information</h2>
+              <h2 className="text-2xl font-bold text-foreground">3. How We Use Your Information</h2>
               <p className="text-text-secondary leading-relaxed">
                 We use the information we collect to provide, maintain, and improve our services, including:
               </p>
@@ -59,21 +59,21 @@ export default function PrivacyPage() {
             </section>
 
             <section className="space-y-4">
-              <h2 className="text-2xl font-bold text-white">4. Data Security</h2>
+              <h2 className="text-2xl font-bold text-foreground">4. Data Security</h2>
               <p className="text-text-secondary leading-relaxed">
                 We implement industry-standard security measures to protect your data. However, no method of transmission over the Internet or electronic storage is 100% secure. While we strive to use commercially acceptable means to protect your personal information, we cannot guarantee its absolute security.
               </p>
             </section>
 
             <section className="space-y-4">
-              <h2 className="text-2xl font-bold text-white">5. Third-Party Services</h2>
+              <h2 className="text-2xl font-bold text-foreground">5. Third-Party Services</h2>
               <p className="text-text-secondary leading-relaxed">
                 We use third-party AI providers (like Google Gemini) to process certain aspects of your data. These providers are strictly prohibited from using your data for their own purposes or training their models on your personal information without explicit consent.
               </p>
             </section>
 
             <section className="space-y-4">
-              <h2 className="text-2xl font-bold text-white">6. Your Rights</h2>
+              <h2 className="text-2xl font-bold text-foreground">6. Your Rights</h2>
               <p className="text-text-secondary leading-relaxed">
                 Depending on your location, you may have rights to access, correct, or delete your personal information. You can manage most of your data through your account settings or by contacting our support team.
               </p>

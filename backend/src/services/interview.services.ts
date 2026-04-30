@@ -28,15 +28,30 @@ export const createInterviewService = async (
         throw new AppError("You have already applied for this job", 400);
     }
 
-    // Auto-building rounds from the Job blueprint
-    const clonedRounds = job.rounds.map((roundConfig) => ({
-        type: roundConfig.type,
-        max_questions: roundConfig.max_questions,
-        status: "pending",
-        qa_pairs: [],
-    }));
+    // ENFORCED LOGIC: 2 AI Interview Rounds + 1 Separate Coding Assessment
+    const clonedRounds = [
+        {
+            type: "BehavioralAnalysis",
+            max_questions: 5,
+            status: "pending",
+            qa_pairs: [],
+        },
+        {
+            type: "TechnicalScreening",
+            max_questions: 5,
+            status: "pending",
+            qa_pairs: [],
+        },
+        {
+            type: "CodingAssessment",
+            max_questions: 3,
+            status: "pending",
+            qa_pairs: [],
+        }
+    ];
 
     const assessment_token = uuidv4();
+    const join_code = Math.random().toString(36).substring(2, 10).toUpperCase();
 
     // Creating the Interview Instance
     const interview = await Interview.create({
@@ -46,6 +61,7 @@ export const createInterviewService = async (
         status: "applied",
         rounds: clonedRounds,
         assessment_token,
+        join_code,
     });
 
     // Send Assessment Link via Gmail (Async)

@@ -54,10 +54,10 @@ export default function ChatDrawer({ isOpen, onClose, userId, userRole, ticketId
             animate={{ x: 0 }}
             exit={{ x: "100%" }}
             transition={{ type: "spring", damping: 25, stiffness: 200 }}
-            className="fixed right-0 top-0 z-[101] h-full w-full max-w-md border-l border-white/10 bg-surface-1 flex flex-col"
+            className="fixed right-0 top-0 z-[101] h-full w-full max-w-md border-l border-border-medium bg-surface-1 flex flex-col"
           >
             {/* Header */}
-            <header className="flex h-20 items-center justify-between border-b border-white/10 px-6 bg-surface-2">
+            <header className="flex h-20 items-center justify-between border-b border-border-medium px-6 bg-surface-2">
               <div className="flex items-center gap-3">
                 <div className="relative">
                   <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 text-primary">
@@ -66,13 +66,13 @@ export default function ChatDrawer({ isOpen, onClose, userId, userRole, ticketId
                   <div className={`absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full border-2 border-surface-2 ${status === "connected" ? "bg-emerald-500" : "bg-slate-500"}`} />
                 </div>
                 <div>
-                  <h3 className="font-bold text-white">Support Chat</h3>
+                  <h3 className="font-bold text-foreground">Support Chat</h3>
                   <p className="text-xs text-text-muted">
                     {status === "connected" ? "Online" : "Connecting..."}
                   </p>
                 </div>
               </div>
-              <button onClick={onClose} className="rounded-xl p-2 text-text-muted hover:bg-white/5 hover:text-white transition-colors">
+              <button onClick={onClose} className="rounded-xl p-2 text-text-muted hover:bg-surface-2 hover:text-foreground transition-colors">
                 <FiX size={20} />
               </button>
             </header>
@@ -81,7 +81,7 @@ export default function ChatDrawer({ isOpen, onClose, userId, userRole, ticketId
             <div ref={scrollRef} className="flex-1 overflow-y-auto p-6 space-y-4 scroll-smooth">
               {messages.length === 0 ? (
                 <div className="flex h-full flex-col items-center justify-center text-center space-y-4">
-                  <div className="rounded-2xl border border-white/5 bg-white/[0.02] p-8 max-w-[280px]">
+                  <div className="rounded-2xl border border-border-subtle bg-white/[0.02] p-8 max-w-[280px]">
                     <p className="text-sm text-text-muted">No messages yet. How can we help you today?</p>
                   </div>
                 </div>
@@ -94,8 +94,8 @@ export default function ChatDrawer({ isOpen, onClose, userId, userRole, ticketId
                         <div 
                           className={`rounded-2xl px-4 py-3 text-sm leading-relaxed ${
                             isMe 
-                              ? "bg-primary text-white" 
-                              : "bg-surface-2 border border-white/10 text-white"
+                              ? "bg-primary text-foreground" 
+                              : "bg-surface-2 border border-border-medium text-foreground"
                           }`}
                         >
                           {msg.content}
@@ -111,9 +111,9 @@ export default function ChatDrawer({ isOpen, onClose, userId, userRole, ticketId
             </div>
 
             {/* Input Area */}
-            <footer className="border-t border-white/10 p-6 bg-surface-2">
+            <footer className="border-t border-border-medium p-6 bg-surface-2">
               <div className="flex items-center gap-3">
-                <button className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-white/10 text-text-muted hover:bg-white/5 transition-colors">
+                <button className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-border-medium text-text-muted hover:bg-surface-2 transition-colors">
                   <FiPaperclip size={18} />
                 </button>
                 <div className="relative flex-1">
@@ -122,11 +122,11 @@ export default function ChatDrawer({ isOpen, onClose, userId, userRole, ticketId
                     onChange={(e) => setInputValue(e.target.value)}
                     onKeyDown={(e) => e.key === "Enter" && handleSend()}
                     placeholder="Type a message..."
-                    className="h-11 w-full rounded-xl border border-white/10 bg-surface-1 pl-4 pr-12 text-sm text-white placeholder:text-slate-500 outline-none focus:border-primary/50 transition-all"
+                    className="h-11 w-full rounded-xl border border-border-medium bg-surface-1 pl-4 pr-12 text-sm text-foreground placeholder:text-text-muted outline-none focus:border-primary/50 transition-all"
                   />
                   <button 
                     onClick={handleSend}
-                    className="absolute right-1 top-1 flex h-9 w-9 items-center justify-center rounded-lg bg-primary text-white transition-all hover:bg-primary-hover active:scale-90"
+                    className="absolute right-1 top-1 flex h-9 w-9 items-center justify-center rounded-lg bg-primary text-foreground transition-all hover:bg-primary-hover active:scale-90"
                   >
                     <FiSend size={16} />
                   </button>

@@ -44,7 +44,7 @@ export default function AboutPage() {
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 border border-primary/20 text-primary text-xs font-bold uppercase tracking-widest">
               Our Mission
             </div>
-            <h1 className="text-5xl md:text-7xl font-black tracking-tight text-white max-w-4xl mx-auto leading-[1.1]">
+            <h1 className="text-5xl md:text-7xl font-black tracking-tight text-foreground max-w-4xl mx-auto leading-[1.1]">
               Leveling the <span className="text-primary text-glow">Playing Field</span> for Every Candidate.
             </h1>
             <p className="text-xl text-text-secondary max-w-2xl mx-auto leading-relaxed">
@@ -69,7 +69,7 @@ export default function AboutPage() {
                 viewport={{ once: true }}
                 transition={{ delay: i * 0.1 }}
               >
-                <p className="text-4xl md:text-5xl font-black text-white mb-2">{stat.value}</p>
+                <p className="text-4xl md:text-5xl font-black text-foreground mb-2">{stat.value}</p>
                 <p className="text-xs font-bold uppercase tracking-widest text-text-muted">{stat.label}</p>
               </motion.div>
             ))}
@@ -95,7 +95,7 @@ export default function AboutPage() {
                 <div className="h-12 w-12 rounded-2xl bg-surface-2 flex items-center justify-center text-xl mb-6 group-hover:scale-110 transition-transform">
                   {value.icon}
                 </div>
-                <h3 className="text-xl font-bold text-white mb-3">{value.title}</h3>
+                <h3 className="text-xl font-bold text-foreground mb-3">{value.title}</h3>
                 <p className="text-sm text-text-secondary leading-relaxed">{value.description}</p>
               </motion.div>
             ))}
@@ -104,7 +104,7 @@ export default function AboutPage() {
 
         {/* Story Section */}
         <section className="max-w-4xl mx-auto px-6 text-center">
-          <h2 className="text-3xl font-black text-white mb-8">The Story</h2>
+          <h2 className="text-3xl font-black text-foreground mb-8">The Story</h2>
           <div className="space-y-6 text-lg text-text-secondary leading-relaxed">
             <p>
               {"It started in a small apartment with a simple realization: recruitment algorithms were filtering out brilliant people just because they didn't know how to \"speak\" to the AI."}

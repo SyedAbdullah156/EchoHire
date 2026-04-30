@@ -13,6 +13,38 @@ import RoundFeedback from "@/components/interview/RoundFeedback";
 import CodingSandbox from "@/components/CodingSandbox";
 import QuizInterface from "@/components/interview/QuizInterface";
 
+interface TQAPair {
+  question: string;
+  candidate_answer?: string;
+  ai_evaluation?: string;
+  timestamp: string | Date;
+  metadata?: {
+    problem_statement?: string;
+    test_cases?: Array<{ input: string; expected: string }>;
+    initial_code?: string;
+  };
+}
+
+interface TInterviewRound {
+  type: string;
+  status: string;
+  qa_pairs: TQAPair[];
+  max_questions: number;
+  score?: number;
+  remarks?: string;
+}
+
+interface SpeechRecognitionInstance {
+  stop: () => void;
+  start: () => void;
+  onresult: (e: { results: { [key: number]: { [key: number]: { transcript: string } } } }) => void;
+  onend: () => void;
+}
+
+interface SpeechRecognitionConstructor {
+  new (): SpeechRecognitionInstance;
+}
+
 function InterviewContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -20,75 +52,61 @@ function InterviewContent() {
   const token = searchParams.get("token");
   const roundIndex = parseInt(searchParams.get("round") || "0");
 
-  const [view, setView] = useState<"selection" | "lobby" | "active" | "results">("selection");
+  const [view, setView] = useState<"selection" | "lobby" | "active" | "results">(
+    !interviewId && !token ? "selection" : "selection"
+  );
   const [chatMessage, setChatMessage] = useState("");
   const [inputInterviewId, setInputInterviewId] = useState("");
   const [showEndConfirm, setShowEndConfirm] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
   const [isVideoOff, setIsVideoOff] = useState(false);
-  const [stream, setStream] = useState<MediaStream | null>(null);
 
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(!interviewId && !token ? false : true);
   const [currentQuestion, setCurrentQuestion] = useState("");
-  const [qaHistory, setQaHistory] = useState<any[]>([]);
+  const [qaHistory, setQaHistory] = useState<TQAPair[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
-  const [roundData, setRoundData] = useState<any>(null);
-  const [totalRounds, setTotalRounds] = useState(3);
+  const [roundData, setRoundData] = useState<TInterviewRound | null>(null);
+  const [assessmentToken, setAssessmentToken] = useState<string | null>(token);
 
   const videoRef = useRef<HTMLVideoElement>(null);
-  const recognitionRef = useRef<any>(null);
-
-  // AI Voice Synthesis
-  const speak = (text: string) => {
-    if (typeof window !== "undefined" && window.speechSynthesis) {
-      window.speechSynthesis.cancel();
-      const utterance = new SpeechSynthesisUtterance(text);
-      utterance.rate = 1.0;
-      utterance.pitch = 1.0;
-      window.speechSynthesis.speak(utterance);
-    }
-  };
-
-  useEffect(() => {
-    if (view === "active" && currentQuestion && !isSubmitting) {
-      speak(currentQuestion);
-    }
-  }, [currentQuestion, view, isSubmitting]);
+  const recognitionRef = useRef<SpeechRecognitionInstance | null>(null);
 
   // Initial Sync Logic
   useEffect(() => {
-    if (!interviewId && !token) {
-      setView("selection");
-      setLoading(false);
-      return;
-    }
+    async function syncInterview() {
+      if (!interviewId && !token) return;
 
-    async function checkState() {
       try {
-        const url = interviewId 
-          ? `/api/ai-interview/${interviewId}/rounds/${roundIndex}`
-          : `/api/ai-interview/validate-token?token=${token}`;
+        const cleanId = interviewId?.trim();
+        const cleanToken = token?.trim();
+
+        const url = cleanId 
+          ? `/api/ai-interview/${cleanId}/rounds/${roundIndex}`
+          : `/api/coding/validate-token?token=${cleanToken}`;
           
         const res = await fetch(url);
         const result = await res.json();
+
         if (res.ok) {
           // If we used a token, we might need to set the internal interviewId for subsequent calls
           const actualInterviewId = result.data.interview?._id || result.data._id;
-          if (token && actualInterviewId) {
+          if (token && actualInterviewId && !interviewId) {
             router.replace(`/candidate/ai-interview?id=${actualInterviewId}&round=${roundIndex}`, { scroll: false });
-            return; // Effect will re-run with interviewId
+            return;
           }
 
-          const round = result.data.round || result.data.rounds[roundIndex];
+          const interviewObj = result.data.interview || result.data;
+          const round = result.data.round || interviewObj.rounds[roundIndex];
+
           setRoundData(round);
-          setTotalRounds(result.data.interview?.rounds.length || result.data.rounds.length);
+          setAssessmentToken(interviewObj.assessment_token);
+          setQaHistory(round.qa_pairs);
 
           if (round.status === "completed") {
             setView("results");
           } else if (round.qa_pairs.length > 0) {
             setCurrentQuestion(round.qa_pairs[round.qa_pairs.length - 1].question);
-            setQaHistory(round.qa_pairs);
             setView("active");
           } else {
             setView("lobby");
@@ -97,16 +115,50 @@ function InterviewContent() {
           toast.error("Could not sync interview data.");
           setView("selection");
         }
-      } catch (e) {
-        console.error("Sync error", e);
+      } catch (error) {
+        console.error("Sync error:", error);
         toast.error("Connection lost.");
         setView("selection");
       } finally {
         setLoading(false);
       }
     }
-    checkState();
-  }, [interviewId, token, roundIndex]);
+    syncInterview();
+  }, [interviewId, token, roundIndex, router]);
+
+  // AI Voice Synthesis
+  const speak = (text: string) => {
+    if (typeof window !== "undefined" && window.speechSynthesis) {
+      window.speechSynthesis.cancel();
+      const utterance = new SpeechSynthesisUtterance(text);
+      
+      const voices = window.speechSynthesis.getVoices();
+      const maleVoice = voices.find(v => 
+        v.name.toLowerCase().includes("male") || 
+        v.name.toLowerCase().includes("david") || 
+        v.name.toLowerCase().includes("guy")
+      );
+      
+      if (maleVoice) utterance.voice = maleVoice;
+      utterance.rate = 1.0;
+      utterance.pitch = 0.9;
+      window.speechSynthesis.speak(utterance);
+    }
+  };
+
+  useEffect(() => {
+    return () => {
+      if (typeof window !== "undefined" && window.speechSynthesis) {
+        window.speechSynthesis.cancel();
+      }
+    };
+  }, []);
+
+  useEffect(() => {
+    if (view === "active" && currentQuestion && !isSubmitting) {
+      speak(currentQuestion);
+    }
+  }, [currentQuestion, view, isSubmitting]);
 
   // Handle Start Round
   const handleStartRound = async () => {
@@ -125,6 +177,28 @@ function InterviewContent() {
         toast.error("Rate limit exceeded: Please wait 15 minutes before starting another AI interview round.");
       } else {
         toast.error(result.message || "Failed to start round.");
+      }
+    } catch {
+      toast.error("Network error.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const startPractice = async (category: string) => {
+    setLoading(true);
+    try {
+      const res = await fetch("/api/ai-interview/practice", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ category }),
+      });
+      const result = await res.json();
+      if (res.ok) {
+        const interviewId = result.data._id;
+        router.push(`/candidate/ai-interview?id=${interviewId}&round=0`);
+      } else {
+        toast.error(result.message || "Failed to start practice.");
       }
     } catch {
       toast.error("Network error.");
@@ -169,17 +243,41 @@ function InterviewContent() {
     }
   };
 
+  const streamRef = useRef<MediaStream | null>(null);
+
   // Camera Management (Active View)
   useEffect(() => {
+    const startCamera = async () => {
+      try {
+        if (view === "active" && !isVideoOff && !streamRef.current) {
+          const s = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+          streamRef.current = s;
+          if (videoRef.current) videoRef.current.srcObject = s;
+        }
+      } catch (err) {
+        console.error("Camera access denied:", err);
+        toast.error("Please enable camera/mic access to proceed.");
+      }
+    };
+
+    const stopCamera = () => {
+      if (streamRef.current) {
+        streamRef.current.getTracks().forEach(t => {
+          t.stop();
+          t.enabled = false;
+        });
+        streamRef.current = null;
+      }
+      if (videoRef.current) videoRef.current.srcObject = null;
+    };
+
     if (view === "active" && !isVideoOff) {
-      navigator.mediaDevices.getUserMedia({ video: true, audio: true }).then(s => {
-        setStream(s);
-        if (videoRef.current) videoRef.current.srcObject = s;
-      });
+      startCamera();
     } else {
-      stream?.getTracks().forEach(t => t.stop());
+      stopCamera();
     }
-    return () => stream?.getTracks().forEach(t => t.stop());
+
+    return () => stopCamera();
   }, [view, isVideoOff]);
 
   const toggleRecording = () => {
@@ -187,10 +285,14 @@ function InterviewContent() {
       recognitionRef.current?.stop();
       setIsRecording(false);
     } else {
-      const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+      const win = window as unknown as { 
+        SpeechRecognition: SpeechRecognitionConstructor; 
+        webkitSpeechRecognition: SpeechRecognitionConstructor; 
+      };
+      const SpeechRecognition = win.SpeechRecognition || win.webkitSpeechRecognition;
       if (!SpeechRecognition) return;
       const rec = new SpeechRecognition();
-      rec.onresult = (e: any) => setChatMessage(e.results[0][0].transcript);
+      rec.onresult = (e: { results: { [key: number]: { [key: number]: { transcript: string } } } }) => setChatMessage(e.results[0][0].transcript);
       rec.onend = () => setIsRecording(false);
       rec.start();
       recognitionRef.current = rec;
@@ -218,7 +320,7 @@ function InterviewContent() {
           className="max-w-4xl mx-auto space-y-12 py-12"
         >
           <div className="text-center space-y-4">
-            <h1 className="text-4xl font-black text-white tracking-tight">AI Interview Terminal</h1>
+            <h1 className="text-4xl font-black text-foreground tracking-tight">AI Interview Terminal</h1>
             <p className="text-text-muted">Enter your interview ID or sharpen your skills with a practice session.</p>
           </div>
 
@@ -229,7 +331,7 @@ function InterviewContent() {
                 <FiZap />
               </div>
               <div className="space-y-2">
-                <h2 className="text-2xl font-bold text-white">Job Interview</h2>
+                <h2 className="text-2xl font-bold text-foreground">Job Interview</h2>
                 <p className="text-sm text-text-muted">Have an interview ID? Enter it below to begin your official assessment.</p>
               </div>
               <div className="space-y-4 pt-4">
@@ -238,12 +340,12 @@ function InterviewContent() {
                   placeholder="Paste Interview ID here..."
                   value={inputInterviewId}
                   onChange={(e) => setInputInterviewId(e.target.value)}
-                  className="w-full h-14 bg-surface-2 border border-border-medium rounded-2xl px-6 text-sm text-white outline-none focus:border-primary/50 transition-all"
+                  className="w-full h-14 bg-surface-2 border border-border-medium rounded-2xl px-6 text-sm text-foreground outline-none focus:border-primary/50 transition-all"
                 />
                 <button
                   onClick={() => inputInterviewId && router.push(`/candidate/ai-interview?id=${inputInterviewId}&round=0`)}
                   disabled={!inputInterviewId}
-                  className="w-full h-14 bg-primary text-white font-black uppercase tracking-widest rounded-2xl hover:bg-primary-hover transition-all disabled:opacity-50"
+                  className="w-full h-14 bg-primary text-foreground font-black uppercase tracking-widest rounded-2xl hover:bg-primary-hover transition-all disabled:opacity-50"
                 >
                   Join Session
                 </button>
@@ -251,12 +353,12 @@ function InterviewContent() {
             </div>
 
             {/* Practice Mode */}
-            <div className="p-10 rounded-[3rem] bg-surface-1 border border-white/5 space-y-6">
-              <div className="h-14 w-14 rounded-2xl bg-white/5 flex items-center justify-center text-white text-2xl">
+            <div className="p-10 rounded-[3rem] bg-surface-1 border border-border-subtle space-y-6">
+              <div className="h-14 w-14 rounded-2xl bg-surface-2 flex items-center justify-center text-foreground text-2xl">
                 <FiMic />
               </div>
               <div className="space-y-2">
-                <h2 className="text-2xl font-bold text-white">Practice Lab</h2>
+                <h2 className="text-2xl font-bold text-foreground">Practice Lab</h2>
                 <p className="text-sm text-text-muted">Warm up with AI-generated mock interviews across different categories.</p>
               </div>
 
@@ -264,10 +366,10 @@ function InterviewContent() {
                 {["Frontend", "Backend", "Behavioral", "System Design"].map((cat) => (
                   <button
                     key={cat}
-                    onClick={() => toast.info(`${cat} practice coming soon!`)}
-                    className="p-4 rounded-2xl bg-surface-2 border border-white/5 text-left hover:border-primary/40 transition-all group"
+                    onClick={() => startPractice(cat)}
+                    className="p-4 rounded-2xl bg-surface-2 border border-border-subtle text-left hover:border-primary/40 transition-all group"
                   >
-                    <p className="text-[10px] font-black text-primary uppercase tracking-widest mb-1 group-hover:text-white">{cat}</p>
+                    <p className="text-[10px] font-black text-primary uppercase tracking-widest mb-1 group-hover:text-foreground">{cat}</p>
                     <p className="text-xs text-text-muted">Start Session</p>
                   </button>
                 ))}
@@ -288,9 +390,9 @@ function InterviewContent() {
           <RoundFeedback
             roundIndex={roundIndex}
             result={roundData}
-            isLastRound={roundIndex >= totalRounds - 1}
+            isLastRound={roundIndex >= 1} // Only 2 AI conversational rounds
             onNext={() => router.push(`/candidate/ai-interview?id=${interviewId}&round=${roundIndex + 1}`)}
-            onFinish={() => router.push("/candidate/dashboard")}
+            onFinish={() => router.push(`/candidate/coding-test?token=${assessmentToken}`)}
           />
         </motion.div>
       )}
@@ -298,17 +400,17 @@ function InterviewContent() {
       {view === "active" && (
         <motion.div key="active" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-6">
           {/* Header */}
-          <header className="flex items-center justify-between p-6 rounded-3xl bg-surface-1/40 border border-white/5 backdrop-blur-md">
+          <header className="flex items-center justify-between p-6 rounded-3xl bg-surface-1/40 border border-border-subtle backdrop-blur-md">
             <div>
               <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.2em] text-primary">
                 <span className="w-2 h-2 rounded-full bg-primary animate-pulse" /> Live Round {roundIndex + 1}
               </div>
-              <h1 className="text-xl font-bold text-white tracking-tight">Technical Assessment</h1>
+              <h1 className="text-xl font-bold text-foreground tracking-tight">Technical Assessment</h1>
             </div>
             <div className="flex items-center gap-4 text-right">
-              <div className="border-r border-white/10 pr-4">
+              <div className="border-r border-border-medium pr-4">
                 <p className="text-[10px] font-bold text-text-muted uppercase tracking-widest">Progress</p>
-                <p className="text-sm font-mono text-white">{qaHistory.length} / {roundData?.max_questions || 5}</p>
+                <p className="text-sm font-mono text-foreground">{qaHistory.length} / {roundData?.max_questions || 5}</p>
               </div>
               <button onClick={() => setShowEndConfirm(true)} className="p-3 rounded-xl bg-red-500/10 text-red-500 hover:bg-red-500/20 transition-all">
                 <FiPhoneOff />
@@ -330,10 +432,12 @@ function InterviewContent() {
                 />
               ) : roundData?.type === "CodingAssessment" ? (
                 <CodingSandbox 
-                  problemStatement={currentQuestion}
+                  problemStatement={roundData?.qa_pairs[qaHistory.length - 1]?.metadata?.problem_statement || currentQuestion}
+                  testCases={roundData?.qa_pairs[qaHistory.length - 1]?.metadata?.test_cases}
+                  initialCode={roundData?.qa_pairs[qaHistory.length - 1]?.metadata?.initial_code}
                   interviewId={interviewId || ""}
                   roundIndex={roundIndex}
-                  onSuccess={(analysis) => {
+                  onSuccess={() => {
                     // Automatically move to next question if coding is done
                     toast.success("Solution captured. Moving to evaluation...");
                     setTimeout(handleSendResponse, 2000);
@@ -341,7 +445,7 @@ function InterviewContent() {
                 />
               ) : (
                 <>
-                  <div className="relative aspect-video rounded-[2.5rem] overflow-hidden border border-white/10 bg-black shadow-2xl">
+                  <div className="relative aspect-video rounded-[2.5rem] overflow-hidden border border-border-medium bg-black shadow-2xl">
                     <video ref={videoRef} autoPlay muted playsInline className="w-full h-full object-cover" />
                     {isVideoOff && (
                       <div className="absolute inset-0 bg-surface-1 flex items-center justify-center">
@@ -350,10 +454,10 @@ function InterviewContent() {
                     )}
                     {/* HUD Controls */}
                     <div className="absolute bottom-6 left-6 flex gap-2">
-                      <button onClick={() => setIsMuted(!isMuted)} className={`p-3 rounded-xl ${isMuted ? 'bg-red-500 text-white' : 'bg-black/40 text-white backdrop-blur-md'}`}>
+                      <button onClick={() => setIsMuted(!isMuted)} className={`p-3 rounded-xl ${isMuted ? 'bg-red-500 text-foreground' : 'bg-black/40 text-foreground backdrop-blur-md'}`}>
                         {isMuted ? <FiMicOff /> : <FiMic />}
                       </button>
-                      <button onClick={() => setIsVideoOff(!isVideoOff)} className={`p-3 rounded-xl ${isVideoOff ? 'bg-red-500 text-white' : 'bg-black/40 text-white backdrop-blur-md'}`}>
+                      <button onClick={() => setIsVideoOff(!isVideoOff)} className={`p-3 rounded-xl ${isVideoOff ? 'bg-red-500 text-foreground' : 'bg-black/40 text-foreground backdrop-blur-md'}`}>
                         {isVideoOff ? <FiVideoOff /> : <FiVideo />}
                       </button>
                     </div>
@@ -361,7 +465,7 @@ function InterviewContent() {
 
                   <div className="p-10 rounded-[2.5rem] bg-surface-1/40 border border-primary/10 relative overflow-hidden">
                     <p className="text-[10px] font-black text-primary uppercase tracking-[0.3em] mb-4">Interviewer Question</p>
-                    <p className="text-2xl font-bold text-white leading-relaxed tracking-tight">"{currentQuestion}"</p>
+                    <p className="text-2xl font-bold text-foreground leading-relaxed tracking-tight">&quot;{currentQuestion}&quot;</p>
                     {isSubmitting && (
                       <div className="mt-4 flex gap-1">
                         {[0, 1, 2].map(i => <motion.div key={i} animate={{ scale: [1, 1.5, 1] }} transition={{ repeat: Infinity, duration: 1, delay: i * 0.2 }} className="w-1.5 h-1.5 rounded-full bg-primary" />)}
@@ -373,10 +477,10 @@ function InterviewContent() {
             </div>
 
             <div className="lg:col-span-4 flex flex-col gap-6">
-              <div className="flex-1 p-6 rounded-[2.5rem] bg-surface-1/40 border border-white/5 overflow-y-auto space-y-4">
-                <h3 className="text-xs font-black text-white uppercase tracking-widest px-2">Conversation</h3>
+              <div className="flex-1 p-6 rounded-[2.5rem] bg-surface-1/40 border border-border-subtle overflow-y-auto space-y-4">
+                <h3 className="text-xs font-black text-foreground uppercase tracking-widest px-2">Conversation</h3>
                 {qaHistory.map((q, i) => (
-                  <div key={i} className="p-4 rounded-2xl bg-white/[0.02] border border-white/5 space-y-2">
+                  <div key={i} className="p-4 rounded-2xl bg-white/[0.02] border border-border-subtle space-y-2">
                     <p className="text-[9px] font-black text-primary uppercase">Question {i + 1}</p>
                     <p className="text-xs text-text-secondary leading-relaxed">{q.question}</p>
                   </div>
@@ -385,22 +489,22 @@ function InterviewContent() {
 
               {/* Hide chat input for Quiz/Coding rounds as they have their own */}
               {roundData?.type !== "FrameworkProficiency" && roundData?.type !== "CodingAssessment" && (
-                <div className="p-6 rounded-[2.5rem] bg-surface-1/40 border border-white/5 space-y-4">
+                <div className="p-6 rounded-[2.5rem] bg-surface-1/40 border border-border-subtle space-y-4">
                   <textarea
                     value={chatMessage}
                     onChange={(e) => setChatMessage(e.target.value)}
                     disabled={isSubmitting}
-                    className="w-full h-32 bg-white/[0.02] border border-white/5 rounded-2xl p-4 text-xs text-white outline-none focus:border-primary/40 transition-all resize-none disabled:opacity-50"
+                    className="w-full h-32 bg-white/[0.02] border border-border-subtle rounded-2xl p-4 text-xs text-foreground outline-none focus:border-primary/40 transition-all resize-none disabled:opacity-50"
                     placeholder="Provide your answer..."
                   />
                   <div className="flex gap-2">
-                    <button onClick={toggleRecording} className={`flex-1 flex items-center justify-center gap-2 py-4 rounded-2xl ${isRecording ? "bg-red-600 text-white" : "bg-surface-2 text-text-muted"}`}>
+                    <button onClick={toggleRecording} className={`flex-1 flex items-center justify-center gap-2 py-4 rounded-2xl ${isRecording ? "bg-red-600 text-foreground" : "bg-surface-2 text-text-muted"}`}>
                       {isRecording ? <FiMicOff /> : <FiMic />}
                     </button>
                     <button
                       onClick={handleSendResponse}
                       disabled={isSubmitting || !chatMessage.trim()}
-                      className="flex-[3] py-4 rounded-2xl bg-primary text-white font-black uppercase tracking-widest hover:bg-primary-hover disabled:opacity-50 transition-all shadow-lg shadow-primary/20"
+                      className="flex-[3] py-4 rounded-2xl bg-primary text-foreground font-black uppercase tracking-widest hover:bg-primary-hover disabled:opacity-50 transition-all shadow-lg shadow-primary/20"
                     >
                       {isSubmitting ? (
                         <div className="flex items-center gap-2">
@@ -418,13 +522,13 @@ function InterviewContent() {
 
       {showEndConfirm && (
         <div className="fixed inset-0 z-[1000] flex items-center justify-center p-4 backdrop-blur-sm bg-black/60">
-          <div className="max-w-sm w-full p-10 rounded-[3rem] bg-surface-1 border border-white/10 text-center space-y-6">
+          <div className="max-w-sm w-full p-10 rounded-[3rem] bg-surface-1 border border-border-medium text-center space-y-6">
             <FiAlertCircle className="text-4xl text-red-500 mx-auto" />
-            <h3 className="text-xl font-bold text-white">Exit Interview?</h3>
+            <h3 className="text-xl font-bold text-foreground">Exit Interview?</h3>
             <p className="text-xs text-text-muted">Your progress for this round will be saved, but the session will end.</p>
             <div className="grid gap-3">
-              <button onClick={() => router.push("/candidate/dashboard")} className="w-full py-4 rounded-2xl bg-red-600 text-white font-bold uppercase tracking-widest">Confirm Exit</button>
-              <button onClick={() => setShowEndConfirm(false)} className="w-full py-4 rounded-2xl bg-surface-2 text-white font-bold uppercase tracking-widest">Cancel</button>
+              <button onClick={() => router.push("/candidate/dashboard")} className="w-full py-4 rounded-2xl bg-red-600 text-foreground font-bold uppercase tracking-widest">Confirm Exit</button>
+              <button onClick={() => setShowEndConfirm(false)} className="w-full py-4 rounded-2xl bg-surface-2 text-foreground font-bold uppercase tracking-widest">Cancel</button>
             </div>
           </div>
         </div>
