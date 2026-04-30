@@ -1,9 +1,10 @@
-const express = require('express');
-const router = express.Router();
-const multer = require('multer');
-const cloudinary = require('cloudinary').v2;
-const streamifier = require('streamifier');
+// src/routes/upload.ts
+import { Router, Request, Response } from 'express';
+import multer from 'multer';
+import { v2 as cloudinary } from 'cloudinary';
+import streamifier from 'streamifier';
 
+const router = Router();
 const upload = multer({ storage: multer.memoryStorage() });
 
 cloudinary.config({
@@ -12,25 +13,26 @@ cloudinary.config({
   api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
-function uploadBufferToCloudinary(buffer, options = {}) {
-  return new Promise((resolve, reject) => {
+const uploadBufferToCloudinary = (buffer: Buffer, options: Record<string, unknown> = {}) =>
+  new Promise<any>((resolve, reject) => {
     const stream = cloudinary.uploader.upload_stream(options, (err, result) => {
       if (err) return reject(err);
       resolve(result);
     });
     streamifier.createReadStream(buffer).pipe(stream);
   });
-}
 
-router.post('/upload', upload.single('file'), async (req, res) => {
+router.post('/upload', upload.single('file'), async (req: Request, res: Response) => {
   try {
-    if (!req.file) return res.status(400).json({ error: 'No file uploaded' });
-    const result = await uploadBufferToCloudinary(req.file.buffer, { folder: 'your-folder' });
-    res.json({ url: result.secure_url, public_id: result.public_id });
+    const file = req.file as Express.Multer.File | undefined;
+    if (!file) return res.status(400).json({ error: 'No file uploaded' });
+
+    const result = await uploadBufferToCloudinary(file.buffer, { folder: 'your-folder' });
+    return res.json({ url: result.secure_url, public_id: result.public_id });
   } catch (err) {
     console.error(err);
-    res.status(500).json({ error: 'Upload failed' });
+    return res.status(500).json({ error: 'Upload failed' });
   }
 });
 
-module.exports = router;
+export default router;
