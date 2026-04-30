@@ -1,6 +1,5 @@
 "use client";
 
-import Navbar from "@/components/Navbar";
 import DashboardSidebar from "@/components/DashboardSidebar";
 import ActionAlert from "../../components/dashboard/ActionAlert";
 import ProgressAreaChart from "../../components/dashboard/ProgressAreaChart";
@@ -40,8 +39,7 @@ export default function DashboardPage() {
 
   return (
     <main className="min-h-screen bg-[#050b18] text-white [font-family:Inter,Manrope,ui-sans-serif,system-ui,sans-serif]">
-      <Navbar />
-      <section className="mx-auto flex max-w-[1500px] flex-col gap-5 px-4 pb-8 pt-24 lg:flex-row">
+      <section className="mx-auto flex max-w-[1500px] flex-col gap-5 px-4 pb-8 pt-8 lg:flex-row">
         <DashboardSidebar active="dashboard" />
 
         <motion.div
