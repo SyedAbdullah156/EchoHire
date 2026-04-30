@@ -58,6 +58,7 @@ function MenuItem({ item, isActive, collapsed, onNavigate }: MenuItemProps) {
       <Link
         href={item.href}
         onClick={onNavigate}
+        title={collapsed ? item.label : undefined}
         className={`flex items-center rounded-xl px-3 py-2.5 text-sm transition-all duration-200 active:scale-[0.98] md:text-base ${
           collapsed ? "justify-center" : "gap-3"
         } ${
@@ -75,12 +76,6 @@ function MenuItem({ item, isActive, collapsed, onNavigate }: MenuItemProps) {
         </div>
         {!collapsed && <span className="truncate">{item.label}</span>}
       </Link>
-
-      {collapsed && (
-        <span className="pointer-events-none absolute left-full top-1/2 z-30 ml-3 -translate-y-1/2 rounded-md border border-white/10 bg-[#0d162a] px-2 py-1 text-xs text-[#dbe7ff] opacity-0 shadow-[0_6px_20px_rgba(0,0,0,0.35)] transition group-hover:opacity-100">
-          {item.label}
-        </span>
-      )}
     </div>
   );
 }
@@ -102,41 +97,47 @@ function SidebarShell({
 }: SidebarShellProps) {
   return (
     <aside
-      className={`rounded-2xl border border-white/10 bg-black/20 p-3 text-[#d2d9ea] shadow-[0_0_1px_1px_rgba(255,255,255,0.1),0_0_20px_rgba(59,130,246,0.28)] backdrop-blur-xl transition-all duration-300 ${
+      className={`flex flex-col rounded-2xl border border-white/10 bg-black/20 p-3 text-[#d2d9ea] shadow-[0_0_1px_1px_rgba(255,255,255,0.1),0_0_20px_rgba(59,130,246,0.28)] backdrop-blur-xl transition-all duration-300 ${
         collapsed ? "w-[88px]" : "w-[290px]"
-      } ${mobile ? "h-full w-[290px] rounded-none border-y-0 border-l-0" : ""}`}
+      } ${
+        mobile
+          ? "h-full w-[290px] rounded-none border-y-0 border-l-0"
+          : "h-[calc(100vh-2rem)] overflow-x-hidden"
+      }`}
     >
-      <div className="mb-4 flex items-center justify-between">
-        <div className={`overflow-hidden transition-all duration-300 ${collapsed ? "w-0 opacity-0" : "w-auto opacity-100"}`}>
-          <h2 className="text-xl font-bold tracking-tight text-[#57a2ff]">EchoHire</h2>
-          <p className="text-xs text-[#7f96c2]">Navigation</p>
-        </div>
+      <div className="relative mb-4">
+        <Link
+          href="/dashboard"
+          onClick={onNavigate}
+          className={`flex w-full items-center rounded-xl transition hover:bg-white/5 ${
+            collapsed ? "justify-center px-2 py-2" : "gap-3 px-2 py-1.5 pr-12"
+          }`}
+          aria-label="EchoHire dashboard"
+        >
+          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-gradient-to-tr from-blue-600 to-indigo-700 shadow-[0_10px_30px_rgba(59,130,246,0.25)]">
+            <span className="text-xs font-bold text-white">EH</span>
+          </div>
+          {!collapsed && (
+            <div className="min-w-0">
+              <h2 className="truncate text-xl font-bold tracking-tight text-[#57a2ff]">EchoHire</h2>
+              <p className="text-xs text-[#7f96c2]">Navigation</p>
+            </div>
+          )}
+        </Link>
 
         <button
           type="button"
           onClick={onToggleCollapsed}
-          className="rounded-lg border border-white/10 bg-black/30 p-2 text-[#c7d7f8] transition hover:border-blue-300/50 hover:text-white"
+          className="absolute right-2 top-2 shrink-0 rounded-lg border border-white/10 bg-black/30 p-2 text-[#c7d7f8] transition hover:border-blue-300/50 hover:text-white"
           aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
         >
           {collapsed ? <FiChevronRight size={16} /> : <FiChevronLeft size={16} />}
         </button>
       </div>
 
-      <nav className="space-y-2">
-        {mainItems.map((item) => (
-          <MenuItem
-            key={item.key}
-            item={item}
-            isActive={active === item.key}
-            collapsed={collapsed}
-            onNavigate={onNavigate}
-          />
-        ))}
-      </nav>
-
-      <div className="mt-5 border-t border-white/10 pt-4">
+      <div className="flex-1 overflow-y-auto pb-2">
         <nav className="space-y-2">
-          {accountItems.map((item) => (
+          {mainItems.map((item) => (
             <MenuItem
               key={item.key}
               item={item}
@@ -146,6 +147,20 @@ function SidebarShell({
             />
           ))}
         </nav>
+
+        <div className="mt-5 border-t border-white/10 pt-4">
+          <nav className="space-y-2">
+            {accountItems.map((item) => (
+              <MenuItem
+                key={item.key}
+                item={item}
+                isActive={active === item.key}
+                collapsed={collapsed}
+                onNavigate={onNavigate}
+              />
+            ))}
+          </nav>
+        </div>
       </div>
     </aside>
   );
@@ -185,7 +200,7 @@ export default function DashboardSidebar({ active }: DashboardSidebarProps) {
         </button>
       </div>
 
-      <div className="hidden lg:block lg:shrink-0">
+      <div className="hidden lg:sticky lg:top-8 lg:block lg:shrink-0 lg:self-start">
         <SidebarShell
           active={active}
           collapsed={collapsed}

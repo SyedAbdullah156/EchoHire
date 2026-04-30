@@ -11,6 +11,8 @@ const quickLinks: Array<{
   href: string;
   icon: IconType;
 }> = [
+  { title: "For Students", desc: "Student landing page", href: "/students", icon: FiBookOpen },
+  { title: "For Recruiters", desc: "Recruiter landing page", href: "/recruiters", icon: FiBarChart2 },
   { title: "Pricing", desc: "Choose your plan", href: "/pricing", icon: FiCreditCard },
   { title: "Sign In", desc: "Access your workspace", href: "/auth", icon: FiUser },
   { title: "Dashboard", desc: "Track your progress", href: "/dashboard", icon: FiGrid },

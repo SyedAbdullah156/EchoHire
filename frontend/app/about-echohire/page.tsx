@@ -1,5 +1,4 @@
 import Link from "next/link";
-import Navbar from "@/components/Navbar";
 import {
   FiArrowRight,
   FiBarChart2,
@@ -29,9 +28,7 @@ const highlights = [
 export default function AboutEchoHirePage() {
   return (
     <main className="min-h-screen bg-[#050b18] text-white">
-      <Navbar />
-
-      <section className="mx-auto max-w-6xl px-4 pb-16 pt-28 md:px-6">
+      <section className="mx-auto max-w-6xl px-4 pb-16 pt-10 md:px-6">
         <header className="rounded-2xl border border-white/20 bg-black/20 p-6 shadow-[0_0_1px_1px_rgba(255,255,255,0.08),0_0_20px_rgba(59,130,246,0.2)] backdrop-blur-xl">
           <p className="text-sm font-medium uppercase tracking-wider text-[#8db5ff]">
             About EchoHire

@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import Navbar from "@/components/Navbar";
 import DashboardSidebar from "@/components/DashboardSidebar";
 import { FiCheckCircle, FiLink2, FiUploadCloud } from "react-icons/fi";
 
@@ -55,9 +54,7 @@ export default function LinkedinOptimizerPage() {
 
   return (
     <main className="min-h-screen bg-[#050b18] text-white">
-      <Navbar />
-
-      <section className="mx-auto flex max-w-[1500px] flex-col gap-5 px-4 pb-10 pt-28 lg:flex-row md:px-6">
+      <section className="mx-auto flex max-w-[1500px] flex-col gap-5 px-4 pb-10 pt-8 lg:flex-row md:px-6">
         <DashboardSidebar active="linkedin-optimizer" />
         <div className="flex-1">
         {/* Header */}
