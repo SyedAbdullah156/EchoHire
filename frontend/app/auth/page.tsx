@@ -5,8 +5,11 @@ import Navbar from "@/components/Navbar";
 import { FiCheckSquare } from "react-icons/fi";
 import { FcGoogle } from "react-icons/fc";
 import { FiLinkedin } from "react-icons/fi";
-import { FormEvent, useState } from "react";
+import { FormEvent, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
+import { authSchema, getZodFieldMessage, parseZodMessage } from "@/lib/validation";
+import { getApiErrorMessage } from "@/lib/api-error";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://127.0.0.1:5050";
 const PROFILE_STORAGE_KEY = "echohire-profile";
@@ -22,6 +25,39 @@ export default function AuthPage() {
   const [role, setRole] = useState<"candidate" | "recruiter">("candidate");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
+  const [confirmPasswordFieldError, setConfirmPasswordFieldError] = useState("");
+
+  const passwordChecks = useMemo(() => {
+    if (mode !== "signup") {
+      return [];
+    }
+
+    return [
+      {
+        label: "8-128 characters",
+        valid: password.length >= 8 && password.length <= 128,
+      },
+      {
+        label: "At least one uppercase letter",
+        valid: /[A-Z]/.test(password),
+      },
+      {
+        label: "At least one lowercase letter",
+        valid: /[a-z]/.test(password),
+      },
+      {
+        label: "At least one number",
+        valid: /[0-9]/.test(password),
+      },
+      {
+        label: "At least one special character",
+        valid: /[^A-Za-z0-9]/.test(password),
+      },
+    ];
+  }, [mode, password]);
+
+  const passwordIsValid = passwordChecks.length > 0 && passwordChecks.every((check) => check.valid);
+  const confirmPasswordIsValid = mode !== "signup" || confirmPassword.length === 0 || password === confirmPassword;
 
   const persistSession = (token: string, profile: { name: string; email: string; role: string }) => {
     localStorage.setItem(TOKEN_STORAGE_KEY, token);
@@ -31,9 +67,25 @@ export default function AuthPage() {
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setErrorMessage("");
+    setConfirmPasswordFieldError("");
 
-    if (mode === "signup" && password !== confirmPassword) {
-      setErrorMessage("Passwords do not match.");
+    const parsed = authSchema.safeParse(
+      mode === "signin"
+        ? { mode, email, password }
+        : { mode, name, email, password, confirmPassword, role },
+    );
+
+    if (!parsed.success) {
+      const message =
+        parsed.error.issues
+          .filter((issue) => issue.path.join(".") !== "confirmPassword")
+          .map((issue) => issue.message)
+          .filter(Boolean)
+          .join(" ") || "Please fix the highlighted fields.";
+      const confirmPasswordMessage = getZodFieldMessage(parsed.error, "confirmPassword");
+      setErrorMessage(message);
+      setConfirmPasswordFieldError(confirmPasswordMessage);
+      toast.error(message);
       return;
     }
 
@@ -43,8 +95,8 @@ export default function AuthPage() {
       const endpoint = mode === "signin" ? "/api/auth/login" : "/api/auth/register";
       const payload =
         mode === "signin"
-          ? { email, password }
-          : { name, email, password, role };
+          ? { email: email.trim(), password }
+          : { name: name.trim(), email: email.trim(), password, role };
 
       const response = await fetch(`${API_BASE_URL}${endpoint}`, {
         method: "POST",
@@ -57,17 +109,16 @@ export default function AuthPage() {
       const result = await response.json();
 
       if (!response.ok) {
-        throw new Error(result?.message ?? "Authentication failed");
+        throw new Error(getApiErrorMessage(result, "Authentication failed"));
       }
 
       persistSession(result.token, result.data);
-      const nextPath =
-        result?.data?.role === "recruiter"
-          ? "/recruiter-dashboard"
-          : "/dashboard?completeProfile=1";
-      router.push(nextPath);
+      toast.success(mode === "signin" ? "Logged in successfully." : "Account created successfully.");
+      router.push("/dashboard?completeProfile=1");
     } catch (error) {
-      setErrorMessage(error instanceof Error ? error.message : "Authentication failed");
+      const message = error instanceof Error ? error.message : "Authentication failed";
+      setErrorMessage(message);
+      toast.error(message);
     } finally {
       setIsSubmitting(false);
     }
@@ -76,6 +127,9 @@ export default function AuthPage() {
   const switchMode = (nextMode: "signin" | "signup") => {
     setMode(nextMode);
     setErrorMessage("");
+    setConfirmPasswordFieldError("");
+    setPassword("");
+    setConfirmPassword("");
   };
 
   return (
@@ -120,12 +174,15 @@ export default function AuthPage() {
           </div>
 
           <h1 className="text-3xl font-bold leading-tight text-[#3f83ff] md:text-4xl">
-            {mode === "signin" ? "Welcome Back" : "Create Your Account"}
-          </h1>
-          <p className="mb-6 mt-2 text-sm text-[#8f97aa] md:text-base">
             {mode === "signin"
               ? "Sign in to continue to your dashboard."
               : "Set up your account to start interview practice."}
+          </h1>
+
+          <p className="mt-3 text-base leading-7 text-[#9ea7ba] md:text-lg">
+            {mode === "signin"
+              ? "Use your email and password to access your account."
+              : "Create your profile, choose your role, and start practicing interviews."}
           </p>
 
           <form className="space-y-4" onSubmit={handleSubmit}>
@@ -164,11 +221,39 @@ export default function AuthPage() {
               <input
                 type="password"
                 value={password}
-                onChange={(event) => setPassword(event.target.value)}
+                onChange={(event) => {
+                  setPassword(event.target.value);
+                  setErrorMessage("");
+                }}
                 required
                 className="w-full rounded-xl border border-[#2b344a] bg-transparent px-4 py-3 text-base outline-none placeholder:text-[#5c667f] focus:border-[#3f83ff]"
                 placeholder="Enter your password"
               />
+              {mode === "signup" && (
+                <div className="mt-3 space-y-2 rounded-xl border border-[#22314f] bg-[#07101f] p-3">
+                  <p className="text-xs font-medium uppercase tracking-[0.18em] text-[#7f8fb2]">
+                    Password rules
+                  </p>
+                  <div className="grid gap-2">
+                    {passwordChecks.map((check) => (
+                      <div
+                        key={check.label}
+                        className={`flex items-center gap-2 text-sm transition-colors ${check.valid ? "text-emerald-300" : "text-[#94a3c7]"}`}
+                      >
+                        <span
+                          className={`inline-flex h-5 w-5 items-center justify-center rounded-full border text-[11px] ${check.valid ? "border-emerald-400 bg-emerald-400/15" : "border-[#556484] bg-transparent"}`}
+                        >
+                          {check.valid ? "✓" : "•"}
+                        </span>
+                        {check.label}
+                      </div>
+                    ))}
+                  </div>
+                  {password.length > 0 && passwordIsValid && (
+                    <p className="text-sm text-emerald-300">Password looks good.</p>
+                  )}
+                </div>
+              )}
             </div>
 
             {mode === "signup" && (
@@ -179,11 +264,21 @@ export default function AuthPage() {
                 <input
                   type="password"
                   value={confirmPassword}
-                  onChange={(event) => setConfirmPassword(event.target.value)}
+                  onChange={(event) => {
+                    setConfirmPassword(event.target.value);
+                    setConfirmPasswordFieldError("");
+                    setErrorMessage("");
+                  }}
                   required
                   className="w-full rounded-xl border border-[#2b344a] bg-transparent px-4 py-3 text-base outline-none placeholder:text-[#5c667f] focus:border-[#3f83ff]"
                   placeholder="Confirm your password"
                 />
+                {confirmPassword.length > 0 && !confirmPasswordIsValid && (
+                  <p className="mt-2 text-sm text-red-300">Passwords do not match.</p>
+                )}
+                {confirmPasswordFieldError && (
+                  <p className="mt-2 text-sm text-red-300">{confirmPasswordFieldError}</p>
+                )}
               </div>
             )}
 
