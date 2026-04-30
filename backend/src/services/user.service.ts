@@ -30,12 +30,12 @@ export const createUserService = async (userData: TUser) => {
 
 export const getAllUsersService = async () => {
     // .select('-password') ensures we never accidentally send hashes to the client
-    const users = await User.find().select('-password');
+    const users = await User.find().select("-password");
     return users;
 };
 
 export const getUserByIdService = async (id: string) => {
-    const user = await User.findById(id).select('-password'); // We already did select: false in schema so here it is redundant but good practice
+    const user = await User.findById(id).select("-password"); // We already did select: false in schema so here it is redundant but good practice
     if (!user) {
         throw new AppError("User not found", 404);
     }
@@ -74,7 +74,7 @@ export const updateUserService = async (id: string, updateData: Partial<TUser>) 
     const user = await User.findByIdAndUpdate(id, updatePayload, {
         new: true,
         runValidators: true,
-    }).select('-password');
+    }).select("-password");
 
     if (!user) {
         throw new AppError("User not found to update", 404);

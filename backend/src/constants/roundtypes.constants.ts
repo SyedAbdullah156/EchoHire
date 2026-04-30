@@ -6,5 +6,5 @@ export enum RoundType {
     BehavioralAnalysis = "BehavioralAnalysis",
     CulturalAlignment = "CulturalAlignment",
     ManagerialReview = "ManagerialReview",
-    HR_Operations = "HR_Operations"
+    HR_Operations = "HR_Operations",
 }

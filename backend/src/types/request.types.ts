@@ -1,7 +1,8 @@
-import { Request } from 'express';
-import { TUser } from './user.types';
+import { Request } from "express";
+import { UserDocument } from "./user.types";
 
 // Custom request type with user property
 export interface AuthRequest extends Request {
-    user?: TUser;
+    user: UserDocument;
+    file?: Express.Multer.File;
 }
