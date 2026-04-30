@@ -5,9 +5,42 @@ import {
     getUserByIdService,
     updateUserService,
     deleteUserService,
-    updateMyProfileService,
 } from "../services/user.service";
 import { signAuthToken } from "../utils/auth.utils";
+
+export const getAllUsers = async (
+    req: Request,
+    res: Response,
+    next: NextFunction,
+) => {
+    try {
+        const users = await getAllUsersService();
+        
+        res.status(200).json({
+            success: true,
+            data: users,
+        });
+    } catch (error) {
+        next(error);
+    }
+};
+
+export const getUserById = async (
+    req: Request,
+    res: Response,
+    next: NextFunction,
+) => {
+    try {
+        const user = await getUserByIdService(req.params.id);
+        
+        res.status(200).json({
+            success: true,
+            data: user,
+        });
+    } catch (error) {
+        next(error);
+    }
+};
 
 export const getMyProfile = async (
     req: AuthRequest,
@@ -38,47 +71,13 @@ export const updateMyProfile = async (
             throw new AppError("Unauthorized", 401);
         }
 
-        const user = await updateMyProfileService(req.user._id, req.body);
+        const user = await updateUserService(req.user._id, req.body);
 
         res.status(200).json({
             success: true,
             message: "Account created successfully",
             data: user,
             token,
-        });
-    } catch (error) {
-        next(error);
-    }
-};
-
-export const getAllUsers = async (
-    req: Request,
-    res: Response,
-    next: NextFunction,
-) => {
-    try {
-        const users = await getAllUsersService();
-
-        res.status(200).json({
-            success: true,
-            data: users,
-        });
-    } catch (error) {
-        next(error);
-    }
-};
-
-export const getUserById = async (
-    req: Request,
-    res: Response,
-    next: NextFunction,
-) => {
-    try {
-        const user = await getUserByIdService(req.params.id);
-
-        res.status(200).json({
-            success: true,
-            data: user,
         });
     } catch (error) {
         next(error);
@@ -92,7 +91,7 @@ export const updateUser = async (
 ) => {
     try {
         const user = await updateUserService(req.params.id, req.body);
-
+        
         res.status(200).json({
             success: true,
             data: user,
