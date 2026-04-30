@@ -1,3 +1,4 @@
+import bcrypt from "bcrypt";
 import { User } from "../models/user.model";
 import { TUser } from "../types/user.types";
 import { AppError } from "../utils/apperror.utls";
@@ -29,13 +30,11 @@ export const createUserService = async (userData: TUser) => {
 };
 
 export const getAllUsersService = async () => {
-    // .select('-password') ensures we never accidentally send hashes to the client
-    const users = await User.find().select("-password");
-    return users;
+    return await User.find().select("-password");
 };
 
 export const getUserByIdService = async (id: string) => {
-    const user = await User.findById(id).select("-password"); // We already did select: false in schema so here it is redundant but good practice
+    const user = await User.findById(id).select("-password");
     if (!user) {
         throw new AppError("User not found", 404);
     }
@@ -77,15 +76,46 @@ export const updateUserService = async (id: string, updateData: Partial<TUser>) 
     }).select("-password");
 
     if (!user) {
-        throw new AppError("User not found to update", 404);
+        throw new AppError("User not found", 404);
     }
+
+    return user;
+};
+
+export const updateMyProfileService = async (
+    id: string,
+    profileData: UpdateProfileInput,
+) => {
+    const currentUser = await User.findById(id);
+    if (!currentUser) {
+        throw new AppError("User not found", 404);
+    }
+
+    const mergedProfile = {
+        ...(currentUser.profile ?? {}),
+        ...profileData,
+    };
+
+    const user = await User.findByIdAndUpdate(
+        id,
+        { profile: mergedProfile },
+        {
+            new: true,
+            runValidators: true,
+        },
+    ).select("-password");
+
+    if (!user) {
+        throw new AppError("User not found", 404);
+    }
+
     return user;
 };
 
 export const deleteUserService = async (id: string) => {
     const user = await User.findByIdAndDelete(id);
     if (!user) {
-        throw new AppError("User not found to delete", 404);
+        throw new AppError("User not found", 404);
     }
     return user;
 };
