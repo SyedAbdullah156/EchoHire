@@ -42,6 +42,7 @@ app.use((req, _res, next) => {
 });
 
 // Routes
+app.use("/api/auth", authRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/auth", authRoutes);
 app.use("/api/companies", companyRoutes);

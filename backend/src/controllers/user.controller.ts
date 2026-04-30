@@ -1,17 +1,16 @@
 import { Request, Response, NextFunction } from "express";
+import { AuthRequest } from "../types/request.types";
 import {
-    createUserService,
     getAllUsersService,
     getUserByIdService,
-    getUserByEmailService,
     updateUserService,
     deleteUserService,
+    updateMyProfileService,
 } from "../services/user.service";
 import { signAuthToken } from "../utils/auth.utils";
 
-// CREATE USER
-export const createUser = async (
-    req: Request,
+export const getMyProfile = async (
+    req: AuthRequest,
     res: Response,
     next: NextFunction,
 ) => {
@@ -22,7 +21,26 @@ export const createUser = async (
             _id: String((user as { _id: { toString(): string } })._id),
         });
 
-        res.status(201).json({
+        const user = await getUserByIdService(req.user._id);
+        res.status(200).json({ success: true, data: user });
+    } catch (error) {
+        next(error);
+    }
+};
+
+export const updateMyProfile = async (
+    req: AuthRequest,
+    res: Response,
+    next: NextFunction,
+) => {
+    try {
+        if (!req.user?._id) {
+            throw new AppError("Unauthorized", 401);
+        }
+
+        const user = await updateMyProfileService(req.user._id, req.body);
+
+        res.status(200).json({
             success: true,
             message: "Account created successfully",
             data: user,
@@ -33,7 +51,6 @@ export const createUser = async (
     }
 };
 
-// GET ALL USERS
 export const getAllUsers = async (
     req: Request,
     res: Response,
@@ -51,14 +68,13 @@ export const getAllUsers = async (
     }
 };
 
-// GET USER BY ID
 export const getUserById = async (
     req: Request,
     res: Response,
     next: NextFunction,
 ) => {
     try {
-        const user = await getUserByIdService(req.params.id as string);
+        const user = await getUserByIdService(req.params.id);
 
         res.status(200).json({
             success: true,
@@ -69,32 +85,13 @@ export const getUserById = async (
     }
 };
 
-// GET USER BY EMAIL
-export const getUserByEmail = async (
-    req: Request,
-    res: Response,
-    next: NextFunction,
-) => {
-    try {
-        const user = await getUserByEmailService(req.params.email as string);
-
-        res.status(200).json({
-            success: true,
-            data: user,
-        });
-    } catch (error) {
-        next(error);
-    }
-};
-
-// UPDATE USER
 export const updateUser = async (
     req: Request,
     res: Response,
     next: NextFunction,
 ) => {
     try {
-        const user = await updateUserService(req.params.id as string, req.body);
+        const user = await updateUserService(req.params.id, req.body);
 
         res.status(200).json({
             success: true,
@@ -105,14 +102,13 @@ export const updateUser = async (
     }
 };
 
-// DELETE USER
 export const deleteUser = async (
     req: Request,
     res: Response,
     next: NextFunction,
 ) => {
     try {
-        const result = await deleteUserService(req.params.id as string);
+        const result = await deleteUserService(req.params.id);
 
         res.status(200).json({
             success: true,
