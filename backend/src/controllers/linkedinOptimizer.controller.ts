@@ -2,7 +2,7 @@ import { NextFunction, Request, Response } from "express";
 import fs from "node:fs/promises";
 
 import { AppError } from "../utils/AppError.utils";
-import { analyzeLinkedinProfileWithGemini } from "../services/linkedinOptimizer.service";
+import { analyzeLinkedinProfileWithGemini } from "../services/linkedinOptimizer.services";
 
 const MAX_EXTRACTED_CHARS = 25_000;
 

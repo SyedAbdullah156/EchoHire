@@ -3,7 +3,7 @@ import bcrypt from "bcrypt";
 import { User } from "../models/user.model";
 import { AppError } from "../utils/AppError.utils";
 import { signToken } from "../utils/jwt.utils";
-import { createUserService } from "../services/user.service";
+import { createUserService } from "./user.services";
 
 export const register = async (
     req: Request,

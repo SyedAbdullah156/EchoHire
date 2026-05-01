@@ -7,9 +7,6 @@ type CreateUserInput = Omit<TUser, "_id" | "password"> & {
     password: string;
 };
 
-type UpdateUserInput = Partial<Omit<TUser, "_id" | "password">>;
-type UpdateProfileInput = Partial<TProfile>;
-
 export const createUserService = async (userData: CreateUserInput) => {
     const existingUser = await User.findOne({ email: userData.email });
     if (existingUser) {
@@ -56,7 +53,6 @@ export const updateUserService = async (id: string, inputData: any) => {
             updatePayload[`profile.${key}`] = value;
         }
     }
-    console.log(updatePayload);
     
     const user = await User.findByIdAndUpdate(
         id,

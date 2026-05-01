@@ -5,7 +5,7 @@ import {
     getUserByIdService,
     updateUserService,
     deleteUserService,
-} from "../services/user.service";
+} from "../services/user.services";
 import { AppError } from "../utils/AppError.utils";
 
 export const getAllUsers = async (

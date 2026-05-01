@@ -108,13 +108,6 @@ const profileFieldsSchema = z
         avatarDataUrl: z
             .string()
             .trim()
-            .regex(
-                /^data:image\/[a-zA-Z0-9.+-]+;base64,[A-Za-z0-9+/=\r\n]+$/,
-                "Avatar must be a valid base64 image data URL",
-            )
-            .refine((value) => value.length <= 2_000_000, {
-                message: "Avatar must be 2MB or smaller",
-            })
             .optional()
             .or(z.literal("")),
     })
@@ -148,9 +141,6 @@ export const loginSchema = z.object({
 });
 
 export const updateProfileSchema = z.object({
-    params: z.object({
-        id: objectIdSchema,
-    }),
     body: z
         .object({
             name: z
@@ -162,5 +152,4 @@ export const updateProfileSchema = z.object({
             email: emailSchema.optional(),
             profile: profileFieldsSchema.optional(),
         })
-        .strict(),
 });

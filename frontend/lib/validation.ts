@@ -54,8 +54,6 @@ export const profileSchema = z.object({
     avatarDataUrl: z
         .string()
         .trim()
-        .regex(/^data:image\/[a-zA-Z0-9.+-]+;base64,[A-Za-z0-9+/=\r\n]+$/, "Avatar must be an image encoded as base64")
-        .refine((value) => value.length <= 2_000_000, "Avatar must be 2MB or smaller")
         .optional()
         .or(z.literal("")),
 });

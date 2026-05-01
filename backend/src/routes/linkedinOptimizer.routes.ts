@@ -1,5 +1,5 @@
 import express from "express";
-import upload from "../utils/multer.config";
+import upload from "../config/multer.config";
 import { analyzeLinkedinPdf } from "../controllers/linkedinOptimizer.controller";
 
 const router = express.Router();
