@@ -21,12 +21,4 @@ router.get("/:id", protect, restrictTo("admin"), getUserById);
 router.put("/:id", protect, restrictTo("admin"), updateUser);
 router.delete("/:id", protect, restrictTo("admin"), deleteUser);
 
-// User/Admin: Get specific profile
-router.get("/email/:email", getUserByEmail);
-router.get("/:id", getUserById);
-
-// User/Admin: Update or Delete
-router.put("/:id", updateUser);
-router.delete("/:id", deleteUser);
-
 export default router;

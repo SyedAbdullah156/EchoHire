@@ -1,7 +1,7 @@
 import { NextFunction, Request, Response } from "express";
 import fs from "node:fs/promises";
 
-import { AppError } from "../utils/apperror.utls";
+import { AppError } from "../utils/AppError.utils";
 import { analyzeLinkedinProfileWithGemini } from "../services/linkedinOptimizer.service";
 
 const MAX_EXTRACTED_CHARS = 25_000;

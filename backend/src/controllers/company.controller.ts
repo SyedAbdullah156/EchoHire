@@ -1,17 +1,6 @@
-import { NextFunction, Response } from "express";
+import { Request, Response, NextFunction } from "express";
 import { AuthRequest } from "../types/request.types";
-import {
-    createCompanyService,
-    deleteCompanyService,
-    getAllCompaniesService,
-    getCompanyByIdService,
-    updateCompanyService,
-} from "../services/company.service";
-import { AppError } from "../utils/apperror.utls";
-
-const getUploadedLogoPath = (file?: Express.Multer.File) => {
-    return file ? `/uploads/${file.filename}` : undefined;
-};
+import * as companyService from "../services/company.service";
 
 export const createCompany = async (
     req: AuthRequest,
@@ -19,37 +8,31 @@ export const createCompany = async (
     next: NextFunction,
 ) => {
     try {
-        const ownerId = req.body.owner_id ?? req.header("x-user-id");
-
-        if (!ownerId) {
-            throw new AppError("owner_id is required to create a company", 400);
-        }
-
-        const company = await createCompanyService({
+        // Compile the data payload from body, file, and user context
+        const companyData = {
             ...req.body,
-            owner_id: ownerId,
-            logo: getUploadedLogoPath(req.file) ?? req.body.logo,
-        });
+            owner_id: req.user!._id,
+        };
 
-        res.status(201).json({
-            success: true,
-            data: company,
-        });
+        const company = await companyService.createCompanyService(companyData);
+
+        res.status(201).json({ success: true, data: company });
     } catch (error) {
         next(error);
     }
 };
 
 export const getAllCompanies = async (
-    _req: AuthRequest,
+    req: Request,
     res: Response,
     next: NextFunction,
 ) => {
     try {
-        const companies = await getAllCompaniesService();
+        const companies = await companyService.getAllCompaniesService();
 
         res.status(200).json({
             success: true,
+            count: companies.length,
             data: companies,
         });
     } catch (error) {
@@ -58,17 +41,16 @@ export const getAllCompanies = async (
 };
 
 export const getCompanyById = async (
-    req: AuthRequest,
+    req: Request,
     res: Response,
     next: NextFunction,
 ) => {
     try {
-        const company = await getCompanyByIdService(req.params.id as string);
+        const company = await companyService.getCompanyByIdService(
+            req.params.id as string,
+        );
 
-        res.status(200).json({
-            success: true,
-            data: company,
-        });
+        res.status(200).json({ success: true, data: company });
     } catch (error) {
         next(error);
     }
@@ -80,20 +62,19 @@ export const updateCompany = async (
     next: NextFunction,
 ) => {
     try {
+        // Compile update data including possible new logo
         const updateData = {
             ...req.body,
-            ...(req.file ? { logo: getUploadedLogoPath(req.file) } : {}),
         };
 
-        const company = await updateCompanyService(
+        const company = await companyService.updateCompanyService(
             req.params.id as string,
             updateData,
+            req.user!._id!.toString(),
+            req.user!.role,
         );
 
-        res.status(200).json({
-            success: true,
-            data: company,
-        });
+        res.status(200).json({ success: true, data: company });
     } catch (error) {
         next(error);
     }
@@ -105,12 +86,15 @@ export const deleteCompany = async (
     next: NextFunction,
 ) => {
     try {
-        const company = await deleteCompanyService(req.params.id as string);
+        await companyService.deleteCompanyService(
+            req.params.id as string,
+            req.user!._id!.toString(),
+            req.user!.role,
+        );
 
         res.status(200).json({
             success: true,
             message: "Company deleted successfully",
-            data: company,
         });
     } catch (error) {
         next(error);

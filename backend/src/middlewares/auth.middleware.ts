@@ -1,74 +1,60 @@
-import { NextFunction, Response } from "express";
+import { Response, NextFunction } from "express";
+import jwt from "jsonwebtoken";
+import { User } from "../models/user.model";
 import { AuthRequest } from "../types/request.types";
-import { TUser } from "../types/user.types";
-import { verifyAuthToken } from "../utils/auth.utils";
+import { AppError } from "../utils/AppError.utils";
 
-const normalizeRole = (value: string | undefined): TUser["role"] => {
-    if (value === "recruiter" || value === "admin") {
-        return value;
-    }
+interface CustomJwtPayload {
+    id: string;
+}
 
-    return "candidate";
-};
-
-export const protect = (
+// Goal: Verify JWT → load user → attach to request
+export const protect = async (
     req: AuthRequest,
-    _res: Response,
+    res: Response,
     next: NextFunction,
 ) => {
-    const authorizationHeader =
-        req.header("authorization") ?? req.header("Authorization");
+    try {
+        let token: string | undefined;
 
-    if (authorizationHeader?.startsWith("Bearer ")) {
-        try {
-            const token = authorizationHeader.slice("Bearer ".length).trim();
-            const payload = verifyAuthToken(token);
+        const authHeader = req.headers.authorization;
 
-            req.user = {
-                _id: String(payload.id),
-                name: payload.name,
-                email: payload.email,
-                password: undefined,
-                role: payload.role as TUser["role"],
-            };
-
-            return next();
-        } catch {
-            return _res.status(401).json({
-                success: false,
-                message: "Invalid or expired token",
-            });
+        if (authHeader && authHeader.startsWith("Bearer ")) {
+            token = authHeader.split(" ")[1];
         }
+
+        if (!token) {
+            return next(new AppError("You are not logged in", 401));
+        }
+
+        const decoded = jwt.verify(
+            token,
+            process.env.JWT_SECRET as string,
+        ) as CustomJwtPayload;
+
+        const currentUser = await User.findById(decoded.id);
+
+        if (!currentUser) {
+            return next(new AppError("User no longer exists", 401));
+        }
+
+        req.user = currentUser;
+
+        next();
+    } catch (error) {
+        next(new AppError("Invalid or expired token", 401));
     }
-
-    const userId = req.header("x-user-id")?.trim();
-    const userEmail = req.header("x-user-email")?.trim();
-    const userName = req.header("x-user-name")?.trim();
-    const userRole = normalizeRole(req.header("x-user-role") ?? undefined);
-
-    if (userId || userEmail || userName || userRole) {
-        req.user = {
-            name: userName ?? "Local User",
-            email: userEmail ?? "local@echohire.dev",
-            password: undefined,
-            role: userRole,
-        };
-    }
-
-    next();
 };
 
-export const restrictTo = (...allowedRoles: TUser["role"][]) => {
+// Used for restricting roles for users
+export const restrictTo = (...roles: string[]) => {
     return (req: AuthRequest, res: Response, next: NextFunction) => {
-        const role =
-            req.user?.role ??
-            normalizeRole(req.header("x-user-role") ?? undefined);
+        if (!req.user) {
+            return next(new AppError("Unauthorized access", 401));
+        }
 
-        if (!allowedRoles.includes(role)) {
-            return res.status(403).json({
-                success: false,
-                message: "You do not have permission to perform this action",
-            });
+        if (!roles.includes(req.user.role)) {
+            return next(new AppError("Permission denied", 403));
         }
 
         next();
