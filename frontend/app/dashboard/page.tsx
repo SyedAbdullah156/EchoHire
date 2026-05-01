@@ -1,11 +1,16 @@
 "use client";
 
-import { Suspense } from "react";
+import { Suspense, useState, useEffect } from "react";
 import DashboardSidebar from "@/components/DashboardSidebar";
 import ActionAlert from "../../components/dashboard/ActionAlert";
 import ProgressAreaChart from "../../components/dashboard/ProgressAreaChart";
 import QuickActionsFab from "../../components/dashboard/QuickActionsFab";
 import StatCard from "../../components/dashboard/StatCard";
+import { motion, Variants, AnimatePresence } from "framer-motion";
+import Link from "next/link";
+import { useSearchParams } from "next/navigation";
+import { FiAward, FiBarChart2, FiFileText, FiRefreshCw, FiHome, FiZap, FiTrendingUp } from "react-icons/fi";
+import { toast } from "sonner";
 
 /** 
  * HCI ANIMATION STRATEGY:

@@ -1,7 +1,7 @@
 "use client";
 
 import { motion, Variants } from "framer-motion";
-import { FiCheck, FiX } from "react-icons/fi";
+import { FiCheck, FiX, FiTarget, FiZap, FiBriefcase } from "react-icons/fi";
 import Navbar from "@/components/Navbar";
 
 const plans = [

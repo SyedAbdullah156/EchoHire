@@ -303,8 +303,8 @@ export default function Home() {
               </div>
             </div>
           </section>
-
-
-        </main>
+        </div>
+      </section>
+    </main>
         );
 }
