@@ -1,23 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
-import { motion, AnimatePresence, Variants } from "framer-motion";
-import { useSearchParams } from "next/navigation";
-import Link from "next/link";
-import { toast } from "sonner";
-
-// Icons
-import { 
-  FiAward, 
-  FiBarChart2, 
-  FiFileText, 
-  FiHome, 
-  FiTrendingUp, 
-  FiZap, 
-  FiRefreshCw 
-} from "react-icons/fi";
-
-// Components (Assuming these exist in your project)
+import { Suspense } from "react";
 import DashboardSidebar from "@/components/DashboardSidebar";
 import ActionAlert from "../../components/dashboard/ActionAlert";
 import ProgressAreaChart from "../../components/dashboard/ProgressAreaChart";
@@ -54,14 +37,7 @@ const itemVariants: Variants = {
   },
 };
 
-const skillData = [
-  { label: "Coding", value: 90, color: "from-blue-400 to-indigo-500" },
-  { label: "Design", value: 72, color: "from-purple-400 to-pink-500" },
-  { label: "Behavioral", value: 58, color: "from-emerald-400 to-teal-500" },
-  { label: "Technical", value: 66, color: "from-orange-400 to-amber-500" },
-];
-
-export default function DashboardPage() {
+function DashboardContent() {
   const searchParams = useSearchParams();
   const shouldCompleteProfile = searchParams.get("completeProfile") === "1";
   const [dataError, setDataError] = useState(false);
@@ -104,7 +80,7 @@ export default function DashboardPage() {
   return (
     <main className="min-h-screen bg-[#050b18] text-[#e2e8f0] selection:bg-blue-500/30 antialiased">
       <section className="mx-auto flex max-w-[1580px] flex-col gap-6 px-4 pb-12 pt-8 lg:flex-row md:px-8">
-        
+
         {/* Persistent Navigation */}
         <DashboardSidebar active="dashboard" />
 
@@ -123,8 +99,8 @@ export default function DashboardPage() {
               <span className="text-[#93a5cc]">Insights Overview</span>
             </div>
             <div className="flex items-center gap-3 rounded-full bg-[#0d162a] border border-[#243253] px-4 py-1.5 text-[10px] font-bold">
-                <span className="flex h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
-                <span className="text-emerald-500 tracking-widest uppercase">AI Engine: Online</span>
+              <span className="flex h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
+              <span className="text-emerald-500 tracking-widest uppercase">AI Engine: Online</span>
             </div>
           </motion.div>
 
@@ -139,7 +115,7 @@ export default function DashboardPage() {
                 <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
                   <div className="space-y-1">
                     <h3 className="text-lg font-bold text-white flex items-center gap-2">
-                       <FiZap className="text-yellow-400" /> Optimize Your Experience
+                      <FiZap className="text-yellow-400" /> Optimize Your Experience
                     </h3>
                     <p className="text-sm text-[#9fb1d8] max-w-xl">
                       Your profile data is used to calibrate interview difficulty for the <span className="text-white font-medium">Class of 2027</span> benchmarks.
@@ -197,7 +173,7 @@ export default function DashboardPage() {
 
           <div className="grid gap-6 xl:grid-cols-[1.8fr_1fr]">
             {/* Chart - HCI: Aesthetic and Minimalist Design */}
-            <motion.section 
+            <motion.section
               variants={itemVariants}
               className="rounded-[2.5rem] border border-[#243253] bg-[#0d162a]/80 p-8 backdrop-blur-md shadow-xl"
             >
@@ -209,17 +185,17 @@ export default function DashboardPage() {
                   <p className="text-sm text-[#9fb1d8]">Aggregate score improvement over time</p>
                 </div>
                 <div className="flex gap-2">
-                   <span className="rounded-lg bg-[#050b18] px-3 py-1 text-[10px] font-bold text-blue-400 border border-[#243253]">MONTHLY</span>
+                  <span className="rounded-lg bg-[#050b18] px-3 py-1 text-[10px] font-bold text-blue-400 border border-[#243253]">MONTHLY</span>
                 </div>
               </div>
               <div className="h-[320px] w-full">
-                 <ProgressAreaChart />
+                <ProgressAreaChart />
               </div>
             </motion.section>
 
             {/* Side Panel */}
             <div className="space-y-6">
-              <motion.section 
+              <motion.section
                 variants={itemVariants}
                 className="rounded-[2.5rem] border border-[#243253] bg-[#0d162a]/80 p-8 backdrop-blur-md"
               >
@@ -263,5 +239,13 @@ export default function DashboardPage() {
         </motion.div>
       </section>
     </main>
+  );
+}
+
+export default function DashboardPage() {
+  return (
+    <Suspense>
+      <DashboardContent />
+    </Suspense>
   );
 }

@@ -1,9 +1,8 @@
 "use client";
 
-import React from "react";
-import { FiCheck, FiX, FiZap, FiTarget, FiBriefcase, FiArrowRight } from "react-icons/fi";
+import { motion, Variants } from "framer-motion";
+import { FiCheck, FiX } from "react-icons/fi";
 import Navbar from "@/components/Navbar";
-import Footer from "@/components/Footer";
 
 const plans = [
   {
@@ -53,116 +52,98 @@ const plans = [
   },
 ];
 
+const staggerContainer: Variants = {
+  hidden: { opacity: 0 },
+  visible: { opacity: 1, transition: { staggerChildren: 0.1 } }
+};
+
+const fadeInUp: Variants = {
+  hidden: { opacity: 0, y: 30 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.5, ease: "easeOut" } }
+};
+
 export default function PricingPage() {
   return (
-    <div className="flex flex-col min-h-screen bg-[#02050d] overflow-x-hidden">
-      {/* 1. Navbar: Positioned at the top */}
+    <main className="min-h-screen bg-[#030712] text-white selection:bg-[#227dff]/30 flex flex-col">
       <Navbar />
+      <section className="mx-auto max-w-7xl px-6 pb-24 pt-32 w-full flex-1">
+        <motion.div
+          initial="hidden"
+          animate="visible"
+          variants={staggerContainer}
+          className="max-w-3xl mx-auto text-center mb-16 md:mb-24 space-y-4"
+        >
+          <motion.h1 variants={fadeInUp} className="text-4xl md:text-6xl font-bold tracking-tight text-white">
+            Simple, transparent pricing
+          </motion.h1>
+          <motion.p variants={fadeInUp} className="text-lg md:text-xl text-[#98a7cb] leading-relaxed">
+            Pick the plan that matches your prep goals. No hidden fees.
+          </motion.p>
+        </motion.div>
 
-      {/* 2. Main Content: flex-grow ensures this takes up available space, pushing footer down */}
-      <main className="flex-grow text-slate-200 selection:bg-blue-500/30">
-        <section className="mx-auto max-w-7xl px-6 pb-24 pt-32 md:pt-40">
-          
-          {/* Header Section: Clear Visual Hierarchy */}
-          <div className="mb-16 text-center animate-in fade-in slide-in-from-bottom-4 duration-700">
-            <h2 className="text-sm font-bold uppercase tracking-[0.3em] text-blue-500 mb-4">
-              Investment
-            </h2>
-            <h1 className="mb-6 text-5xl font-extrabold tracking-tight text-white md:text-6xl">
-              Ready to <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-indigo-500">Level Up?</span>
-            </h1>
-            <p className="mx-auto max-w-2xl text-lg text-slate-400 leading-relaxed">
-              Choose a plan that fits your current career stage. All plans include access to our core AI interview simulation engine.
-            </p>
-          </div>
-
-          {/* Pricing Grid: Using Grid for responsive layout */}
-          <div className="grid gap-8 md:grid-cols-3 items-stretch">
-            {plans.map((plan, index) => (
-              <article
-                key={plan.title}
-                className={`relative flex flex-col rounded-3xl border transition-all duration-500 hover:translate-y-[-8px] ${
-                  plan.featured 
-                    ? "bg-gradient-to-b from-[#111827] to-[#050d17] border-blue-500/50 p-8 shadow-[0_0_50px_-12px_rgba(59,130,246,0.3)] z-10 scale-105" 
-                    : "bg-[#050d17]/50 border-slate-800 p-7"
+        <motion.div
+          initial="hidden"
+          animate="visible"
+          variants={staggerContainer}
+          className="grid gap-8 md:grid-cols-3 max-w-6xl mx-auto items-center"
+        >
+          {plans.map((plan) => (
+            <motion.article
+              variants={fadeInUp}
+              key={plan.title}
+              className={`relative flex flex-col rounded-[2rem] border transition-colors hover:bg-[linear-gradient(145deg,rgba(7,20,43,0.95)_0%,rgba(15,30,60,0.65)_100%)] p-8 md:p-10 ${plan.featured
+                  ? "border-[#227dff]/50 bg-[linear-gradient(145deg,rgba(7,20,43,0.95)_0%,rgba(11,23,48,0.65)_100%)] md:scale-[1.03] z-10 py-12"
+                  : "border-white/10 bg-white/[0.02] h-full"
                 }`}
-              >
-                {/* Visual Anchor: Recommendation Badge */}
-                {plan.featured && (
-                  <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-blue-600 text-white text-xs font-bold px-4 py-1.5 rounded-full shadow-lg z-20">
-                    RECOMMENDED
-                  </div>
-                )}
-
-                <div className="flex items-center gap-3 mb-6">
-                  <div className="p-2.5 bg-slate-900 rounded-xl border border-slate-800 shadow-inner">
-                    {plan.icon}
-                  </div>
-                  <h3 className="text-xl font-bold text-white tracking-tight">{plan.title}</h3>
+            >
+              {plan.featured && (
+                <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 bg-gradient-to-r from-[#227dff] to-[#332989] text-white px-5 py-1.5 rounded-full text-sm font-medium border border-[#3f83ff]/30 shadow-sm">
+                  Most Popular
                 </div>
+              )}
 
-                <p className="text-sm text-slate-400 mb-8 leading-relaxed min-h-[40px]">
-                  {plan.description}
+              <div className="mb-8 text-center">
+                <h3 className="text-xl font-medium text-[#dbe7ff] mb-4">{plan.title}</h3>
+                <p className="text-5xl font-bold text-white flex items-center justify-center">
+                  <span className="text-2xl text-[#227dff] mr-1">$</span>
+                  {plan.price}
+                  <span className="text-lg font-normal text-[#7f92be] ml-2">/ mo</span>
                 </p>
+              </div>
 
-                <div className="mb-8">
-                  <div className="flex items-baseline gap-1">
-                    <span className="text-2xl font-bold text-slate-400">$</span>
-                    <span className="text-6xl font-black text-white tracking-tighter">
-                      {plan.price}
-                    </span>
-                    <span className="text-slate-500 font-medium ml-1">/month</span>
-                  </div>
-                </div>
+              <ul className="space-y-4 text-base mb-8 flex-1">
+                {plan.perks.map((perk) => (
+                  <li
+                    key={perk.label}
+                    className={`flex items-center gap-3 ${perk.available ? "text-[#dbe7ff]" : "text-[#5c667f]"
+                      }`}
+                  >
+                    <div className={`w-6 h-6 rounded-full flex items-center justify-center shrink-0 border transition-colors ${perk.available ? "bg-[#227dff]/10 border-[#227dff]/30" : "border-[#2b344a] bg-transparent"
+                      }`}>
+                      {perk.available ? (
+                        <FiCheck className="text-[#227dff] w-3.5 h-3.5" />
+                      ) : (
+                        <FiX className="text-[#5c667f] w-3 h-3" />
+                      )}
+                    </div>
+                    <span>{perk.label}</span>
+                  </li>
+                ))}
+              </ul>
 
-                {/* Primary Action Button: High contrast for conversion */}
-                <button
-                  type="button"
-                  className={`group mb-10 w-full rounded-2xl py-4 text-sm font-bold transition-all duration-300 active:scale-95 ${
-                    plan.featured
-                      ? "bg-blue-600 text-white hover:bg-blue-500 shadow-lg shadow-blue-900/20"
-                      : "bg-slate-800 text-slate-200 hover:bg-slate-700 border border-slate-700"
+              <button
+                type="button"
+                className={`min-h-[48px] w-full rounded-xl py-3 px-6 text-base font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-400 ${plan.featured
+                    ? "bg-gradient-to-r from-[#227dff] to-[#332989] text-white hover:brightness-110"
+                    : "bg-white/5 border border-white/10 text-white hover:bg-white/10"
                   }`}
-                >
-                  <span className="flex items-center justify-center gap-2">
-                    Get Started with {plan.title}
-                    <FiArrowRight className="group-hover:translate-x-1 transition-transform" />
-                  </span>
-                </button>
-
-                {/* Perks List: Clear scannability */}
-                <div className="mt-auto space-y-5">
-                  <p className="text-xs font-bold text-slate-500 uppercase tracking-[0.2em]">
-                    Key Features
-                  </p>
-                  <ul className="space-y-4">
-                    {plan.perks.map((perk) => (
-                      <li
-                        key={perk.label}
-                        className="flex items-start gap-3"
-                      >
-                        <div className={`mt-0.5 flex-shrink-0 ${perk.available ? "text-blue-500" : "text-slate-700"}`}>
-                          {perk.available ? <FiCheck size={18} /> : <FiX size={18} />}
-                        </div>
-                        <span className={`text-sm ${perk.available ? "text-slate-300" : "text-slate-600 line-through"}`}>
-                          {perk.label}
-                        </span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              </article>
-            ))}
-          </div>
-
-          {/* Social Proof/Safety Net */}
-          <div className="mt-20 text-center opacity-80">
-            <p className="text-slate-500 text-sm font-medium italic">
-              All plans include a 7-day money-back guarantee. Secure payments processed via Stripe.
-            </p>
-          </div>
-        </section>
-      </main>
-    </div>
+              >
+                Choose {plan.title}
+              </button>
+            </motion.article>
+          ))}
+        </motion.div>
+      </section>
+    </main>
   );
 }
