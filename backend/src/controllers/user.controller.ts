@@ -8,6 +8,13 @@ import {
 } from "../services/user.services";
 import { AppError } from "../utils/AppError.utils";
 
+const getNormalizedParamId = (id: string | string[] | undefined): string => {
+    if (Array.isArray(id)) {
+        return id[0] ?? "";
+    }
+    return id ?? "";
+};
+
 export const getAllUsers = async (
     req: Request,
     res: Response,

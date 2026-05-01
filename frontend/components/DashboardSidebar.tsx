@@ -25,10 +25,6 @@ type SidebarItem = {
   href: string;
 };
 
-type DashboardSidebarProps = {
-  active: string;
-};
-
 const mainItems: SidebarItem[] = [
   { key: "dashboard", label: "Dashboard", icon: FiGrid, href: "/dashboard" },
   { key: "ai-interview", label: "AI Interview", icon: FiBookOpen, href: "/ai-interview" },
@@ -43,50 +39,47 @@ const accountItems: SidebarItem[] = [
   { key: "logout", label: "Logout", icon: FiLogOut, href: "/auth" },
 ];
 
-type MenuItemProps = {
-  item: SidebarItem;
-  isActive: boolean;
-  collapsed: boolean;
-  onNavigate?: () => void;
-};
-
-function MenuItem({ item, isActive, collapsed, onNavigate }: MenuItemProps) {
+function MenuItem({ item, isActive, collapsed, onNavigate }: { 
+  item: SidebarItem; 
+  isActive: boolean; 
+  collapsed: boolean; 
+  onNavigate?: () => void 
+}) {
   const Icon = item.icon;
 
   return (
-    <div className="group relative">
-      <Link
-        href={item.href}
-        onClick={onNavigate}
-        title={collapsed ? item.label : undefined}
-        className={`flex items-center rounded-xl px-3 py-2.5 text-sm transition-all duration-200 active:scale-[0.98] md:text-base ${
-          collapsed ? "justify-center" : "gap-3"
-        } ${
-          isActive
-            ? "bg-gradient-to-r from-[#2a7df7]/90 to-[#332b8c]/90 text-white shadow-[0_8px_24px_rgba(42,125,247,0.3)]"
-            : "text-[#aeb7cc] hover:bg-white/5 hover:text-white"
-        }`}
-      >
-        <div
-          className={`rounded-md border p-1.5 ${
-            isActive ? "border-white/30 bg-white/15" : "border-white/10 bg-white/5"
-          }`}
-        >
-          <Icon className="shrink-0" size={15} />
-        </div>
-        {!collapsed && <span className="truncate">{item.label}</span>}
-      </Link>
-    </div>
+    <Link
+      href={item.href}
+      onClick={onNavigate}
+      className={`group relative flex items-center rounded-2xl px-3 py-3 transition-all duration-300 ${
+        collapsed ? "justify-center" : "gap-4"
+      } ${
+        isActive
+          ? "bg-blue-500/10 text-blue-400"
+          : "text-slate-400 hover:bg-slate-800/40 hover:text-slate-200"
+      }`}
+    >
+      {/* Active Indicator - Clean Blue line, no white glow */}
+      {isActive && (
+        <div className="absolute left-0 h-6 w-1 rounded-r-full bg-blue-600" />
+      )}
+
+      <div className={`flex shrink-0 items-center justify-center transition-transform duration-300 group-hover:scale-110 ${
+        isActive ? "text-blue-400" : "text-slate-500 group-hover:text-slate-300"
+      }`}>
+        <Icon size={20} />
+      </div>
+
+      {!collapsed && (
+        <span className={`text-sm font-semibold tracking-wide transition-opacity duration-300 ${
+          isActive ? "text-white" : "opacity-80"
+        }`}>
+          {item.label}
+        </span>
+      )}
+    </Link>
   );
 }
-
-type SidebarShellProps = {
-  active: string;
-  collapsed: boolean;
-  onToggleCollapsed: () => void;
-  onNavigate?: () => void;
-  mobile?: boolean;
-};
 
 function SidebarShell({
   active,
@@ -94,62 +87,62 @@ function SidebarShell({
   onToggleCollapsed,
   onNavigate,
   mobile = false,
-}: SidebarShellProps) {
+}: {
+  active: string;
+  collapsed: boolean;
+  onToggleCollapsed: () => void;
+  onNavigate?: () => void;
+  mobile?: boolean;
+}) {
   return (
     <aside
-      className={`flex flex-col rounded-2xl border border-white/10 bg-black/20 p-3 text-[#d2d9ea] shadow-[0_0_1px_1px_rgba(255,255,255,0.1),0_0_20px_rgba(59,130,246,0.28)] backdrop-blur-xl transition-all duration-300 ${
-        collapsed ? "w-[88px]" : "w-[290px]"
+      className={`flex flex-col border border-slate-800/60 bg-[#0f172a]/60 backdrop-blur-xl transition-all duration-500 ease-in-out ${
+        collapsed ? "w-[88px]" : "w-[280px]"
       } ${
         mobile
-          ? "h-full w-[290px] rounded-none border-y-0 border-l-0"
-          : "h-[calc(100vh-2rem)] overflow-x-hidden"
+          ? "h-full w-[280px] rounded-none"
+          : "h-[calc(100vh-4rem)] rounded-[2.5rem] sticky top-8"
       }`}
     >
-      <div className="relative mb-4">
+      {/* Brand Section */}
+      <div className="p-6">
         <Link
           href="/dashboard"
           onClick={onNavigate}
-          className={`flex w-full items-center rounded-xl transition hover:bg-white/5 ${
-            collapsed ? "justify-center px-2 py-2" : "gap-3 px-2 py-1.5 pr-12"
-          }`}
-          aria-label="EchoHire dashboard"
+          className={`flex items-center gap-3 transition-all ${collapsed ? "justify-center" : ""}`}
         >
-          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-gradient-to-tr from-blue-600 to-indigo-700 shadow-[0_10px_30px_rgba(59,130,246,0.25)]">
-            <span className="text-xs font-bold text-white">EH</span>
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-blue-600">
+            <span className="text-sm font-black text-white italic">EH</span>
           </div>
           {!collapsed && (
             <div className="min-w-0">
-              <h2 className="truncate text-xl font-bold tracking-tight text-[#57a2ff]">EchoHire</h2>
-              <p className="text-xs text-[#7f96c2]">Navigation</p>
+              <h2 className="text-lg font-bold tracking-tight text-white">EchoHire</h2>
+              <div className="h-0.5 w-6 rounded-full bg-blue-600/50" />
             </div>
           )}
         </Link>
-
-        <button
-          type="button"
-          onClick={onToggleCollapsed}
-          className="absolute right-2 top-2 shrink-0 rounded-lg border border-white/10 bg-black/30 p-2 text-[#c7d7f8] transition hover:border-blue-300/50 hover:text-white"
-          aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
-        >
-          {collapsed ? <FiChevronRight size={16} /> : <FiChevronLeft size={16} />}
-        </button>
       </div>
 
-      <div className="flex-1 overflow-y-auto pb-2">
-        <nav className="space-y-2">
-          {mainItems.map((item) => (
-            <MenuItem
-              key={item.key}
-              item={item}
-              isActive={active === item.key}
-              collapsed={collapsed}
-              onNavigate={onNavigate}
-            />
-          ))}
-        </nav>
+      {/* Nav Section */}
+      <div className="flex-1 overflow-y-auto px-4 py-2 space-y-8">
+        <div>
+          {!collapsed && <p className="px-4 mb-3 text-[10px] font-bold uppercase tracking-[0.2em] text-slate-600">Main Menu</p>}
+          <nav className="space-y-1">
+            {mainItems.map((item) => (
+              <MenuItem
+                key={item.key}
+                item={item}
+                isActive={active === item.key}
+                collapsed={collapsed}
+                onNavigate={onNavigate}
+              />
+            ))}
+          </nav>
+        </div>
 
-        <div className="mt-5 border-t border-white/10 pt-4">
-          <nav className="space-y-2">
+        <div>
+          {!collapsed && <p className="px-4 mb-3 text-[10px] font-bold uppercase tracking-[0.2em] text-slate-600">Account</p>}
+          <nav className="space-y-1">
             {accountItems.map((item) => (
               <MenuItem
                 key={item.key}
@@ -162,26 +155,33 @@ function SidebarShell({
           </nav>
         </div>
       </div>
+
+      {/* Footer / Toggle */}
+      {!mobile && (
+        <div className="p-6">
+          <button
+            onClick={onToggleCollapsed}
+            className="flex w-full items-center justify-center rounded-2xl border border-slate-800 bg-slate-900/40 py-3 text-slate-500 transition-all hover:bg-slate-800 hover:text-white"
+          >
+            {collapsed ? <FiChevronRight /> : <div className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest"><FiChevronLeft /> Collapse</div>}
+          </button>
+        </div>
+      )}
     </aside>
   );
 }
 
-export default function DashboardSidebar({ active }: DashboardSidebarProps) {
+export default function DashboardSidebar({ active }: { active: string }) {
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
 
   useEffect(() => {
     const onResize = () => {
-      const isDesktop = window.innerWidth >= 1024;
-      const shouldCollapse = window.innerWidth < 1280;
-      if (isDesktop) {
-        setCollapsed(shouldCollapse);
-      }
       if (window.innerWidth >= 1024) {
         setMobileOpen(false);
+        setCollapsed(window.innerWidth < 1280);
       }
     };
-
     onResize();
     window.addEventListener("resize", onResize);
     return () => window.removeEventListener("resize", onResize);
@@ -189,18 +189,16 @@ export default function DashboardSidebar({ active }: DashboardSidebarProps) {
 
   return (
     <>
-      <div className="lg:hidden">
+      <div className="lg:hidden mb-4 px-2">
         <button
-          type="button"
           onClick={() => setMobileOpen(true)}
-          className="inline-flex items-center gap-2 rounded-xl border border-white/10 bg-black/20 px-4 py-2 text-sm text-[#dbe7ff] shadow-[0_0_1px_1px_rgba(255,255,255,0.1),0_0_15px_rgba(59,130,246,0.25)] transition hover:border-blue-300/50"
+          className="flex items-center gap-3 rounded-2xl border border-slate-800 bg-[#0f172a] px-5 py-3 text-sm font-bold text-white"
         >
-          <FiMenu />
-          Open Menu
+          <FiMenu className="text-blue-500" /> Menu
         </button>
       </div>
 
-      <div className="hidden lg:sticky lg:top-8 lg:block lg:shrink-0 lg:self-start">
+      <div className="hidden lg:block lg:shrink-0">
         <SidebarShell
           active={active}
           collapsed={collapsed}
@@ -208,39 +206,23 @@ export default function DashboardSidebar({ active }: DashboardSidebarProps) {
         />
       </div>
 
-      <div
-        className={`fixed inset-0 z-[1200] transition-all duration-200 lg:hidden ${
-          mobileOpen ? "pointer-events-auto opacity-100" : "pointer-events-none opacity-0"
-        }`}
-      >
-        <button
-          type="button"
-          className="absolute inset-0 bg-black/55"
-          onClick={() => setMobileOpen(false)}
-          aria-label="Close sidebar overlay"
-        />
-        <div
-          className={`absolute left-0 top-0 h-full w-[84vw] max-w-[320px] transition-transform duration-300 ${
-            mobileOpen ? "translate-x-0" : "-translate-x-full"
-          }`}
-        >
-          <div className="flex items-start justify-end bg-transparent p-3">
-            <button
-              type="button"
-              onClick={() => setMobileOpen(false)}
-              className="rounded-lg border border-white/10 bg-black/30 p-2 text-[#c7d7f8]"
-              aria-label="Close sidebar"
+      {/* Mobile Menu Drawer */}
+      <div className={`fixed inset-0 z-[2000] lg:hidden transition-opacity duration-300 ${mobileOpen ? "visible opacity-100" : "invisible opacity-0"}`}>
+        <div className="absolute inset-0 bg-black/80 backdrop-blur-sm" onClick={() => setMobileOpen(false)} />
+        <div className={`absolute left-0 top-0 h-full transition-transform duration-500 ease-out ${mobileOpen ? "translate-x-0" : "-translate-x-full"}`}>
+            <SidebarShell
+              active={active}
+              collapsed={false}
+              onToggleCollapsed={() => undefined}
+              onNavigate={() => setMobileOpen(false)}
+              mobile
+            />
+            <button 
+                onClick={() => setMobileOpen(false)}
+                className="absolute right-[-50px] top-6 rounded-xl bg-slate-900 border border-slate-800 p-3 text-white"
             >
-              <FiX size={16} />
+                <FiX size={20} />
             </button>
-          </div>
-          <SidebarShell
-            active={active}
-            collapsed={false}
-            onToggleCollapsed={() => undefined}
-            onNavigate={() => setMobileOpen(false)}
-            mobile
-          />
         </div>
       </div>
     </>
