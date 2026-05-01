@@ -3,21 +3,18 @@ import { AppError } from "../utils/AppError.utils";
 import { getGeminiModel } from "../config/gemini.config";
 
 interface GeminiResponse {
-    spoken_response: string;
-    score_update: number;
-    next_topic: string;
+    evaluation_of_previous_answer: string;
+    next_question: string;
     is_complete: boolean;
 }
 
-// ─── Helpers ──────────────────────────────────────────────────────────────────
-
-const formatHistory = (messages: any[]): string => {
-    return messages
+const formatHistory = (qaPairs: any[]): string => {
+    return qaPairs
         .map(
-            (m) =>
-                `${m.role === "ai" ? "Interviewer" : "Candidate"}: ${m.content}`,
+            (qa, index) =>
+                `Q${index + 1}: ${qa.question}\nCandidate A: ${qa.candidate_answer || "[No answer yet]"}`,
         )
-        .join("\n");
+        .join("\n\n");
 };
 
 const buildPrompt = (
@@ -31,25 +28,26 @@ const buildPrompt = (
     const isFirst = !candidateAnswer;
 
     return `You are a Technical Interviewer for a ${jobRole} position.
-            This is a ${roundType} round. This is question ${questionNumber} of ${maxQuestions}.
+            This is a ${roundType} round. We are on question ${questionNumber} of ${maxQuestions}.
 
-            ${isFirst ? "Start the interview with your first question." : `CONVERSATION SO FAR:\n${history}\n\nCandidate answered: "${candidateAnswer}"\n\nEvaluate their answer briefly and ask the next question.`}
+            ${
+                isFirst
+                    ? "Start the interview by generating the first question."
+                    : `CONVERSATION SO FAR:\n${history}\n\nEvaluate the candidate's last answer, then ask the next question.`
+            }
 
             Rules:
-            1. Ask exactly ONE question.
-            2. Progressively increase difficulty based on their answers.
-            3. If this is question ${maxQuestions}, set is_complete to true.
+            1. Keep the 'next_question' concise and to the point.
+            2. Progressively increase difficulty based on their previous answers.
+            3. If this is question ${maxQuestions}, set is_complete to true and leave 'next_question' empty.
 
             Respond strictly in this JSON format:
             {
-                "spoken_response": "Your evaluation and next question",
-                "score_update": 5,
-                "next_topic": "concept being tested",
+                "evaluation_of_previous_answer": "Brief assessment of their answer (leave empty if this is the first question)",
+                "next_question": "The next question to ask",
                 "is_complete": false
             }`;
 };
-
-// ─── Services ─────────────────────────────────────────────────────────────────
 
 export const startRoundService = async (
     interviewId: string,
@@ -58,42 +56,39 @@ export const startRoundService = async (
 ) => {
     const interview: any =
         await Interview.findById(interviewId).populate("job_id");
-
-    if (!interview) throw new AppError("Interview not found", 404);
+    if (!interview) throw new AppError("Interview Not found", 404);
     if (interview.user_id.toString() !== userId)
-        throw new AppError("Access denied", 403);
+        throw new AppError("Access Denied", 401);
 
     const round = interview.rounds[roundIndex];
-    if (!round) throw new AppError(`Round ${roundIndex} not found`, 404);
     if (round.status === "completed")
         throw new AppError("Round already completed", 400);
 
-    // If already started, return current state
-    if (round.messages.length > 0) return { interview, round, roundIndex };
+    // If round already has QA pairs, just return it
+    if (round.qa_pairs.length > 0) return { interview, round, roundIndex };
 
-    const job = interview.job_id;
-    const model = getGeminiModel(true); // Enforce Native JSON Mode
-
+    // Generating first question
     const prompt = buildPrompt(
-        job.role,
+        interview.job_id.role,
         round.type,
         1,
-        interview.questions_per_round,
+        round.max_questions,
         "",
     );
+    const model = getGeminiModel(true);
     const result = await model.generateContent(prompt);
     const aiData: GeminiResponse = JSON.parse(result.response.text());
 
-    interview.rounds[roundIndex].messages.push({
-        role: "ai",
-        content: aiData.spoken_response,
+    // Push the VERY FIRST question into the array
+    interview.rounds[roundIndex].qa_pairs.push({
+        question: aiData.next_question,
         timestamp: new Date(),
     });
 
     interview.rounds[roundIndex].status = "ongoing";
     interview.status = "ongoing";
-
     await interview.save();
+
     return { interview, round: interview.rounds[roundIndex], roundIndex };
 };
 
@@ -105,38 +100,31 @@ export const answerInRoundService = async (
 ) => {
     const interview: any =
         await Interview.findById(interviewId).populate("job_id");
-
-    if (!interview) throw new AppError("Interview not found", 404);
+    if (!interview) throw new AppError("Interview Not found", 404);
     if (interview.user_id.toString() !== userId)
-        throw new AppError("Access denied", 403);
+        throw new AppError("Access Denied", 401);
 
-    const round = interview.rounds[roundIndex];
-    if (!round) throw new AppError(`Round ${roundIndex} not found`, 404);
-    if (round.status !== "ongoing")
+    const current_round = interview.rounds[roundIndex];
+
+    if (current_round.status !== "ongoing")
         throw new AppError("Round is not active", 400);
 
-    const job = interview.job_id;
-    const maxQuestions = interview.questions_per_round;
-    const aiMessageCount = round.messages.filter(
-        (m: any) => m.role === "ai",
-    ).length;
+    // 1. Find the current active question (the last one in the array)
+    const currentQuestionIndex = current_round.qa_pairs.length - 1;
+    if (currentQuestionIndex < 0)
+        throw new AppError("No active question found", 400);
 
-    // Save candidate answer
-    interview.rounds[roundIndex].messages.push({
-        role: "candidate",
-        content: candidateAnswer,
-        timestamp: new Date(),
-    });
+    // 2. Save candidate's answer into the existing QA pair
+    current_round.qa_pairs[currentQuestionIndex].candidate_answer =
+        candidateAnswer;
 
-    if (aiMessageCount >= maxQuestions) {
-        return await _finalizeRound(interview, roundIndex);
-    }
-
-    const history = formatHistory(round.messages);
+    // 3. Prepare AI request
+    const maxQuestions = current_round.max_questions;
+    const history = formatHistory(current_round.qa_pairs);
     const prompt = buildPrompt(
-        job.role,
-        round.type,
-        aiMessageCount + 1,
+        interview.job_id.role,
+        current_round.type,
+        currentQuestionIndex + 2,
         maxQuestions,
         history,
         candidateAnswer,
@@ -146,18 +134,25 @@ export const answerInRoundService = async (
     const result = await model.generateContent(prompt);
     const aiData: GeminiResponse = JSON.parse(result.response.text());
 
-    interview.rounds[roundIndex].messages.push({
-        role: "ai",
-        content: aiData.spoken_response,
-        timestamp: new Date(),
-    });
+    current_round.qa_pairs[currentQuestionIndex].ai_evaluation =
+        aiData.evaluation_of_previous_answer;
 
-    if (aiData.is_complete || aiMessageCount + 1 >= maxQuestions) {
+    // Checking if we are done or if we need to push a new question
+    if (aiData.is_complete || current_round.qa_pairs.length >= maxQuestions) {
         return await _finalizeRound(interview, roundIndex);
+    } else {
+        // Adding new question
+        current_round.qa_pairs.push({
+            question: aiData.next_question,
+            timestamp: new Date(),
+        });
     }
 
+    // Tell Mongoose exactly what changed since we modified a deeply nested array index
+    interview.markModified(`rounds.${roundIndex}.qa_pairs`);
     await interview.save();
-    return { interview, round: interview.rounds[roundIndex], roundIndex };
+
+    return { interview, round: current_round, roundIndex };
 };
 
 export const getRoundService = async (
@@ -166,8 +161,9 @@ export const getRoundService = async (
     userId: string,
 ) => {
     const interview = await Interview.findById(interviewId);
-    if (!interview || interview.user_id.toString() !== userId)
-        throw new AppError("Not found or denied", 404);
+    if (!interview) throw new AppError("Interview Not found", 404);
+    if (interview.user_id.toString() !== userId)
+        throw new AppError("Access Denied", 401);
 
     const round = interview.rounds[roundIndex];
     if (!round) throw new AppError("Round not found", 404);
@@ -175,17 +171,15 @@ export const getRoundService = async (
     return { interview, round, roundIndex };
 };
 
-// ─── Private ──────────────────────────────────────────────────────────────────
-
 const _finalizeRound = async (interview: any, roundIndex: number) => {
     const round = interview.rounds[roundIndex];
     const model = getGeminiModel(true);
-    const transcript = formatHistory(round.messages);
+    const transcript = formatHistory(round.qa_pairs);
 
-    const summaryPrompt = `Review this technical interview round transcript:\n${transcript}\n\nProvide JSON: {"summary": "2 sentences", "final_score": 7}`;
+    const summaryPrompt = `Review this technical interview round:\n${transcript}\n\nProvide JSON: {"summary": "2 sentences", "final_score": 85} Ensure final_score is out of 100.`;
 
     let summary = "Round completed.";
-    let finalScore = 5;
+    let finalScore = 50;
 
     try {
         const result = await model.generateContent(summaryPrompt);
@@ -200,10 +194,10 @@ const _finalizeRound = async (interview: any, roundIndex: number) => {
     interview.rounds[roundIndex].score = finalScore;
     interview.rounds[roundIndex].remarks = summary;
 
-    // Check if ALL rounds are complete to finalize the entire interview
     const allDone = interview.rounds.every(
         (r: any) => r.status === "completed" || r.status === "failed",
     );
+
     if (allDone) {
         const completedRounds = interview.rounds.filter(
             (r: any) => r.status === "completed",
@@ -220,7 +214,8 @@ const _finalizeRound = async (interview: any, roundIndex: number) => {
 
         interview.score = avgScore;
         interview.status = "completed";
-        interview.remarks = `Interview completed. Average score: ${avgScore}/10.`;
+
+        interview.remarks = `Interview completed. Average score: ${avgScore}/100.`;
     }
 
     await interview.save();

@@ -2,23 +2,19 @@ import mongoose, { Schema } from "mongoose";
 import { RoundType } from "../constants/roundtypes.constants";
 import { VIOLATION_TYPES } from "../constants/violations.constants";
 import { ROUND_STATUS, INTERVIEW_STATUS } from "../constants/status.constants";
-import {
-    TInterview,
-    TInterviewRound,
-    TMessage,
-} from "../types/interview.types";
+import { TInterview, TInterviewRound, TQAPair } from "../types/interview.types";
 
-const messageSchema = new Schema<TMessage>(
+const qaPairSchema = new Schema<TQAPair>(
     {
-        role: {
+        question: {
             type: String,
-            enum: ["ai", "candidate"],
             required: true,
         },
-        content: {
+        candidate_answer: {
             type: String,
-            required: true,
-            trim: true,
+        },
+        ai_evaluation: {
+            type: String,
         },
         timestamp: {
             type: Date,
@@ -28,7 +24,7 @@ const messageSchema = new Schema<TMessage>(
     { _id: false },
 );
 
-const violationSchema = new Schema<any>(
+const violationSchema = new Schema(
     {
         type: {
             type: String,
@@ -64,8 +60,8 @@ const roundSchema = new Schema<TInterviewRound>(
             },
             default: "pending",
         },
-        messages: {
-            type: [messageSchema],
+        qa_pairs: {
+            type: [qaPairSchema],
             default: [],
         },
         max_questions: {

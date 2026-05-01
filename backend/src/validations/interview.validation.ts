@@ -15,20 +15,16 @@ const optionalUrl = z
     .optional()
     .or(z.literal(""));
 
-const messageZodSchema = z.object({
-    role: z.enum(["ai", "candidate"], {
-        message: "Role must be ai or candidate",
-    }),
-    content: z
-        .string()
-        .trim()
-        .min(1, "Message content is required")
-        .max(5000, "Message cannot exceed 5000 characters"),
+const qaPairZodSchema = z.object({
+    question: z.string().trim().min(1, "Question is required"),
+    candidate_answer: z.string().trim().optional(),
+    ai_evaluation: z.string().trim().optional(),
     timestamp: z
         .string()
-        .refine((val) => !isNaN(Date.parse(val)), "Invalid date format")
+        .refine((val) => !isNaN(Date.parse(val)), "Invalid date")
         .transform((val) => new Date(val))
-        .optional(),
+        .optional()
+        .default(() => new Date().toISOString()),
 });
 
 const roundZodSchema = z.object({
@@ -43,13 +39,7 @@ const roundZodSchema = z.object({
             message: "Invalid round status",
         }),
 
-    messages: z.array(messageZodSchema).default([]),
-
-    question_count: z
-        .number()
-        .min(0, "Question count cannot be negative")
-        .optional()
-        .default(0),
+    qa_pairs: z.array(qaPairZodSchema).default([]),
 
     max_questions: z
         .number()
@@ -128,7 +118,7 @@ const interviewBodySchema = z.object({
 });
 
 /**
- * We only need the job_id (and optionally CV). 
+ * We only need the job_id (and optionally CV).
  * Everything else is handled by the createInterviewService logic.
  */
 export const createInterviewSchema = z.object({

@@ -3,16 +3,17 @@ import { RoundType } from "../constants/roundtypes.constants";
 import { ROUND_STATUS, INTERVIEW_STATUS } from "../constants/status.constants";
 import { VIOLATION_TYPES } from "../constants/violations.constants";
 
-export interface TMessage {
-    role: "ai" | "candidate";
-    content: string;
+export interface TQAPair {
+    question: string;
+    candidate_answer?: string;
+    ai_evaluation?: string;
     timestamp: Date;
 }
 
 export interface TInterviewRound {
     type: RoundType;
     status: (typeof ROUND_STATUS)[number];
-    messages: TMessage[];
+    qa_pairs: TQAPair[];
     max_questions: number;
     score?: number;
     remarks?: string;
