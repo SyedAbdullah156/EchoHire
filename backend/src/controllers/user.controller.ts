@@ -1,39 +1,21 @@
 import { Request, Response, NextFunction } from "express";
+import { AuthRequest } from "../types/request.types";
 import {
-    createUserService,
     getAllUsersService,
     getUserByIdService,
-    getUserByEmailService,
     updateUserService,
     deleteUserService,
 } from "../services/user.service";
-import { signAuthToken } from "../utils/auth.utils";
+import { AppError } from "../utils/AppError.utils";
 
-// CREATE USER
-export const createUser = async (req: Request, res: Response, next: NextFunction) => {
-    try {
-        const user = await createUserService(req.body);
-        const token = signAuthToken({
-            ...user,
-            _id: String((user as { _id: { toString(): string } })._id),
-        });
-
-        res.status(201).json({
-            success: true,
-            message: "Account created successfully",
-            data: user,
-            token,
-        });
-    } catch (error) {
-        next(error);
-    }
-};
-
-// GET ALL USERS
-export const getAllUsers = async (req: Request, res: Response, next: NextFunction) => {
+export const getAllUsers = async (
+    req: Request,
+    res: Response,
+    next: NextFunction,
+) => {
     try {
         const users = await getAllUsersService();
-
+        
         res.status(200).json({
             success: true,
             data: users,
@@ -43,18 +25,14 @@ export const getAllUsers = async (req: Request, res: Response, next: NextFunctio
     }
 };
 
-// GET USER BY ID
-export const getUserById = async (req: Request, res: Response, next: NextFunction) => {
+export const getUserById = async (
+    req: Request,
+    res: Response,
+    next: NextFunction,
+) => {
     try {
-        const user = await getUserByIdService(req.params.id as string);
-
-        if (!user) {
-            return res.status(404).json({
-                success: false,
-                message: "User not found",
-            });
-        }
-
+        const user = await getUserByIdService(req.params.id);
+        
         res.status(200).json({
             success: true,
             data: user,
@@ -64,18 +42,53 @@ export const getUserById = async (req: Request, res: Response, next: NextFunctio
     }
 };
 
-// GET USER BY EMAIL
-export const getUserByEmail = async (req: Request, res: Response, next: NextFunction) => {
+export const getMyProfile = async (
+    req: AuthRequest,
+    res: Response,
+    next: NextFunction,
+) => {
     try {
-        const user = await getUserByEmailService(req.params.email as string);
-
-        if (!user) {
-            return res.status(404).json({
-                success: false,
-                message: "User not found",
-            });
+        if (!req.user?._id) {
+            throw new AppError("Unauthorized", 401);
         }
 
+        const user = await getUserByIdService(req.user._id);
+        res.status(200).json({ success: true, data: user });
+    } catch (error) {
+        next(error);
+    }
+};
+
+export const updateMyProfile = async (
+    req: AuthRequest,
+    res: Response,
+    next: NextFunction,
+) => {
+    try {
+        if (!req.user?._id) {
+            throw new AppError("Unauthorized", 401);
+        }
+
+        const user = await updateUserService(req.user._id, req.body);
+
+        res.status(200).json({
+            success: true,
+            message: "Profile updated successfully",
+            data: user,
+        });
+    } catch (error) {
+        next(error);
+    }
+};
+
+export const updateUser = async (
+    req: Request,
+    res: Response,
+    next: NextFunction,
+) => {
+    try {
+        const user = await updateUserService(req.params.id, req.body);
+        
         res.status(200).json({
             success: true,
             data: user,
@@ -85,38 +98,13 @@ export const getUserByEmail = async (req: Request, res: Response, next: NextFunc
     }
 };
 
-// UPDATE USER
-export const updateUser = async (req: Request, res: Response, next: NextFunction) => {
+export const deleteUser = async (
+    req: Request,
+    res: Response,
+    next: NextFunction,
+) => {
     try {
-        const user = await updateUserService(req.params.id as string, req.body);
-
-        if (!user) {
-            return res.status(404).json({
-                success: false,
-                message: "User not found",
-            });
-        }
-
-        res.status(200).json({
-            success: true,
-            data: user,
-        });
-    } catch (error) {
-        next(error);
-    }
-};
-
-// DELETE USER
-export const deleteUser = async (req: Request, res: Response, next: NextFunction) => {
-    try {
-        const result = await deleteUserService(req.params.id as string);
-
-        if (!result) {
-            return res.status(404).json({
-                success: false,
-                message: "User not found",
-            });
-        }
+        const result = await deleteUserService(req.params.id);
 
         res.status(200).json({
             success: true,

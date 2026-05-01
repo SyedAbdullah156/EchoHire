@@ -1,6 +1,6 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { z } from "zod";
-import { AppError } from "../utils/apperror.utls";
+import { AppError } from "../utils/AppError.utils";
 
 const LinkedinOptimizerSchema = z.object({
   overallScore: z.number().min(0).max(100),

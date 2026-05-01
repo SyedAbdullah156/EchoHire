@@ -1,27 +1,24 @@
 import express from "express";
+import { protect, restrictTo } from "../middlewares/auth.middleware";
 import {
-    createUser,
-    getAllUsers,
-    getUserById,
-    getUserByEmail,
-    updateUser,
-    deleteUser
+  getMyProfile,
+  updateMyProfile,
+  getAllUsers,
+  getUserById,
+  updateUser,
+  deleteUser,
 } from "../controllers/user.controller";
 
 const router = express.Router();
 
-// Public: Sign up
-router.post("/", createUser);
+// My profile
+router.get("/me", protect, getMyProfile);
+router.put("/me", protect, updateMyProfile);
 
-// Protected: Only an Admin should see all users
-router.get("/", getAllUsers);
-
-// User/Admin: Get specific profile
-router.get("/email/:email", getUserByEmail);
-router.get("/:id", getUserById);
-
-// User/Admin: Update or Delete
-router.put("/:id", updateUser);
-router.delete("/:id", deleteUser);
+// Admin only
+router.get("/", protect, restrictTo("admin"), getAllUsers);
+router.get("/:id", protect, restrictTo("admin"), getUserById);
+router.put("/:id", protect, restrictTo("admin"), updateUser);
+router.delete("/:id", protect, restrictTo("admin"), deleteUser);
 
 export default router;

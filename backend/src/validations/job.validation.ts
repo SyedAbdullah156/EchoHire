@@ -52,7 +52,7 @@ const jobBodySchema = z.object({
         })
         .transform((val) => new Date(val)),
 
-    company_id: objectIdSchema, 
+    company_id: objectIdSchema,
 
     is_active: z.boolean().optional().default(true),
 });
