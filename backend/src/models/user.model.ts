@@ -24,6 +24,18 @@ const userSchema = new Schema<TUser>(
             enum: ["candidate", "recruiter", "admin"],
             default: "candidate",
         },
+        googleId: {
+            type: String,
+            required: false,
+        },
+        resetPasswordToken: {
+            type: String,
+            required: false,
+        },
+        resetPasswordExpires: {
+            type: Date,
+            required: false,
+        },
         profile: {
             phone: { type: String },
             cityCountry: { type: String },

@@ -1,11 +1,9 @@
-import bcrypt from "bcrypt";
+import bcrypt from "bcryptjs";
 import { User } from "../models/user.model";
 import { TProfile, TUser } from "../types/user.types";
 import { AppError } from "../utils/AppError.utils";
 
-type CreateUserInput = Omit<TUser, "_id" | "password"> & {
-    password: string;
-};
+type CreateUserInput = Omit<TUser, "_id">;
 
 export const createUserService = async (userData: CreateUserInput) => {
     const existingUser = await User.findOne({ email: userData.email });
@@ -13,11 +11,14 @@ export const createUserService = async (userData: CreateUserInput) => {
         throw new AppError("Email is already registered", 400);
     }
 
-    const hashedPassword = await bcrypt.hash(userData.password, 10);
+    let hashedPassword;
+    if (userData.password) {
+        hashedPassword = await bcrypt.hash(userData.password, 10);
+    }
 
     const user = await User.create({
         ...userData,
-        password: hashedPassword,
+        ...(hashedPassword && { password: hashedPassword }),
     });
 
     const userObj = user.toObject();

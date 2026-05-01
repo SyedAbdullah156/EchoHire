@@ -140,6 +140,26 @@ export const loginSchema = z.object({
         .strict(),
 });
 
+export const googleAuthSchema = z.object({
+    body: z.object({
+        credential: z.string().min(1, "Credential is required"),
+        role: z.enum(["candidate", "recruiter", "admin"]).optional(),
+    }).strict(),
+});
+
+export const forgotPasswordSchema = z.object({
+    body: z.object({
+        email: emailSchema,
+    }).strict(),
+});
+
+export const resetPasswordSchema = z.object({
+    body: z.object({
+        token: z.string().min(1, "Token is required"),
+        password: signupPasswordSchema,
+    }).strict(),
+});
+
 export const updateProfileSchema = z.object({
     body: z
         .object({

@@ -25,4 +25,7 @@ export interface TUser {
     password?: string;
     role: "candidate" | "recruiter" | "admin";
     profile?: TProfile;
+    googleId?: string;
+    resetPasswordToken?: string;
+    resetPasswordExpires?: Date;
 }
