@@ -1,17 +1,18 @@
 import { NextFunction, Request, Response } from "express";
-import bcrypt from "bcryptjs";
+import bcrypt from "bcrypt";
 import { User } from "../models/user.model";
-import { AppError } from "../utils/apperror.utls";
-import { signAuthToken } from "../utils/auth.utils";
+import { AppError } from "../utils/AppError.utils";
+import { signToken } from "../utils/jwt.utils";
 import { createUserService } from "../services/user.service";
 
-export const register = async (req: Request, res: Response, next: NextFunction) => {
+export const register = async (
+    req: Request,
+    res: Response,
+    next: NextFunction,
+) => {
     try {
         const user = await createUserService(req.body);
-        const token = signAuthToken({
-            ...user,
-            _id: String((user as { _id: { toString(): string } })._id),
-        });
+        const token = signToken(user._id.toString(), user.role);
 
         res.status(201).json({
             success: true,
@@ -24,15 +25,24 @@ export const register = async (req: Request, res: Response, next: NextFunction) 
     }
 };
 
-export const login = async (req: Request, res: Response, next: NextFunction) => {
+export const login = async (
+    req: Request,
+    res: Response,
+    next: NextFunction,
+) => {
     try {
-        const { email, password } = req.body as { email?: string; password?: string };
+        const { email, password } = req.body as {
+            email?: string;
+            password?: string;
+        };
 
         if (!email || !password) {
             throw new AppError("Email and password are required", 400);
         }
 
-        const user = await User.findOne({ email: email.trim().toLowerCase() }).select("+password");
+        const user = await User.findOne({
+            email: email.trim().toLowerCase(),
+        }).select("+password");
 
         if (!user || !user.password) {
             throw new AppError("Invalid email or password", 401);
@@ -47,10 +57,7 @@ export const login = async (req: Request, res: Response, next: NextFunction) => 
         const userObject = user.toObject();
         delete userObject.password;
 
-        const token = signAuthToken({
-            ...userObject,
-            _id: String((userObject as { _id: { toString(): string } })._id),
-        });
+        const token = signToken(user._id.toString(), user.role);
 
         res.status(200).json({
             success: true,

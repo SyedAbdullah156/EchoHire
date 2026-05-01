@@ -1,91 +1,80 @@
+import bcrypt from "bcrypt";
 import { User } from "../models/user.model";
-import { TUser } from "../types/user.types";
-import { AppError } from "../utils/apperror.utls";
-import bcrypt from "bcryptjs";
+import { TProfile, TUser } from "../types/user.types";
+import { AppError } from "../utils/AppError.utils";
 
-const normalizeEmail = (email: string) => email.trim().toLowerCase();
+type CreateUserInput = Omit<TUser, "_id" | "password"> & {
+    password: string;
+};
 
-export const createUserService = async (userData: TUser) => {
-    // Check if user already exists to prevent duplicate errors from MongoDB
-    const email = normalizeEmail(userData.email);
-    const existingUser = await User.findOne({ email });
+type UpdateUserInput = Partial<Omit<TUser, "_id" | "password">>;
+type UpdateProfileInput = Partial<TProfile>;
+
+export const createUserService = async (userData: CreateUserInput) => {
+    const existingUser = await User.findOne({ email: userData.email });
     if (existingUser) {
         throw new AppError("Email is already registered", 400);
     }
 
-    const hashedPassword = userData.password
-        ? await bcrypt.hash(userData.password, 10)
-        : undefined;
-    
+    const hashedPassword = await bcrypt.hash(userData.password, 10);
+
     const user = await User.create({
         ...userData,
-        email,
         password: hashedPassword,
     });
 
-    const userObject = user.toObject();
-    delete userObject.password;
-    return userObject;
+    const userObj = user.toObject();
+    delete userObj.password;
+
+    return userObj;
 };
 
 export const getAllUsersService = async () => {
-    // .select('-password') ensures we never accidentally send hashes to the client
-    const users = await User.find().select('-password');
-    return users;
+    return await User.find().select("-password");
 };
 
 export const getUserByIdService = async (id: string) => {
-    const user = await User.findById(id).select('-password'); // We already did select: false in schema so here it is redundant but good practice
+    const user = await User.findById(id).select("-password");
     if (!user) {
         throw new AppError("User not found", 404);
     }
     return user;
 };
 
-export const getUserByEmailService = async (email: string) => {
-    const user = await User.findOne({ email: normalizeEmail(email) }).select('-password');
-    if (!user) {
-        throw new AppError("No user found with this email", 404);
-    }
-    return user;
-};
+export const updateUserService = async (id: string, inputData: any) => {
+    const { name, email, profile } = inputData;
 
-export const updateUserService = async (id: string, updateData: Partial<TUser>) => {
-    const updatePayload = {
-        ...updateData,
-        ...(updateData.email ? { email: normalizeEmail(updateData.email) } : {}),
-    };
+    const updatePayload: Record<string, any> = {};
 
-    if (updatePayload.email) {
-        const existingUser = await User.findOne({
-            email: updatePayload.email,
-            _id: { $ne: id },
-        });
+    // top-level fields
+    if (name) updatePayload.name = name;
+    if (email) updatePayload.email = email;
 
-        if (existingUser) {
-            throw new AppError("Email is already registered", 400);
+    // nested profile fields (SAFE)
+    if (profile) {
+        for (const [key, value] of Object.entries(profile)) {
+            updatePayload[`profile.${key}`] = value;
         }
     }
-
-    if (updatePayload.password) {
-        updatePayload.password = await bcrypt.hash(updatePayload.password, 10);
-    }
-
-    const user = await User.findByIdAndUpdate(id, updatePayload, {
-        new: true,
-        runValidators: true,
-    }).select('-password');
+    console.log(updatePayload);
+    
+    const user = await User.findByIdAndUpdate(
+        id,
+        { $set: updatePayload },
+        { new: true, runValidators: true },
+    ).select("-password");
 
     if (!user) {
-        throw new AppError("User not found to update", 404);
+        throw new AppError("User not found", 404);
     }
+
     return user;
 };
 
 export const deleteUserService = async (id: string) => {
     const user = await User.findByIdAndDelete(id);
     if (!user) {
-        throw new AppError("User not found to delete", 404);
+        throw new AppError("User not found", 404);
     }
     return user;
 };
