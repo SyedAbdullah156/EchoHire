@@ -49,7 +49,7 @@ const roundZodSchema = z.object({
     score: z
         .number()
         .min(0, `Min score is 0`)
-        .max(10, `Max score is 10`)
+        .max(100, `Max score is 100`)
         .optional(),
 
     remarks: z
@@ -98,7 +98,7 @@ const interviewBodySchema = z.object({
     score: z
         .number()
         .min(0, `Min score is 0`)
-        .max(10, `Max score is 10`)
+        .max(100, `Max score is 100`)
         .optional(),
 
     remarks: z

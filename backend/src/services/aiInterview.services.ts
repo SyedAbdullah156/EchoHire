@@ -10,9 +10,10 @@ interface GeminiResponse {
 
 const formatHistory = (qaPairs: any[]): string => {
     return qaPairs
+        .filter((qa) => qa.question)
         .map(
             (qa, index) =>
-                `Q${index + 1}: ${qa.question}\nCandidate A: ${qa.candidate_answer || "[No answer yet]"}`,
+                `Round ${index + 1}:\nQ: ${qa.question}\nA: ${qa.candidate_answer || "[No answer provided]"}\nEvaluation: ${qa.ai_evaluation || "[Pending]"}`,
         )
         .join("\n\n");
 };
@@ -27,25 +28,27 @@ const buildPrompt = (
 ): string => {
     const isFirst = !candidateAnswer;
 
-    return `You are a Technical Interviewer for a ${jobRole} position.
-            This is a ${roundType} round. We are on question ${questionNumber} of ${maxQuestions}.
+    return `You are a professional Technical Interviewer for a ${jobRole} position.
+            Current Round: ${roundType}
+            Progress: Question ${questionNumber} of ${maxQuestions}
 
             ${
                 isFirst
-                    ? "Start the interview by generating the first question."
-                    : `CONVERSATION SO FAR:\n${history}\n\nEvaluate the candidate's last answer, then ask the next question.`
+                    ? "Greet the candidate and ask the first technical question related to the job role."
+                    : `INTERVIEW HISTORY:\n${history}\n\nLATEST ANSWER FROM CANDIDATE: "${candidateAnswer}"\n\nEvaluate the candidate's last answer critically, then ask the next technical question.`
             }
 
-            Rules:
-            1. Keep the 'next_question' concise and to the point.
-            2. Progressively increase difficulty based on their previous answers.
-            3. If this is question ${maxQuestions}, set is_complete to true and leave 'next_question' empty.
+            STRICT RULES:
+            1. Keep your tone professional and encouraging.
+            2. If the candidate's answer is vague, ask a follow-up to probe deeper.
+            3. If this is question ${maxQuestions}, set 'is_complete' to true and do not ask a next question.
+            4. Respond ONLY in JSON.
 
-            Respond strictly in this JSON format:
+            JSON STRUCTURE:
             {
-                "evaluation_of_previous_answer": "Brief assessment of their answer (leave empty if this is the first question)",
-                "next_question": "The next question to ask",
-                "is_complete": false
+                "evaluation_of_previous_answer": "Constructive feedback on the last answer",
+                "next_question": "The next technical question to ask",
+                "is_complete": boolean
             }`;
 };
 
@@ -58,16 +61,14 @@ export const startRoundService = async (
         await Interview.findById(interviewId).populate("job_id");
     if (!interview) throw new AppError("Interview Not found", 404);
     if (interview.user_id.toString() !== userId)
-        throw new AppError("Access Denied", 401);
+        throw new AppError("Access denied", 403);
 
     const round = interview.rounds[roundIndex];
     if (round.status === "completed")
         throw new AppError("Round already completed", 400);
 
-    // If round already has QA pairs, just return it
     if (round.qa_pairs.length > 0) return { interview, round, roundIndex };
 
-    // Generating first question
     const prompt = buildPrompt(
         interview.job_id.role,
         round.type,
@@ -75,11 +76,17 @@ export const startRoundService = async (
         round.max_questions,
         "",
     );
+
     const model = getGeminiModel(true);
     const result = await model.generateContent(prompt);
-    const aiData: GeminiResponse = JSON.parse(result.response.text());
 
-    // Push the VERY FIRST question into the array
+    let aiData: GeminiResponse;
+    try {
+        aiData = JSON.parse(result.response.text());
+    } catch (e) {
+        throw new AppError("AI generation failed. Please try again.", 502);
+    }
+
     interview.rounds[roundIndex].qa_pairs.push({
         question: aiData.next_question,
         timestamp: new Date(),
@@ -95,30 +102,28 @@ export const startRoundService = async (
 export const answerInRoundService = async (
     interviewId: string,
     roundIndex: number,
-    candidateAnswer: string,
+    candidateAnswer: string | undefined,
     userId: string,
+    audioBuffer?: Buffer,
 ) => {
     const interview: any =
         await Interview.findById(interviewId).populate("job_id");
     if (!interview) throw new AppError("Interview Not found", 404);
     if (interview.user_id.toString() !== userId)
-        throw new AppError("Access Denied", 401);
+        throw new AppError("Access denied", 403);
 
     const current_round = interview.rounds[roundIndex];
-
     if (current_round.status !== "ongoing")
         throw new AppError("Round is not active", 400);
 
-    // 1. Find the current active question (the last one in the array)
     const currentQuestionIndex = current_round.qa_pairs.length - 1;
     if (currentQuestionIndex < 0)
         throw new AppError("No active question found", 400);
 
-    // 2. Save candidate's answer into the existing QA pair
+    // Save whatever we have (text or note about audio)
     current_round.qa_pairs[currentQuestionIndex].candidate_answer =
-        candidateAnswer;
+        candidateAnswer || "[Audio Response]";
 
-    // 3. Prepare AI request
     const maxQuestions = current_round.max_questions;
     const history = formatHistory(current_round.qa_pairs);
     const prompt = buildPrompt(
@@ -127,28 +132,43 @@ export const answerInRoundService = async (
         currentQuestionIndex + 2,
         maxQuestions,
         history,
-        candidateAnswer,
+        candidateAnswer || "The candidate provided a voice response.",
     );
 
     const model = getGeminiModel(true);
-    const result = await model.generateContent(prompt);
-    const aiData: GeminiResponse = JSON.parse(result.response.text());
+
+    // Construct parts for multimodal generation
+    const parts: any[] = [prompt];
+    if (audioBuffer) {
+        parts.push({
+            inlineData: {
+                data: audioBuffer.toString("base64"),
+                mimeType: "audio/wav", // Multimodal support
+            },
+        });
+    }
+
+    const result = await model.generateContent(parts);
+
+    let aiData: GeminiResponse;
+    try {
+        aiData = JSON.parse(result.response.text());
+    } catch (e) {
+        throw new AppError("AI response error. Please resubmit.", 502);
+    }
 
     current_round.qa_pairs[currentQuestionIndex].ai_evaluation =
         aiData.evaluation_of_previous_answer;
 
-    // Checking if we are done or if we need to push a new question
     if (aiData.is_complete || current_round.qa_pairs.length >= maxQuestions) {
         return await _finalizeRound(interview, roundIndex);
     } else {
-        // Adding new question
         current_round.qa_pairs.push({
             question: aiData.next_question,
             timestamp: new Date(),
         });
     }
 
-    // Tell Mongoose exactly what changed since we modified a deeply nested array index
     interview.markModified(`rounds.${roundIndex}.qa_pairs`);
     await interview.save();
 
@@ -163,7 +183,7 @@ export const getRoundService = async (
     const interview = await Interview.findById(interviewId);
     if (!interview) throw new AppError("Interview Not found", 404);
     if (interview.user_id.toString() !== userId)
-        throw new AppError("Access Denied", 401);
+        throw new AppError("Access denied", 403);
 
     const round = interview.rounds[roundIndex];
     if (!round) throw new AppError("Round not found", 404);
@@ -176,7 +196,7 @@ const _finalizeRound = async (interview: any, roundIndex: number) => {
     const model = getGeminiModel(true);
     const transcript = formatHistory(round.qa_pairs);
 
-    const summaryPrompt = `Review this technical interview round:\n${transcript}\n\nProvide JSON: {"summary": "2 sentences", "final_score": 85} Ensure final_score is out of 100.`;
+    const summaryPrompt = `Critically review this technical interview round for a ${interview.job_id.role} role:\n\nTRANSCRIPT:\n${transcript}\n\nProvide a final summary and a numeric score (0-100) based on technical accuracy, communication, and depth of knowledge. Ensure the JSON format is strictly followed.`;
 
     let summary = "Round completed.";
     let finalScore = 50;
@@ -184,8 +204,11 @@ const _finalizeRound = async (interview: any, roundIndex: number) => {
     try {
         const result = await model.generateContent(summaryPrompt);
         const data = JSON.parse(result.response.text());
-        summary = data.summary;
-        finalScore = data.final_score;
+        summary =
+            data.summary ||
+            data.evaluation_of_previous_answer ||
+            "Assessment complete.";
+        finalScore = data.final_score || data.score || 50;
     } catch {
         console.error("Failed to generate round summary, using fallbacks.");
     }
@@ -214,8 +237,7 @@ const _finalizeRound = async (interview: any, roundIndex: number) => {
 
         interview.score = avgScore;
         interview.status = "completed";
-
-        interview.remarks = `Interview completed. Average score: ${avgScore}/100.`;
+        interview.remarks = `Interview series concluded. Final performance score: ${avgScore}/100.`;
     }
 
     await interview.save();

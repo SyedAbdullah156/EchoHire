@@ -38,22 +38,32 @@ export const getUserByIdService = async (id: string) => {
     return user;
 };
 
-export const updateUserService = async (id: string, inputData: any) => {
+export const updateUserService = async (id: string, inputData: Partial<TUser>) => {
     const { name, email, profile } = inputData;
 
-    const updatePayload: Record<string, any> = {};
+    // If email is being changed, check for duplicates
+    // If same email as before → passes (since it excludes self)
+    if (email) {
+        const existingUser = await User.findOne({ email, _id: { $ne: id } });
+        if (existingUser) {
+            throw new AppError(
+                "Email is already in use by another account",
+                400,
+            );
+        }
+    }
 
-    // top-level fields
+    const updatePayload: Record<string, any> = {};
     if (name) updatePayload.name = name;
     if (email) updatePayload.email = email;
 
-    // nested profile fields (SAFE)
+    // Map nested profile fields to dot notation for atomic updates
     if (profile) {
-        for (const [key, value] of Object.entries(profile)) {
+        Object.entries(profile).forEach(([key, value]) => {
             updatePayload[`profile.${key}`] = value;
-        }
+        });
     }
-    
+
     const user = await User.findByIdAndUpdate(
         id,
         { $set: updatePayload },

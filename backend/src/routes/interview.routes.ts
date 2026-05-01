@@ -24,6 +24,6 @@ router.get("/my-interviews", protect, getMyInterviews);
 
 // GET /api/interviews/:id
 // Gets a specific interview by its ID
-router.get("/:id", protect, restrictTo("admin"), getInterview);
+router.get("/:id", protect, getInterview);
 
 export default router;

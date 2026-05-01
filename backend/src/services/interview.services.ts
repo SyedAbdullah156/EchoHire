@@ -30,7 +30,7 @@ export const createInterviewService = async (
         type: roundConfig.type,
         max_questions: roundConfig.max_questions,
         status: "pending",
-        messages: [],
+        qa_pairs: [],
     }));
 
     // Creating the Interview Instance
