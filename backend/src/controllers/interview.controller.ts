@@ -43,7 +43,7 @@ export const getInterview = async (
 ) => {
     try {
         const { id } = req.params;
-        const interview = await InterviewService.getInterviewByIdService(id);
+        const interview = await InterviewService.getInterviewByIdService(id as string);
 
         if (!req.user) {
             throw new AppError("Authentication required", 401);

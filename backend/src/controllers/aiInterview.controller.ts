@@ -11,7 +11,7 @@ export const startRound = async (
     try {
         if (!req.user?._id) throw new AppError("Unauthorized", 401);
         const data = await AiService.startRoundService(
-            req.params.interviewId,
+            req.params.interviewId.toString(),
             Number(req.params.roundIndex),
             req.user._id as string,
         );
@@ -33,7 +33,7 @@ export const answerInRound = async (
     try {
         if (!req.user?._id) throw new AppError("Unauthorized", 401);
         const data = await AiService.answerInRoundService(
-            req.params.interviewId,
+            req.params.interviewId.toString(),
             Number(req.params.roundIndex),
             req.body.content,
             req.user._id as string,
@@ -58,7 +58,7 @@ export const voiceAnswer = async (
         if (!req.file) throw new AppError("Audio file is required", 400);
 
         const data = await AiService.answerInRoundService(
-            req.params.interviewId,
+            req.params.interviewId.toString(),
             Number(req.params.roundIndex),
             undefined, // No text content
             req.user._id as string,
@@ -83,7 +83,7 @@ export const getRound = async (
     try {
         if (!req.user?._id) throw new AppError("Unauthorized", 401);
         const data = await AiService.getRoundService(
-            req.params.interviewId,
+            req.params.interviewId.toString(),
             Number(req.params.roundIndex),
             req.user._id as string,
         );

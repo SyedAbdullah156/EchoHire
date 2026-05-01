@@ -8,7 +8,7 @@ const objectIdSchema = z
 
 const jobRoundSchema = z.object({
     type: z.nativeEnum(RoundType, {
-        errorMap: () => ({ message: "Invalid round type selected" }),
+        message: "Invalid round type selected",
     }),
     max_questions: z
         .number()

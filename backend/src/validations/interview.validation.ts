@@ -22,9 +22,8 @@ const qaPairZodSchema = z.object({
     timestamp: z
         .string()
         .refine((val) => !isNaN(Date.parse(val)), "Invalid date")
-        .transform((val) => new Date(val))
-        .optional()
-        .default(() => new Date().toISOString()),
+        .default(() => new Date().toISOString())
+        .transform((val) => new Date(val)),
 });
 
 const roundZodSchema = z.object({
