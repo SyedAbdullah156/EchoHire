@@ -4,25 +4,62 @@ import { VIOLATION_TYPES } from "../constants/violations.constants";
 import { ROUND_STATUS, INTERVIEW_STATUS } from "../constants/status.constants";
 import { INTERVIEW_LIMITS } from "../constants/interview.constants";
 
-// Reusable ID validation
 const objectIdSchema = z
     .string()
     .regex(/^[0-9a-fA-F]{24}$/, "Invalid ID format");
 
-// Sub-Schemas Validation
+const optionalUrl = z
+    .string()
+    .trim()
+    .url("Invalid URL format")
+    .optional()
+    .or(z.literal(""));
+
+const messageZodSchema = z.object({
+    role: z.enum(["ai", "candidate"], {
+        message: "Role must be ai or candidate",
+    }),
+    content: z
+        .string()
+        .trim()
+        .min(1, "Message content is required")
+        .max(5000, "Message cannot exceed 5000 characters"),
+    timestamp: z
+        .string()
+        .refine((val) => !isNaN(Date.parse(val)), "Invalid date format")
+        .transform((val) => new Date(val))
+        .optional(),
+});
+
 const roundZodSchema = z.object({
-    type: z.nativeEnum(RoundType).optional(),
+    type: z.nativeEnum(RoundType, {
+        message: "Invalid round type",
+    }),
+
+    status: z
+        .string()
+        .optional()
+        .refine((val) => !val || ROUND_STATUS.includes(val as any), {
+            message: "Invalid round status",
+        }),
+
+    messages: z.array(messageZodSchema).default([]),
+
+    question_count: z
+        .number()
+        .min(0, "Question count cannot be negative")
+        .optional()
+        .default(0),
+
+    max_questions: z
+        .number()
+        .min(1, "Max questions must be at least 1")
+        .max(15, "Max questions cannot exceed 15"),
 
     score: z
         .number()
-        .min(
-            INTERVIEW_LIMITS.SCORE_MIN,
-            `Min score is ${INTERVIEW_LIMITS.SCORE_MIN}`,
-        )
-        .max(
-            INTERVIEW_LIMITS.SCORE_MAX,
-            `Max score is ${INTERVIEW_LIMITS.SCORE_MAX}`,
-        )
+        .min(0, `Min score is 0`)
+        .max(10, `Max score is 10`)
         .optional(),
 
     remarks: z
@@ -37,12 +74,12 @@ const roundZodSchema = z.object({
             `Max ${INTERVIEW_LIMITS.REMARKS_MAX} chars`,
         )
         .optional(),
-
-    status: z.enum([...ROUND_STATUS] as [string, ...string[]]).optional(),
 });
 
 const violationZodSchema = z.object({
-    type: z.enum([...VIOLATION_TYPES] as [string, ...string[]]).optional(),
+    type: z.enum([...VIOLATION_TYPES] as [string, ...string[]], {
+        message: "Invalid violation type",
+    }),
 
     timestamp: z
         .string()
@@ -51,27 +88,27 @@ const violationZodSchema = z.object({
         .optional(),
 });
 
-// Main Schema Validaion
 const interviewBodySchema = z.object({
     job_id: objectIdSchema,
     user_id: objectIdSchema,
 
+    status: z
+        .string()
+        .optional()
+        .refine((val) => !val || INTERVIEW_STATUS.includes(val as any), {
+            message: "Invalid interview status",
+        }),
+
     rounds: z
         .array(roundZodSchema)
-        .min(1, "At least one interview round must be provided"),
+        .min(1, "At least one interview round is required"),
 
-    cv_url: z.string().url("Invalid CV URL format").optional(),
+    cv_url: optionalUrl,
 
     score: z
         .number()
-        .min(
-            INTERVIEW_LIMITS.SCORE_MIN,
-            `Min score is ${INTERVIEW_LIMITS.SCORE_MIN}`,
-        )
-        .max(
-            INTERVIEW_LIMITS.SCORE_MAX,
-            `Max score is ${INTERVIEW_LIMITS.SCORE_MAX}`,
-        )
+        .min(0, `Min score is 0`)
+        .max(10, `Max score is 10`)
         .optional(),
 
     remarks: z
@@ -87,20 +124,30 @@ const interviewBodySchema = z.object({
         )
         .optional(),
 
-    status: z.enum([...INTERVIEW_STATUS] as [string, ...string[]]).optional(),
-
     violations: z.array(violationZodSchema).optional(),
 });
 
-// Actual Use Cases
+/**
+ * We only need the job_id (and optionally CV). 
+ * Everything else is handled by the createInterviewService logic.
+ */
 export const createInterviewSchema = z.object({
-    body: interviewBodySchema,
+    body: z.object({
+        job_id: objectIdSchema,
+        cv_url: optionalUrl,
+    }),
 });
 
+/**
+ * Used for updating interview details (admin/system use)
+ */
 export const updateInterviewSchema = z.object({
     body: interviewBodySchema.partial(),
 });
 
+/**
+ * URL Parameter validation
+ */
 export const interviewParamsSchema = z.object({
     params: z.object({
         id: objectIdSchema,
