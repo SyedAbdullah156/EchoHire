@@ -2,12 +2,21 @@ import { z } from "zod";
 import { RoundType } from "../constants/roundtypes.constants";
 import { JOB_LIMITS } from "../constants/job.constants";
 
-// ObjectId validation
 const objectIdSchema = z
     .string()
     .regex(/^[0-9a-fA-F]{24}$/, "Invalid ID format");
 
-// Job Body validation
+const jobRoundSchema = z.object({
+    type: z.nativeEnum(RoundType, {
+        errorMap: () => ({ message: "Invalid round type selected" }),
+    }),
+    max_questions: z
+        .number()
+        .min(1, "Must ask at least 1 question")
+        .max(15, "Cannot exceed 15 questions per round")
+        .default(5),
+});
+
 const jobBodySchema = z.object({
     name: z
         .string()
@@ -37,12 +46,12 @@ const jobBodySchema = z.object({
         .max(JOB_LIMITS.ROLE_MAX, `Max ${JOB_LIMITS.ROLE_MAX} chars`),
 
     framework: z
-        .array(z.string().min(1, "Framework cannot be empty"))
-        .min(JOB_LIMITS.FRAMEWORK_MIN, "At least one framework required"),
+        .array(z.string().min(1, "Framework name cannot be empty"))
+        .min(JOB_LIMITS.FRAMEWORK_MIN, "At least one framework is required"),
 
-    roundTypes: z
-        .array(z.nativeEnum(RoundType))
-        .min(JOB_LIMITS.ROUNDS_MIN, "Select at least one round type"),
+    rounds: z
+        .array(jobRoundSchema)
+        .min(JOB_LIMITS.ROUNDS_MIN, "Define at least one interview round"),
 
     deadline: z
         .string()
@@ -50,7 +59,10 @@ const jobBodySchema = z.object({
         .refine((val) => !isNaN(Date.parse(val)), {
             message: "Invalid date format",
         })
-        .transform((val) => new Date(val)),
+        .transform((val) => new Date(val))
+        .refine((date) => date > new Date(), {
+            message: "Deadline must be in the future",
+        }),
 
     company_id: objectIdSchema,
 
@@ -62,12 +74,12 @@ export const createJobSchema = z.object({
     body: jobBodySchema,
 });
 
-// Update Job (partial body only)
+// Update Job (makes all fields optional)
 export const updateJobSchema = z.object({
     body: jobBodySchema.partial(),
 });
 
-// Params validation
+// Params validation (e.g., /api/jobs/:id)
 export const jobParamsSchema = z.object({
     params: z.object({
         id: objectIdSchema,

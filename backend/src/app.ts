@@ -2,6 +2,7 @@ import express, { Request, Response } from "express";
 import userRoutes from "./routes/user.routes";
 import companyRoutes from "./routes/company.routes";
 import interviewRoutes from "./routes/interview.routes";
+import aiInterviewRoutes from "./routes/aiInterview.routes";
 import authRoutes from "./routes/auth.routes";
 import cors from "cors";
 import "./config/env.config";
@@ -39,7 +40,9 @@ app.options("*", cors(corsOptions)); // handle preflight
 app.use("/api/auth", authRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/companies", companyRoutes);
+// app.use("/api/jobs", jobRoutes);
 app.use("/api/interview", interviewRoutes);
+app.use("/api/aiInterview", aiInterviewRoutes);
 app.get("/health", (_req: Request, res: Response) => {
     res.status(200).json({ success: true, message: "EchoHire backend is healthy" });
 });

@@ -1,50 +1,78 @@
-import { Request, Response, NextFunction } from "express";
-import { GoogleGenerativeAI } from "@google/generative-ai";
+import { Response, NextFunction } from "express";
+import { AuthRequest } from "../types/request.types";
+import * as InterviewService from "../services/interview.services";
 import { AppError } from "../utils/AppError.utils";
 
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY as string);
-
-export const getNextQuestion = async (
-    req: Request,
+export const createInterview = async (
+    req: AuthRequest,
     res: Response,
     next: NextFunction,
 ) => {
     try {
-        const { targetRole, previousQuestion, candidateAnswer } = req.body;
+        // Extract strictly what is allowed from the body
+        const { job_id, cv_url } = req.body;
 
-        if (!targetRole || !candidateAnswer) {
-            throw new AppError(
-                "Target role and candidate answer are required",
-                400,
-            );
+        // Extract user_id from the auth middleware
+        const user_id = req.user?._id;
+
+        if (!user_id) {
+            throw new AppError("Unauthorized access", 401);
         }
 
-        // We use Flash because it's the fastest model (perfect for real-time chat)
-        const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+        const interview = await InterviewService.createInterviewService(
+            job_id,
+            user_id as string,
+            cv_url,
+        );
 
-        // This is the "Brain" of your Phase 1 interviewer
-        const prompt = `
-            You are a technical interviewer hiring for a ${targetRole} position.
-            
-            Context:
-            - You just asked the candidate: "${previousQuestion || "Tell me about yourself."}"
-            - The candidate replied: "${candidateAnswer}"
+        res.status(201).json({
+            success: true,
+            message:
+                "Application submitted and interview initialized successfully",
+            data: interview,
+        });
+    } catch (error) {
+        next(error);
+    }
+};
 
-            Task:
-            1. Analyze their answer.
-            2. If it was weak, ask a clarifying question. If it was strong, ask a harder follow-up question.
-            3. Act exactly like a human interviewer. Do not say "Here is my next question". 
-            4. Respond ONLY with the exact text of the next question you want to ask.
-        `;
-
-        const result = await model.generateContent(prompt);
-        const nextQuestion = result.response.text().trim();
+export const getInterview = async (
+    req: AuthRequest,
+    res: Response,
+    next: NextFunction,
+) => {
+    try {
+        const { id } = req.params;
+        const interview = await InterviewService.getInterviewByIdService(id);
 
         res.status(200).json({
             success: true,
-            data: {
-                aiResponse: nextQuestion,
-            },
+            data: interview,
+        });
+    } catch (error) {
+        next(error);
+    }
+};
+
+export const getMyInterviews = async (
+    req: AuthRequest,
+    res: Response,
+    next: NextFunction,
+) => {
+    try {
+        const user_id = req.user?._id;
+
+        if (!user_id) {
+            throw new AppError("Unauthorized access", 401);
+        }
+
+        const interviews = await InterviewService.getUserInterviewsService(
+            user_id as string,
+        );
+
+        res.status(200).json({
+            success: true,
+            data: interviews,
         });
     } catch (error) {
         next(error);

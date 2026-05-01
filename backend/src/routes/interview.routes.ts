@@ -1,9 +1,29 @@
 import { Router } from "express";
-import { protect } from "../middlewares/auth.middleware";
-import { getNextQuestion } from "../controllers/interview.controller";
+import {
+    createInterview,
+    getMyInterviews,
+    getInterview,
+} from "../controllers/interview.controller";
+import { protect, restrictTo } from "../middlewares/auth.middleware";
+import { validate } from "../middlewares/validate.middleware";
+import { createInterviewSchema } from "../validations/interview.validation";
 
 const router = Router();
 
-router.post("/next-question", protect, getNextQuestion);
+// POST /api/interviews
+router.post(
+    "/",
+    protect,
+    validate(createInterviewSchema),
+    createInterview,
+);
+
+// GET /api/interviews/my-interviews
+// Gets all interviews applied by the logged-in candidate
+router.get("/my-interviews", protect, getMyInterviews);
+
+// GET /api/interviews/:id
+// Gets a specific interview by its ID
+router.get("/:id", protect, restrictTo("admin"), getInterview);
 
 export default router;
