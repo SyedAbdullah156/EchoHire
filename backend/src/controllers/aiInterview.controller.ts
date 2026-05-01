@@ -60,9 +60,9 @@ export const getRound = async (
             Number(req.params.roundIndex),
             req.user._id as string,
         );
-        res.status(200).json({ 
-            success: true, 
-            data 
+        res.status(200).json({
+            success: true,
+            data,
         });
     } catch (error) {
         next(error);
