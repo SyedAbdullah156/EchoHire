@@ -98,6 +98,29 @@ export const updateUser = async (
     }
 };
 
+export const updateAvatar = async (
+    req: AuthRequest,
+    res: Response,
+    next: NextFunction,
+) => {
+    try {
+        if (!req.user) throw new AppError("Unauthorized", 401);
+        if (!req.body.logo) throw new AppError("No image uploaded", 400);
+
+        const user = await updateUserService(req.user._id!, {
+            profile: { avatarDataUrl: req.body.logo }
+        });
+
+        res.status(200).json({
+            success: true,
+            message: "Avatar updated successfully",
+            url: user.profile?.avatarDataUrl
+        });
+    } catch (error) {
+        next(error);
+    }
+};
+
 export const deleteUser = async (
     req: Request,
     res: Response,

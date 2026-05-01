@@ -35,12 +35,39 @@ export const answerInRound = async (
         const data = await AiService.answerInRoundService(
             req.params.interviewId,
             Number(req.params.roundIndex),
-            req.body.answer,
+            req.body.content,
             req.user._id as string,
         );
         res.status(200).json({
             success: true,
             message: "Answer submitted",
+            data,
+        });
+    } catch (error) {
+        next(error);
+    }
+};
+
+export const voiceAnswer = async (
+    req: AuthRequest,
+    res: Response,
+    next: NextFunction,
+) => {
+    try {
+        if (!req.user?._id) throw new AppError("Unauthorized", 401);
+        if (!req.file) throw new AppError("Audio file is required", 400);
+
+        const data = await AiService.answerInRoundService(
+            req.params.interviewId,
+            Number(req.params.roundIndex),
+            undefined, // No text content
+            req.user._id as string,
+            req.file.buffer, // Audio buffer
+        );
+
+        res.status(200).json({
+            success: true,
+            message: "Voice answer processed",
             data,
         });
     } catch (error) {

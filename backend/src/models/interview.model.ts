@@ -74,7 +74,7 @@ const roundSchema = new Schema<TInterviewRound>(
         score: {
             type: Number,
             min: [0, "Score cannot be less than 0"],
-            max: [10, "Score cannot exceed 10"],
+            max: [100, "Score cannot exceed 100"],
         },
         remarks: {
             type: String,
@@ -114,7 +114,7 @@ const interviewSchema = new Schema<TInterview>(
         score: {
             type: Number,
             min: [0, "Score cannot be less than 0"],
-            max: [10, "Score cannot exceed 10"],
+            max: [100, "Score cannot exceed 100"],
         },
         remarks: {
             type: String,

@@ -18,11 +18,11 @@ export interface TProfile {
     avatarDataUrl?: string;
 }
 
-export interface TUser{
+export interface TUser {
     _id?: string;
     name: string;
     email: string;
     password?: string;
-    role: 'candidate' | 'recruiter' | 'admin';
+    role: "candidate" | "recruiter" | "admin";
     profile?: TProfile;
 }

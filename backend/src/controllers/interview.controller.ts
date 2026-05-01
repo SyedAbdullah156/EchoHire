@@ -45,6 +45,18 @@ export const getInterview = async (
         const { id } = req.params;
         const interview = await InterviewService.getInterviewByIdService(id);
 
+        if (!req.user) {
+            throw new AppError("Authentication required", 401);
+        }
+
+        // Security Check: Only Admin or the Candidate who owns this interview can view it
+        const isAdmin = req.user.role === "admin";
+        const isOwner = interview.user_id._id.toString() === req.user._id!.toString();
+
+        if (!isAdmin && !isOwner) {
+            throw new AppError("Access denied", 403);
+        }
+
         res.status(200).json({
             success: true,
             data: interview,

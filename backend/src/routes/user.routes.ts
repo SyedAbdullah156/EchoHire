@@ -3,6 +3,7 @@ import { protect, restrictTo } from "../middlewares/auth.middleware";
 import {
   getMyProfile,
   updateMyProfile,
+  updateAvatar,
   getAllUsers,
   getUserById,
   updateUser,
@@ -30,12 +31,7 @@ router.post(
     protect,
     upload.single("logo"),
     uploadLogoToCloudinary,
-    (req, res) => {
-        if (!req.body.logo) {
-            return res.status(400).json({ success: false, message: "No image uploaded" });
-        }
-        res.status(200).json({ success: true, url: req.body.logo });
-    }
+    updateAvatar
 );
 
 // Admin only

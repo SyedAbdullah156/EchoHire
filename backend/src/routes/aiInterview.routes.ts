@@ -4,9 +4,11 @@ import { validate } from "../middlewares/validate.middleware";
 import {
     startRound,
     answerInRound,
+    voiceAnswer,
     getRound,
 } from "../controllers/aiInterview.controller";
 import { z } from "zod";
+import upload from "../config/multer.config";
 
 const router = Router();
 
@@ -29,6 +31,12 @@ router.post(
     protect,
     validate(answerSchema),
     answerInRound,
+);
+router.post(
+    "/:interviewId/rounds/:roundIndex/voice-answer",
+    protect,
+    upload.single("audio"),
+    voiceAnswer,
 );
 router.get("/:interviewId/rounds/:roundIndex", protect, getRound);
 

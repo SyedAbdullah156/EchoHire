@@ -13,7 +13,7 @@ export const uploadLogoToCloudinary = async (
 
     try {
         const result = await uploadToCloudinary(req.file.buffer, "logos"); // Send the file Buffer to Cloudinary
-        req.body.logo = result.secure_url; // // Add the new URL to the body
+        req.body.logo = result.secure_url; // Add the new URL to the body
         next();
     } catch (error) {
         next(error);
