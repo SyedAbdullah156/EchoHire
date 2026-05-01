@@ -6,7 +6,7 @@ import {
     updateUserService,
     deleteUserService,
 } from "../services/user.service";
-import { signAuthToken } from "../utils/auth.utils";
+import { AppError } from "../utils/AppError.utils";
 
 export const getAllUsers = async (
     req: Request,
@@ -48,11 +48,9 @@ export const getMyProfile = async (
     next: NextFunction,
 ) => {
     try {
-        const user = await createUserService(req.body);
-        const token = signAuthToken({
-            ...user,
-            _id: String((user as { _id: { toString(): string } })._id),
-        });
+        if (!req.user?._id) {
+            throw new AppError("Unauthorized", 401);
+        }
 
         const user = await getUserByIdService(req.user._id);
         res.status(200).json({ success: true, data: user });
@@ -75,9 +73,8 @@ export const updateMyProfile = async (
 
         res.status(200).json({
             success: true,
-            message: "Account created successfully",
+            message: "Profile updated successfully",
             data: user,
-            token,
         });
     } catch (error) {
         next(error);

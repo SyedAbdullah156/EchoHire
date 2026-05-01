@@ -1,19 +1,17 @@
-import { NextFunction, Request, Response } from "express";
-import { ZodSchema } from "zod";
+import { Response, NextFunction } from "express";
+import { ZodSchema, ZodError } from "zod";
+import { AuthRequest } from "../types/request.types";
 
-export const validate = (schema: ZodSchema) => {
-    return (req: Request, res: Response, next: NextFunction) => {
-        const result = schema.safeParse({
-            body: req.body,
-            params: req.params,
-            query: req.query,
-        });
+export const validate =
+    (schema: ZodSchema) =>
+    async (req: AuthRequest, res: Response, next: NextFunction) => {
+        try {
+            if (req.file) {
+                req.body.logo = req.file.path;
+            }
 
-        if (!result.success) {
-            return res.status(400).json({
-                success: false,
-                message: "Validation failed",
-                errors: result.error.flatten(),
+            await schema.parseAsync({
+                body: req.body,
             });
 
             next();
@@ -31,7 +29,4 @@ export const validate = (schema: ZodSchema) => {
 
             next(error);
         }
-
-        next();
     };
-};

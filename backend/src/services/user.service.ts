@@ -1,32 +1,32 @@
 import bcrypt from "bcrypt";
 import { User } from "../models/user.model";
-import { TUser } from "../types/user.types";
-import { AppError } from "../utils/apperror.utls";
-import bcrypt from "bcryptjs";
+import { TProfile, TUser } from "../types/user.types";
+import { AppError } from "../utils/AppError.utils";
 
-const normalizeEmail = (email: string) => email.trim().toLowerCase();
+type CreateUserInput = Omit<TUser, "_id" | "password"> & {
+    password: string;
+};
 
-export const createUserService = async (userData: TUser) => {
-    // Check if user already exists to prevent duplicate errors from MongoDB
-    const email = normalizeEmail(userData.email);
-    const existingUser = await User.findOne({ email });
+type UpdateUserInput = Partial<Omit<TUser, "_id" | "password">>;
+type UpdateProfileInput = Partial<TProfile>;
+
+export const createUserService = async (userData: CreateUserInput) => {
+    const existingUser = await User.findOne({ email: userData.email });
     if (existingUser) {
         throw new AppError("Email is already registered", 400);
     }
 
-    const hashedPassword = userData.password
-        ? await bcrypt.hash(userData.password, 10)
-        : undefined;
-    
+    const hashedPassword = await bcrypt.hash(userData.password, 10);
+
     const user = await User.create({
         ...userData,
-        email,
         password: hashedPassword,
     });
 
-    const userObject = user.toObject();
-    delete userObject.password;
-    return userObject;
+    const userObj = user.toObject();
+    delete userObj.password;
+
+    return userObj;
 };
 
 export const getAllUsersService = async () => {
@@ -41,39 +41,8 @@ export const getUserByIdService = async (id: string) => {
     return user;
 };
 
-export const getUserByEmailService = async (email: string) => {
-    const user = await User.findOne({ email: normalizeEmail(email) }).select('-password');
-    if (!user) {
-        throw new AppError("No user found with this email", 404);
-    }
-    return user;
-};
-
-export const updateUserService = async (id: string, updateData: Partial<TUser>) => {
-    const updatePayload = {
-        ...updateData,
-        ...(updateData.email ? { email: normalizeEmail(updateData.email) } : {}),
-    };
-
-    if (updatePayload.email) {
-        const existingUser = await User.findOne({
-            email: updatePayload.email,
-            _id: { $ne: id },
-        });
-
-        if (existingUser) {
-            throw new AppError("Email is already registered", 400);
-        }
-    }
-
-    if (updatePayload.password) {
-        updatePayload.password = await bcrypt.hash(updatePayload.password, 10);
-    }
-
-    const user = await User.findByIdAndUpdate(id, updatePayload, {
-        new: true,
-        runValidators: true,
-    }).select("-password");
+export const updateUserService = async (id: string, inputData: any) => {
+    const { name, email, profile } = inputData;
 
     const updatePayload: Record<string, any> = {};
 

@@ -2,11 +2,7 @@ import mongoose from "mongoose";
 
 export const connectDB = async () => {
     try {
-        const uri = process.env.MONGODB_URI ?? "mongodb://127.0.0.1:27017/echohire";
-
-        mongoose.set("strictQuery", true);
-
-        const conn = await mongoose.connect(uri);
+        const conn = await mongoose.connect(process.env.MONGODB_URI as string);
 
         console.log(`MongoDB Connected: ${conn.connection.host}`);
     } catch (error) {
