@@ -46,6 +46,7 @@ export const getCompanyById = async (
     next: NextFunction,
 ) => {
     try {
+        console.error(req.params);
         const company = await companyService.getCompanyByIdService(
             req.params.id as string,
         );

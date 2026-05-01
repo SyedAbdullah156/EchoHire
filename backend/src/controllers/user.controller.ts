@@ -31,7 +31,7 @@ export const getUserById = async (
     next: NextFunction,
 ) => {
     try {
-        const user = await getUserByIdService(req.params.id);
+        const user = await getUserByIdService(req.params.id.toString());
         
         res.status(200).json({
             success: true,
@@ -52,7 +52,7 @@ export const getMyProfile = async (
             throw new AppError("Unauthorized", 401);
         }
 
-        const user = await getUserByIdService(req.user._id);
+        const user = await getUserByIdService(req.user._id.toString());
         res.status(200).json({ success: true, data: user });
     } catch (error) {
         next(error);
@@ -69,7 +69,7 @@ export const updateMyProfile = async (
             throw new AppError("Unauthorized", 401);
         }
 
-        const user = await updateUserService(req.user._id, req.body);
+        const user = await updateUserService(req.user._id.toString(), req.body);
 
         res.status(200).json({
             success: true,
@@ -87,7 +87,7 @@ export const updateUser = async (
     next: NextFunction,
 ) => {
     try {
-        const user = await updateUserService(req.params.id, req.body);
+        const user = await updateUserService(req.params.id.toString(), req.body);
         
         res.status(200).json({
             success: true,
@@ -107,7 +107,7 @@ export const updateAvatar = async (
         if (!req.user) throw new AppError("Unauthorized", 401);
         if (!req.body.logo) throw new AppError("No image uploaded", 400);
 
-        const user = await updateUserService(req.user._id!, {
+        const user = await updateUserService(req.user._id!.toString(), {
             profile: { avatarDataUrl: req.body.logo }
         });
 
@@ -127,7 +127,7 @@ export const deleteUser = async (
     next: NextFunction,
 ) => {
     try {
-        const result = await deleteUserService(req.params.id);
+        const result = await deleteUserService(req.params.id.toString());
 
         res.status(200).json({
             success: true,

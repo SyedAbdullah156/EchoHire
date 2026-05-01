@@ -11,6 +11,7 @@ import { validate } from "../middlewares/validate.middleware";
 import {
     createCompanySchema,
     updateCompanySchema,
+    companyParamsSchema,
 } from "../validations/company.validation";
 import upload from "../config/multer.config";
 import { uploadLogoToCloudinary } from "../middlewares/cloudinary.middleware";
@@ -22,7 +23,7 @@ const router = express.Router();
  * Anyone can view companies (like a job board)
  */
 router.get("/", getAllCompanies);
-router.get("/:id", getCompanyById);
+router.get("/:id", validate(companyParamsSchema), getCompanyById);
 
 /**
  * PROTECTED ROUTES
@@ -31,11 +32,11 @@ router.get("/:id", getCompanyById);
 
 router.post(
     "/",
-    protect,                        // 1. Check who the user is (Sets req.user)
-    upload.single("logo"),          // 2. Read the form data (Text -> req.body, Image -> req.file.buffer)
-    validate(createCompanySchema),  // 3. Zod checks req.body
-    uploadLogoToCloudinary,         // 4. Upload buffer to Cloudinary, put URL into req.body.logo
-    createCompany                   // 5. Save everything to MongoDB!
+    protect, // 1. Check who the user is (Sets req.user)
+    upload.single("logo"), // 2. "logo" is name of field that contains file. It read the form data (Text -> req.body, Image -> req.file.buffer)
+    validate(createCompanySchema), // 3. Zod checks req.body
+    uploadLogoToCloudinary, // 4. Upload buffer to Cloudinary, put URL into req.body.logo
+    createCompany, // 5. Save everything to MongoDB!
 );
 
 router.patch(
