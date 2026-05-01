@@ -12,6 +12,13 @@ import { useSearchParams } from "next/navigation";
 import { FiAward, FiBarChart2, FiFileText, FiRefreshCw, FiHome, FiZap, FiTrendingUp } from "react-icons/fi";
 import { toast } from "sonner";
 
+const skillData = [
+  { label: "Coding", value: 90, color: "from-blue-400 to-blue-600" },
+  { label: "Design", value: 72, color: "from-purple-400 to-purple-600" },
+  { label: "Behavioral", value: 58, color: "from-emerald-400 to-emerald-600" },
+  { label: "Technical", value: 66, color: "from-amber-400 to-amber-600" },
+];
+
 /** 
  * HCI ANIMATION STRATEGY:
  * We use a staggered entrance to guide the user's eye from the 
