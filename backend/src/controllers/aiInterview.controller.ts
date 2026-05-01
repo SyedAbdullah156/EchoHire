@@ -3,6 +3,11 @@ import { AuthRequest } from "../types/request.types";
 import { AppError } from "../utils/AppError.utils";
 import * as AiService from "../services/aiInterview.services";
 
+const getNormalizedParam = (value: string | string[] | undefined): string => {
+    if (Array.isArray(value)) return value[0] ?? "";
+    return value ?? "";
+};
+
 export const startRound = async (
     req: AuthRequest,
     res: Response,
@@ -10,6 +15,9 @@ export const startRound = async (
 ) => {
     try {
         if (!req.user?._id) throw new AppError("Unauthorized", 401);
+        const interviewId = getNormalizedParam(req.params.interviewId);
+        if (!interviewId) throw new AppError("Interview ID is required", 400);
+
         const data = await AiService.startRoundService(
             req.params.interviewId.toString(),
             Number(req.params.roundIndex),
@@ -32,6 +40,9 @@ export const answerInRound = async (
 ) => {
     try {
         if (!req.user?._id) throw new AppError("Unauthorized", 401);
+        const interviewId = getNormalizedParam(req.params.interviewId);
+        if (!interviewId) throw new AppError("Interview ID is required", 400);
+
         const data = await AiService.answerInRoundService(
             req.params.interviewId.toString(),
             Number(req.params.roundIndex),
@@ -56,6 +67,8 @@ export const voiceAnswer = async (
     try {
         if (!req.user?._id) throw new AppError("Unauthorized", 401);
         if (!req.file) throw new AppError("Audio file is required", 400);
+        const interviewId = getNormalizedParam(req.params.interviewId);
+        if (!interviewId) throw new AppError("Interview ID is required", 400);
 
         const data = await AiService.answerInRoundService(
             req.params.interviewId.toString(),
@@ -82,6 +95,9 @@ export const getRound = async (
 ) => {
     try {
         if (!req.user?._id) throw new AppError("Unauthorized", 401);
+        const interviewId = getNormalizedParam(req.params.interviewId);
+        if (!interviewId) throw new AppError("Interview ID is required", 400);
+
         const data = await AiService.getRoundService(
             req.params.interviewId.toString(),
             Number(req.params.roundIndex),
