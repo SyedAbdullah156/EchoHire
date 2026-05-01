@@ -4,8 +4,8 @@ import companyRoutes from "./routes/company.routes";
 import interviewRoutes from "./routes/interview.routes";
 import authRoutes from "./routes/auth.routes";
 import cors from "cors";
-import { globalErrorHandler } from "./middlewares/errors.middleware";
 import "./config/env.config";
+import { globalErrorHandler } from "./middlewares/errors.middleware";
 
 const app = express();
 

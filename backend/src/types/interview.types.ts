@@ -35,4 +35,6 @@ export interface TInterview {
     score?: number;
     remarks?: string;
     messages: TMessage[];
+    rounds: TRound[];
+    violations: TViolation[];
 }

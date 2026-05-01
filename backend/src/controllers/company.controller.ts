@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from "express";
 import { AuthRequest } from "../types/request.types";
-import * as companyService from "../services/company.service";
+import * as companyService from "../services/company.services";
 
 export const createCompany = async (
     req: AuthRequest,

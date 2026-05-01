@@ -6,22 +6,14 @@ export const uploadLogoToCloudinary = async (
     req: AuthRequest,
     res: Response,
     next: NextFunction,
-) => {
-    // 1. If the user didn't upload a logo, just move on to Zod
-    if (!req.file) {
+) => { 
+    if (!req.file) { // If the user didn't upload a logo, just move on to Zod
         return next();
     }
 
     try {
-        // 2. Send the file Buffer to Cloudinary
-        const result = await uploadToCloudinary(
-            req.file.buffer,
-            "company_logos",
-        );
-
-        // 3. Inject the Cloudinary URL into req.body so Zod can see it
-        req.body.logo = result.secure_url;
-
+        const result = await uploadToCloudinary(req.file.buffer, "logos"); // Send the file Buffer to Cloudinary
+        req.body.logo = result.secure_url; // // Add the new URL to the body
         next();
     } catch (error) {
         next(error);

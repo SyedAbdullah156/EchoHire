@@ -58,6 +58,8 @@ export default function ProfilePage() {
   const [savedMessage, setSavedMessage] = useState("");
   const [touchedFields, setTouchedFields] = useState<Partial<Record<keyof ProfileData, boolean>>>({});
   const [submitAttempted, setSubmitAttempted] = useState(false);
+  const [avatarFile, setAvatarFile] = useState<File | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
 
   useEffect(() => {
     const load = async () => {
@@ -145,21 +147,25 @@ export default function ProfilePage() {
       return;
     }
 
-    const reader = new FileReader();
-    reader.onload = () => {
-      const result = typeof reader.result === "string" ? reader.result : "";
-      setProfile((prev) => ({ ...prev, avatarDataUrl: result }));
-      setTouchedFields((prev) => ({ ...prev, avatarDataUrl: true }));
-      setSavedMessage("");
-      toast.success("Avatar loaded successfully.");
-    };
-    reader.readAsDataURL(file);
+    setAvatarFile(file);
+    // Use a separate state for local preview to avoid polluting the profile state with blob URLs
+    const url = URL.createObjectURL(file);
+    setPreviewUrl(url);
+    setSavedMessage("");
+    toast.success("Avatar selected. Click 'Save Changes' to upload.");
   };
 
   const saveProfile = async () => {
     setSubmitAttempted(true);
     const token = localStorage.getItem("echohire-token");
     const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://127.0.0.1:5050";
+
+    const { fullName, email, ...restProfile } = profile;
+    const payload = {
+      name: fullName,
+      email: email,
+      profile: restProfile,
+    };
 
     const parsed = profileSchema.safeParse(profile);
     if (!parsed.success) {
@@ -170,30 +176,79 @@ export default function ProfilePage() {
     }
 
     if (token) {
+      const loadingToast = toast.loading("Saving profile...");
       try {
+        let finalAvatarUrl = profile.avatarDataUrl;
+        
+        // Sanitize: Never send a polluted local blob URL to the server
+        if (finalAvatarUrl && finalAvatarUrl.startsWith("blob:")) {
+            finalAvatarUrl = "";
+        }
+
+        // Step 1: Upload Avatar if a new file was selected
+        if (avatarFile) {
+          const formData = new FormData();
+          formData.append("logo", avatarFile);
+          
+          const uploadRes = await fetch(`${API_BASE}/api/users/me/avatar`, {
+            method: "POST",
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+            body: formData,
+          });
+
+          if (uploadRes.ok) {
+            const uploadData = await uploadRes.json();
+            console.log("Cloudinary Upload Success:", uploadData);
+            finalAvatarUrl = uploadData.url;
+          } else {
+            const errBody = await uploadRes.text();
+            console.error("Cloudinary Upload Failed:", errBody);
+            toast.error("Failed to upload avatar image. Saving profile without changes to photo.", { id: loadingToast });
+          }
+        }
+
+        console.log("Final Avatar URL being saved:", finalAvatarUrl);
+
+        // Step 2: Save Profile
+        const { fullName, email, ...restProfile } = profile;
+        const payload = {
+          name: fullName,
+          email: email,
+          profile: { ...restProfile, avatarDataUrl: finalAvatarUrl },
+        };
+
         const res = await fetch(`${API_BASE}/api/users/me`, {
           method: "PUT",
           headers: {
             "Content-Type": "application/json",
             Authorization: `Bearer ${token}`,
           },
-          body: JSON.stringify({ profile }),
+          body: JSON.stringify(payload),
         });
 
         if (res.ok) {
+          const body = await res.json();
+          // Update the local profile state with the returned data from server (including new Cloudinary URL)
+          const updatedProfile = body.data.profile || {};
+          setProfile(prev => ({ ...prev, ...updatedProfile, fullName: body.data.name || prev.fullName, email: body.data.email || prev.email }));
+          
           setSavedMessage("Profile saved to your account.");
-          toast.success("Profile saved to your account.");
+          toast.success("Profile saved successfully!", { id: loadingToast });
+          setAvatarFile(null);
+          setPreviewUrl(null);
           return;
         }
         const err = await res.json().catch(() => ({}));
         const message = getApiErrorMessage(err, "Failed to save profile to server.");
         setSavedMessage(message);
-        toast.error(message);
+        toast.error(message, { id: loadingToast });
         return;
       } catch (e) {
         const message = "Failed to save profile to server.";
         setSavedMessage(message);
-        toast.error(message);
+        toast.error(message, { id: loadingToast });
         return;
       }
     }
@@ -216,9 +271,9 @@ export default function ProfilePage() {
 
         <div className="rounded-2xl border border-[#243253] bg-[#0d162a] p-6">
           <div className="mb-6 flex flex-col items-start gap-4 rounded-xl border border-[#2a3b61] bg-[#0a1223] p-4 md:flex-row md:items-center">
-            {profile.avatarDataUrl ? (
+            {(previewUrl || profile.avatarDataUrl) ? (
               <img
-                src={profile.avatarDataUrl}
+                src={previewUrl || profile.avatarDataUrl}
                 alt="Profile avatar"
                 className="h-16 w-16 rounded-full border border-[#3a5488] object-cover"
               />

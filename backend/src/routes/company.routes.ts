@@ -33,8 +33,8 @@ router.post(
     "/",
     protect,                        // 1. Check who the user is (Sets req.user)
     upload.single("logo"),          // 2. Read the form data (Text -> req.body, Image -> req.file.buffer)
-    uploadLogoToCloudinary,         // 3. Upload buffer to Cloudinary, put URL into req.body.logo
-    validate(createCompanySchema),  // 4. Zod checks req.body (which now contains the secure URL!)
+    validate(createCompanySchema),  // 3. Zod checks req.body
+    uploadLogoToCloudinary,         // 4. Upload buffer to Cloudinary, put URL into req.body.logo
     createCompany                   // 5. Save everything to MongoDB!
 );
 
@@ -43,6 +43,7 @@ router.patch(
     protect,
     upload.single("logo"),
     validate(updateCompanySchema),
+    uploadLogoToCloudinary,
     updateCompany,
 );
 
