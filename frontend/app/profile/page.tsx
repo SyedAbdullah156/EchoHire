@@ -66,7 +66,7 @@ export default function ProfilePage() {
       const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://127.0.0.1:5050";
       if (token) {
         try {
-          const res = await fetch(`${API_BASE}/api/profile/me`, {
+          const res = await fetch(`${API_BASE}/api/users/me`, {
             headers: { Authorization: `Bearer ${token}` },
           });
           if (res.ok) {
@@ -171,7 +171,7 @@ export default function ProfilePage() {
 
     if (token) {
       try {
-        const res = await fetch(`${API_BASE}/api/profile/me`, {
+        const res = await fetch(`${API_BASE}/api/users/me`, {
           method: "PUT",
           headers: {
             "Content-Type": "application/json",

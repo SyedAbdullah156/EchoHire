@@ -31,7 +31,7 @@ export default function RootLayout({
       suppressHydrationWarning
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col">
+      <body className="min-h-full flex flex-col" suppressHydrationWarning>
         <Toaster richColors position="top-right" closeButton toastOptions={{ style: { background: '#0d162a', color: '#eaf0ff', border: '1px solid #243253' } }} />
         <div className="flex-1">{children}</div>
         <Footer />
