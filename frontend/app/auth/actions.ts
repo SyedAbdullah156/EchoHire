@@ -1,8 +1,6 @@
 "use server";
 
 import { cookies } from "next/headers";
-import { redirect } from "next/navigation";
-import { isRedirectError } from "next/dist/client/components/redirect";
 import { z } from "zod";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5050";
@@ -20,7 +18,6 @@ const registerSchema = z.object({
 });
 
 export async function loginAction(formData: z.infer<typeof loginSchema>) {
-  let result;
   try {
     const response = await fetch(`${API_BASE_URL}/api/auth/login`, {
       method: "POST",
@@ -28,13 +25,13 @@ export async function loginAction(formData: z.infer<typeof loginSchema>) {
       body: JSON.stringify(formData),
     });
 
-    result = await response.json();
+    const result = await response.json();
 
     if (!response.ok) {
       return { success: false, message: result.message || "Invalid credentials" };
     }
 
-    const { token } = result;
+    const { token, data } = result;
 
     // Set secure HTTP-only cookie
     const cookieStore = await cookies();
@@ -45,16 +42,19 @@ export async function loginAction(formData: z.infer<typeof loginSchema>) {
       maxAge: 60 * 60 * 24 * 7, // 7 days
       path: "/",
     });
+
+    return { 
+      success: true, 
+      message: "Logged in successfully",
+      redirectUrl: getDashboardRoute(data.role) 
+    };
   } catch (err) {
-    if (isRedirectError(err)) throw err;
     console.error("Login Action Error:", err);
     return { success: false, message: "A system error occurred. Please try again." };
   }
-  redirect(getDashboardRoute(result.data.role));
 }
 
 export async function registerAction(formData: z.infer<typeof registerSchema>) {
-  let result;
   try {
     const response = await fetch(`${API_BASE_URL}/api/auth/register`, {
       method: "POST",
@@ -62,13 +62,13 @@ export async function registerAction(formData: z.infer<typeof registerSchema>) {
       body: JSON.stringify(formData),
     });
 
-    result = await response.json();
+    const result = await response.json();
 
     if (!response.ok) {
       return { success: false, message: result.message || "Registration failed" };
     }
 
-    const { token } = result;
+    const { token, data } = result;
 
     // Set secure HTTP-only cookie
     const cookieStore = await cookies();
@@ -79,18 +79,22 @@ export async function registerAction(formData: z.infer<typeof registerSchema>) {
       maxAge: 60 * 60 * 24 * 7, // 7 days
       path: "/",
     });
+
+    return { 
+      success: true, 
+      message: "Registered successfully",
+      redirectUrl: getDashboardRoute(data.role) 
+    };
   } catch (err) {
-    if (isRedirectError(err)) throw err;
     console.error("Register Action Error:", err);
     return { success: false, message: "A system error occurred. Please try again." };
   }
-  redirect(getDashboardRoute(result.data.role));
 }
 
 export async function logoutAction() {
     const cookieStore = await cookies();
     cookieStore.delete("echohire-session");
-    redirect("/auth");
+    return { success: true, redirectUrl: "/auth" };
 }
 
 function getDashboardRoute(role: string) {

@@ -11,7 +11,6 @@ import {
   FiLogOut,
   FiMenu,
   FiSettings,
-  FiUser,
   FiX,
   FiBriefcase,
   FiUsers,

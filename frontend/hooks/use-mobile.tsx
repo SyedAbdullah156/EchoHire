@@ -17,7 +17,6 @@ export function useIsMobile() {
     
     return () => {
       mql.removeEventListener("change", onChange)
-      clearTimeout(timeoutId)
     }
   }, []) // Removed isMobile dependency to prevent loops and cascading renders
 
