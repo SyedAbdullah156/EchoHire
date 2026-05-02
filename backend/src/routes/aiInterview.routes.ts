@@ -4,6 +4,7 @@ import { validate } from "../middlewares/validate.middleware";
 import {
     startRound,
     answerInRound,
+    answerInRoundStreaming,
     voiceAnswer,
     getRound,
 } from "../controllers/aiInterview.controller";
@@ -41,6 +42,12 @@ router.post(
 );
 
 router.post(
+    "/:id/rounds/:roundIndex/answer-stream",
+    protect,
+    answerInRoundStreaming,
+);
+
+router.post(
     "/:interviewId/rounds/:roundIndex/voice-answer",
     protect,
     validate(interviewRoundParamsSchema),
@@ -48,7 +55,6 @@ router.post(
     voiceAnswer,
 );
 
-// 4. Get Round
 router.get(
     "/:interviewId/rounds/:roundIndex", 
     protect, 

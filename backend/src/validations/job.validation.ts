@@ -61,7 +61,7 @@ const jobBodySchema = z.object({
             message: "Deadline must be in the future",
         }),
 
-    company_id: mongoIdString,
+    company_id: mongoIdString.optional(),
 
     is_active: z.boolean().optional().default(true),
 });

@@ -1,9 +1,21 @@
-import { Company } from '../models/company.model';
-import { TCompany } from '../types/company.types';
-import { AppError } from '../utils/AppError.utils';
+import { Company } from "../models/company.model";
+import { TCompany } from "../types/company.types";
+import { AppError } from "../utils/AppError.utils";
+import { User } from "../models/user.model";
 
 export const createCompanyService = async (payload: Partial<TCompany>) => {
-    return await Company.create(payload);
+    const newCompany = await Company.create(payload);
+
+    // Update the User's profile with the new companyId
+    await User.findByIdAndUpdate(
+        payload.owner_id,
+        { 
+            $set: { "profile.companyId": newCompany._id }
+        }, 
+        { new: true, runValidators: false }
+    );
+
+    return newCompany;
 };
 
 export const getAllCompaniesService = async () => {
@@ -71,7 +83,16 @@ export const deleteCompanyService = async (
         );
     }
 
+    // Delete the company
     await company.deleteOne();
+
+    // Remove the companyId from the User document
+    await User.findByIdAndUpdate(
+        company.owner_id,
+        { 
+            $unset: { "profile.companyId": 1 } // Completely removes the field
+        }
+    );
 
     return true;
 };

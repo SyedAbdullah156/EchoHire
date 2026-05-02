@@ -6,9 +6,8 @@ export const validate =
     (schema: ZodSchema) =>
     async (req: AuthRequest, res: Response, next: NextFunction) => {
         try {
-            if (req.file) {
-                req.body.logo = req.file.path;
-            }
+            // Skip automatic file path assignment here as it's handled 
+            // specifically by cloudinary middlewares for different fields.
 
             await schema.parseAsync({
                 body: req.body,

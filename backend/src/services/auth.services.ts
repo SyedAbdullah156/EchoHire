@@ -115,12 +115,9 @@ export const googleLogin = async (
                 name: payload.name || "Google User",
                 email: payload.email,
                 role: (role as "candidate" | "recruiter" | "admin") || "candidate",
+                googleId: payload.sub,
             });
             user = await User.findById(newUser._id);
-            if (user) {
-                user.googleId = payload.sub;
-                await user.save();
-            }
         } else if (!user.googleId) {
             user.googleId = payload.sub;
             await user.save();

@@ -9,13 +9,19 @@ import { validate } from "../middlewares/validate.middleware";
 import { createInterviewSchema } from "../validations/interview.validation";
 import { objectIdSchema } from "../validations/common.validation";
 
+import upload from "../config/multer.config";
+import { uploadCvToCloudinary } from "../middlewares/cloudinary.middleware";
+
 const router = Router();
 
 // POST /api/interviews
+// Allows a candidate to apply for a job and upload their CV
 router.post(
     "/",
     protect,
-    validate(createInterviewSchema),
+    upload.single("cv"), // Handle the PDF file upload
+    validate(createInterviewSchema), // verifies before upload
+    uploadCvToCloudinary, // Upload the file to Cloudinary and set req.body.cv_url
     createInterview,
 );
 

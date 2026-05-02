@@ -1,3 +1,4 @@
+import "./config/env.config";
 import express, { Request, Response } from "express";
 import userRoutes from "./routes/user.routes";
 import companyRoutes from "./routes/company.routes";
@@ -8,7 +9,6 @@ import resumeRoutes from "./routes/resume.routes";
 import authRoutes from "./routes/auth.routes";
 import linkedinOptimizerRoutes from "./routes/linkedinOptimizer.routes";
 import cors from "cors";
-import "./config/env.config";
 import { globalErrorHandler } from "./middlewares/errors.middleware";
 
 const app = express();

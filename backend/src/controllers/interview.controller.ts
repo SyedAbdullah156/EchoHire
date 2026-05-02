@@ -12,6 +12,10 @@ export const createInterview = async (
         // Extract strictly what is allowed from the body
         const { job_id, cv_url } = req.body;
 
+        if (req.user?.role != "candidate") {
+            throw new AppError("Only Candidate can register for Interview", 403);
+        }
+
         // Extract user_id from the auth middleware
         const user_id = req.user?._id;
 
@@ -48,7 +52,7 @@ export const getInterview = async (
         }
     
         const interview = await InterviewService.getInterviewByIdService(id as string);
-        
+
         // Security Check: Only Admin or the Candidate who owns this interview can view it
         const isAdmin = req.user.role === "admin";
         const isOwner = interview.user_id._id.toString() === req.user._id!.toString();
