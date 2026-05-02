@@ -1,19 +1,35 @@
 import { Response, NextFunction } from "express";
-import { uploadToCloudinary } from "../config/cloudnary.config"; // Adjust path
 import { AuthRequest } from "../types/request.types";
+
+const CLOUDINARY_CONFIGURED =
+    process.env.CLOUDINARY_CLOUD_NAME &&
+    process.env.CLOUDINARY_CLOUD_NAME !== "placeholder" &&
+    process.env.CLOUDINARY_API_KEY &&
+    process.env.CLOUDINARY_API_KEY !== "placeholder";
 
 export const uploadLogoToCloudinary = async (
     req: AuthRequest,
     res: Response,
     next: NextFunction,
-) => { 
-    if (!req.file) { // If the user didn't upload a logo, just move on to Zod
+) => {
+    if (!req.file) {
         return next();
     }
 
     try {
-        const result = await uploadToCloudinary(req.file.buffer, "logos"); // Send the file Buffer to Cloudinary
-        req.body.logo = result.secure_url; // Add the new URL to the body
+        if (CLOUDINARY_CONFIGURED) {
+            // Use Cloudinary when real credentials are present
+            const { uploadToCloudinary } = await import("../config/cloudnary.config");
+            const result = await uploadToCloudinary(req.file.buffer, "logos");
+            req.body.logo = result.secure_url;
+        } else {
+            // Fallback: convert to Base64 data URL and store directly in DB.
+            // This works perfectly with the existing `avatarDataUrl` field.
+            const mimeType = req.file.mimetype || "image/jpeg";
+            const base64 = req.file.buffer.toString("base64");
+            req.body.logo = `data:${mimeType};base64,${base64}`;
+        }
+
         next();
     } catch (error) {
         next(error);
