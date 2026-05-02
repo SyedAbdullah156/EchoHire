@@ -1,144 +1,182 @@
 "use client";
 
-import { motion, Variants } from "framer-motion";
-import { FiCheck, FiX, FiTarget, FiZap, FiBriefcase } from "react-icons/fi";
+import { useState } from "react";
+import { motion, AnimatePresence, Variants } from "framer-motion";
+import { FiCheck, FiTarget, FiZap, FiBriefcase } from "react-icons/fi";
 import Navbar from "@/components/Navbar";
 
 const plans = [
   {
-    price: 49,
-    title: "Standard",
-    icon: <FiTarget className="text-blue-400" />,
+    title: "Starter",
+    icon: <FiTarget />,
     description: "Perfect for students starting their interview journey.",
+    monthlyPrice: 29,
+    annualPrice: 24,
     featured: false,
-    perks: [
-      { label: "Unlimited Access", available: true },
-      { label: "Up to 100 Projects", available: true },
-      { label: "No Monthly Fees", available: true },
-      { label: "Priority Support", available: false },
-      { label: "Unlimited Storage", available: false },
-      { label: "Live Meeting", available: false },
-    ],
+    perks: ["Unlimited Access", "Up to 50 Projects", "No Monthly Fees", "Standard Support"],
+    buttonText: "Start for Free",
   },
   {
-    price: 99,
-    title: "Enterprise",
-    icon: <FiZap className="text-yellow-400" />,
+    title: "Professional",
+    icon: <FiZap />,
     description: "The ultimate power suite for serious professionals.",
+    monthlyPrice: 79,
+    annualPrice: 64,
     featured: true,
-    perks: [
-      { label: "Everything in Business", available: true },
-      { label: "Unlimited Projects", available: true },
-      { label: "Unlimited Storage", available: true },
-      { label: "Live Meeting", available: true },
-      { label: "Priority Support", available: true },
-      { label: "Custom Analytics", available: true },
-    ],
+    perks: ["Everything in Starter", "Unlimited Projects", "Priority Support", "Custom Analytics", "Live Mock Interviews"],
+    buttonText: "Get Started Now",
   },
   {
-    price: 79,
-    title: "Business",
-    icon: <FiBriefcase className="text-purple-400" />,
-    description: "Advanced features for experienced job seekers.",
+    title: "Enterprise",
+    icon: <FiBriefcase />,
+    description: "Custom solutions for large engineering teams.",
+    monthlyPrice: 199,
+    annualPrice: 159,
     featured: false,
-    perks: [
-      { label: "Everything in Standard", available: true },
-      { label: "Up to 150 Projects", available: true },
-      { label: "Priority Support", available: true },
-      { label: "Value for Money", available: true },
-      { label: "Unlimited Storage", available: false },
-      { label: "Live Meeting", available: false },
-    ],
+    perks: ["Everything in Pro", "SSO & SAML", "Dedicated Account Manager", "Custom Integrations", "Training Sessions"],
+    buttonText: "Contact Sales",
   },
 ];
 
 const staggerContainer: Variants = {
   hidden: { opacity: 0 },
-  visible: { opacity: 1, transition: { staggerChildren: 0.1 } }
+  visible: { opacity: 1, transition: { staggerChildren: 0.12 } }
 };
 
 const fadeInUp: Variants = {
   hidden: { opacity: 0, y: 30 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.5, ease: "easeOut" } }
+  visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: [0.22, 1, 0.36, 1] } }
 };
 
 export default function PricingPage() {
+  const [billingCycle, setBillingCycle] = useState<"monthly" | "annually">("monthly");
+
   return (
-    <main className="min-h-screen bg-[#030712] text-white selection:bg-[#227dff]/30 flex flex-col">
+    <main className="min-h-screen bg-background text-foreground selection:bg-primary/30">
       <Navbar />
-      <section className="mx-auto max-w-7xl px-6 pb-24 pt-32 w-full flex-1">
+      
+      <section className="mx-auto max-w-7xl px-6 pb-24 pt-40">
+        {/* Header Section */}
         <motion.div
           initial="hidden"
           animate="visible"
           variants={staggerContainer}
-          className="max-w-3xl mx-auto text-center mb-16 md:mb-24 space-y-4"
+          className="max-w-3xl mx-auto text-center mb-20 space-y-8"
         >
-          <motion.h1 variants={fadeInUp} className="text-4xl md:text-6xl font-bold tracking-tight text-white">
-            Simple, transparent pricing
+          <motion.div 
+            variants={fadeInUp}
+            className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 border border-primary/20 text-primary text-xs font-bold uppercase tracking-widest"
+          >
+            Flexible Plans
+          </motion.div>
+          <motion.h1 variants={fadeInUp} className="text-5xl md:text-7xl font-black tracking-tight">
+            Ready to <span className="text-primary">Scale</span>?
           </motion.h1>
-          <motion.p variants={fadeInUp} className="text-lg md:text-xl text-[#98a7cb] leading-relaxed">
-            Pick the plan that matches your prep goals. No hidden fees.
+          <motion.p variants={fadeInUp} className="text-xl text-text-secondary leading-relaxed max-w-2xl mx-auto">
+            Choose the perfect plan to accelerate your technical career. Save 20% with annual billing.
           </motion.p>
+
+          {/* Billing Toggle */}
+          <motion.div 
+            variants={fadeInUp}
+            className="flex items-center justify-center gap-6 pt-6"
+          >
+            <span className={`text-sm font-bold tracking-wide transition-colors ${billingCycle === "monthly" ? "text-white" : "text-text-muted"}`}>Monthly</span>
+            <button
+              onClick={() => setBillingCycle(billingCycle === "monthly" ? "annually" : "monthly")}
+              className="group relative h-9 w-16 rounded-full bg-surface-1 border border-border-medium p-1.5 transition-all hover:border-primary/50"
+            >
+              <motion.div
+                animate={{ x: billingCycle === "monthly" ? 0 : 28 }}
+                transition={{ type: "spring", stiffness: 400, damping: 30 }}
+                className="h-full aspect-square rounded-full bg-primary"
+              />
+            </button>
+            <span className={`text-sm font-bold tracking-wide transition-colors ${billingCycle === "annually" ? "text-white" : "text-text-muted"}`}>
+              Annually <span className="ml-1 text-[10px] bg-primary/20 text-primary px-1.5 py-0.5 rounded-md">-20%</span>
+            </span>
+          </motion.div>
         </motion.div>
 
+        {/* Pricing Grid */}
         <motion.div
           initial="hidden"
           animate="visible"
           variants={staggerContainer}
-          className="grid gap-8 md:grid-cols-3 max-w-6xl mx-auto items-center"
+          className="grid gap-8 md:grid-cols-3 items-stretch"
         >
           {plans.map((plan) => (
             <motion.article
               variants={fadeInUp}
               key={plan.title}
-              className={`relative flex flex-col rounded-[2rem] border transition-colors hover:bg-[linear-gradient(145deg,rgba(7,20,43,0.95)_0%,rgba(15,30,60,0.65)_100%)] p-8 md:p-10 ${plan.featured
-                  ? "border-[#227dff]/50 bg-[linear-gradient(145deg,rgba(7,20,43,0.95)_0%,rgba(11,23,48,0.65)_100%)] md:scale-[1.03] z-10 py-12"
-                  : "border-white/10 bg-white/[0.02] h-full"
-                }`}
+              whileHover={{ scale: 1.02, backgroundColor: "var(--surface-2)" }}
+              transition={{ duration: 0.3 }}
+              className={`relative flex flex-col rounded-[2.5rem] border p-10 transition-colors ${
+                plan.featured
+                  ? "bg-surface-1 border-primary/50"
+                  : "bg-surface-1/40 border-border-medium"
+              }`}
             >
               {plan.featured && (
-                <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 bg-gradient-to-r from-[#227dff] to-[#332989] text-white px-5 py-1.5 rounded-full text-sm font-medium border border-[#3f83ff]/30 shadow-sm">
+                <div className="absolute -top-4 left-1/2 -translate-x-1/2 rounded-full bg-primary px-6 py-1.5 text-xs font-black uppercase tracking-widest text-white">
                   Most Popular
                 </div>
               )}
 
-              <div className="mb-8 text-center">
-                <h3 className="text-xl font-medium text-[#dbe7ff] mb-4">{plan.title}</h3>
-                <p className="text-5xl font-bold text-white flex items-center justify-center">
-                  <span className="text-2xl text-[#227dff] mr-1">$</span>
-                  {plan.price}
-                  <span className="text-lg font-normal text-[#7f92be] ml-2">/ mo</span>
-                </p>
+              <div className="mb-10">
+                <div className={`mb-8 flex h-16 w-16 items-center justify-center rounded-2xl border text-2xl ${
+                  plan.featured ? "bg-primary/10 border-primary/20 text-primary" : "bg-white/5 border-border-medium text-text-secondary"
+                }`}>
+                  {plan.icon}
+                </div>
+                <h3 className="text-3xl font-bold mb-3">{plan.title}</h3>
+                <p className="text-base text-text-muted leading-relaxed">{plan.description}</p>
               </div>
 
-              <ul className="space-y-4 text-base mb-8 flex-1">
-                {plan.perks.map((perk) => (
-                  <li
-                    key={perk.label}
-                    className={`flex items-center gap-3 ${perk.available ? "text-[#dbe7ff]" : "text-[#5c667f]"
-                      }`}
+              <div className="mb-10">
+                <div className="flex items-baseline gap-2">
+                  <span className="text-4xl font-bold text-text-muted">$</span>
+                  <AnimatePresence mode="wait">
+                    <motion.span
+                      key={billingCycle}
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -10 }}
+                      className="text-6xl font-black tracking-tighter"
+                    >
+                      {billingCycle === "monthly" ? plan.monthlyPrice : plan.annualPrice}
+                    </motion.span>
+                  </AnimatePresence>
+                  <span className="text-text-muted font-medium">/mo</span>
+                </div>
+                {billingCycle === "annually" && (
+                  <motion.p 
+                    initial={{ opacity: 0 }} 
+                    animate={{ opacity: 1 }} 
+                    className="mt-3 text-xs font-bold text-primary uppercase tracking-widest"
                   >
-                    <div className={`w-6 h-6 rounded-full flex items-center justify-center shrink-0 border transition-colors ${perk.available ? "bg-[#227dff]/10 border-[#227dff]/30" : "border-[#2b344a] bg-transparent"
-                      }`}>
-                      {perk.available ? (
-                        <FiCheck className="text-[#227dff] w-3.5 h-3.5" />
-                      ) : (
-                        <FiX className="text-[#5c667f] w-3 h-3" />
-                      )}
-                    </div>
-                    <span>{perk.label}</span>
-                  </li>
-                ))}
-              </ul>
+                    Billed annually (${plan.annualPrice * 12}/yr)
+                  </motion.p>
+                )}
+              </div>
 
-              <button
-                type="button"
-                className={`min-h-[48px] w-full rounded-xl py-3 px-6 text-base font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-400 ${plan.featured
-                    ? "bg-gradient-to-r from-[#227dff] to-[#332989] text-white hover:brightness-110"
-                    : "bg-white/5 border border-white/10 text-white hover:bg-white/10"
-                  }`}
-              >
-                Choose {plan.title}
+              <div className="flex-1 space-y-5 mb-10">
+                {plan.perks.map((perk) => (
+                  <div key={perk} className="flex items-start gap-4">
+                    <div className={`mt-1 flex h-5 w-5 shrink-0 items-center justify-center rounded-full ${plan.featured ? "bg-primary text-white" : "bg-white/10 text-text-muted"}`}>
+                      <FiCheck size={12} strokeWidth={4} />
+                    </div>
+                    <span className="text-sm font-medium text-foreground/80 leading-snug">{perk}</span>
+                  </div>
+                ))}
+              </div>
+
+              <button className={`w-full rounded-2xl py-5 font-black uppercase tracking-widest transition-all active:scale-[0.98] ${
+                plan.featured
+                  ? "bg-primary text-white hover:bg-primary-hover"
+                  : "bg-white/5 border border-border-medium text-white hover:bg-white/10"
+              }`}>
+                {plan.buttonText}
               </button>
             </motion.article>
           ))}

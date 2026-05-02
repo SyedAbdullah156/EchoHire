@@ -29,7 +29,7 @@ export default function Footer() {
   const pathname = usePathname();
 
   // HCI: Conditional rendering keeps the UI focused on the task (e.g., hiding footer during a high-stakes AI interview)
-  const showFooter = ["/", "/auth", "/students", "/recruiters"].includes(pathname);
+  const showFooter = ["/", "/auth", "/features", "/pricing", "/students", "/recruiter", "/about", "/privacy", "/terms", "/contact"].includes(pathname);
   if (!showFooter) return null;
 
   return (
@@ -41,7 +41,7 @@ export default function Footer() {
 
       <div className="relative mx-auto w-full max-w-7xl px-6 py-16">
         <div className="grid gap-12 lg:grid-cols-4 md:grid-cols-2">
-          
+
           {/* Brand & Newsletter Section */}
           <div className="lg:col-span-1">
             <Link href="/" className="text-2xl font-bold tracking-tight text-white transition-opacity hover:opacity-90">
@@ -50,7 +50,7 @@ export default function Footer() {
             <p className="mt-4 text-sm leading-relaxed text-slate-400">
               Empowering candidates with AI-driven interview intelligence and career-growth tools.
             </p>
-            
+
             <form className="mt-6 space-y-2" onSubmit={(e) => e.preventDefault()}>
               <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">Stay Updated</p>
               <div className="flex items-center gap-2">
@@ -79,8 +79,8 @@ export default function Footer() {
               <ul className="mt-4 space-y-3">
                 {links.map((link) => (
                   <li key={link.label}>
-                    <Link 
-                      href={link.href} 
+                    <Link
+                      href={link.href}
                       className="group flex items-center text-sm text-slate-400 transition hover:text-white"
                     >
                       <span className="h-px w-0 bg-blue-500 transition-all group-hover:mr-2 group-hover:w-3" />

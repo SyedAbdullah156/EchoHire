@@ -3,20 +3,8 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import type { IconType } from "react-icons";
-import {
-  FiBarChart2,
-  FiBookOpen,
-  FiChevronLeft,
-  FiChevronRight,
-  FiFileText,
-  FiGrid,
-  FiHelpCircle,
-  FiLogOut,
-  FiMenu,
-  FiSettings,
-  FiUser,
-  FiX,
-} from "react-icons/fi";
+import { FiBarChart2, FiBookOpen, FiChevronLeft, FiChevronRight, FiFileText, FiGrid, FiHelpCircle, FiLogOut, FiMenu, FiSettings, FiUser, FiX } from "react-icons/fi";
+import { logoutAction } from "@/app/auth/actions";
 
 type SidebarItem = {
   key: string;
@@ -26,15 +14,14 @@ type SidebarItem = {
 };
 
 const mainItems: SidebarItem[] = [
-  { key: "dashboard", label: "Dashboard", icon: FiGrid, href: "/dashboard" },
-  { key: "ai-interview", label: "AI Interview", icon: FiBookOpen, href: "/ai-interview" },
-  { key: "resume-analyzer", label: "Resume Analyzer", icon: FiFileText, href: "/resume-analyzer" },
-  { key: "linkedin-optimizer", label: "LinkedIn Optimizer", icon: FiBarChart2, href: "/linkedin-optimizer" },
+  { key: "dashboard", label: "Dashboard", icon: FiGrid, href: "/candidate/dashboard" },
+  { key: "ai-interview", label: "AI Interview", icon: FiBookOpen, href: "/candidate/ai-interview" },
+  { key: "resume-analyzer", label: "Resume Analyzer", icon: FiFileText, href: "/candidate/resume-analyzer" },
+  { key: "linkedin-optimizer", label: "LinkedIn Optimizer", icon: FiBarChart2, href: "/candidate/linkedin-optimizer" },
 ];
 
 const accountItems: SidebarItem[] = [
-  { key: "profile", label: "Profile", icon: FiUser, href: "/profile" },
-  { key: "settings", label: "Settings", icon: FiSettings, href: "/settings" },
+  { key: "settings", label: "Settings", icon: FiSettings, href: "/candidate/settings" },
   { key: "support", label: "Help & Support", icon: FiHelpCircle, href: "/support" },
   { key: "logout", label: "Logout", icon: FiLogOut, href: "/auth" },
 ];
@@ -46,6 +33,30 @@ function MenuItem({ item, isActive, collapsed, onNavigate }: {
   onNavigate?: () => void 
 }) {
   const Icon = item.icon;
+
+  if (item.key === "logout") {
+    return (
+      <button
+        onClick={async () => {
+          if (onNavigate) onNavigate();
+          await logoutAction();
+        }}
+        className={`group relative flex w-full items-center rounded-2xl px-3 py-3 transition-all duration-300 ${
+          collapsed ? "justify-center" : "gap-4"
+        } text-slate-400 hover:bg-rose-500/10 hover:text-rose-400`}
+      >
+        <div className={`flex shrink-0 items-center justify-center transition-transform duration-300 group-hover:scale-110 text-slate-500 group-hover:text-rose-400`}>
+          <Icon size={20} />
+        </div>
+
+        {!collapsed && (
+          <span className={`text-sm font-semibold tracking-wide transition-opacity duration-300 opacity-80 group-hover:text-white`}>
+            {item.label}
+          </span>
+        )}
+      </button>
+    );
+  }
 
   return (
     <Link
@@ -107,7 +118,7 @@ function SidebarShell({
       {/* Brand Section */}
       <div className="p-6">
         <Link
-          href="/dashboard"
+          href="/candidate/dashboard"
           onClick={onNavigate}
           className={`flex items-center gap-3 transition-all ${collapsed ? "justify-center" : ""}`}
         >

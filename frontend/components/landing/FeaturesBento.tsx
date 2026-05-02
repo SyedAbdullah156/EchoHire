@@ -1,7 +1,7 @@
-import { motion } from "framer-motion";
+import { motion, Variants } from "framer-motion";
 import { Cpu, Code, BarChart } from "lucide-react";
 
-const bentoVariants = {
+const bentoVariants: Variants = {
   hidden: { opacity: 0, y: 20 },
   visible: {
     opacity: 1,
@@ -14,7 +14,7 @@ const bentoVariants = {
   },
 };
 
-const staggerContainer = {
+const staggerContainer: Variants = {
   hidden: { opacity: 0 },
   visible: { opacity: 1, transition: { staggerChildren: 0.1 } },
 };
