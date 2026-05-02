@@ -55,13 +55,13 @@ export default function PricingPage() {
     <main className="min-h-screen bg-background text-foreground selection:bg-primary/30">
       <Navbar />
       
-      <section className="mx-auto max-w-7xl px-6 pb-24 pt-40">
+      <section className="mx-auto max-w-7xl px-6 pb-24 pt-32">
         {/* Header Section */}
         <motion.div
           initial="hidden"
           animate="visible"
           variants={staggerContainer}
-          className="max-w-3xl mx-auto text-center mb-20 space-y-8"
+          className="max-w-3xl mx-auto text-center mb-12 space-y-8"
         >
           <motion.div 
             variants={fadeInUp}
@@ -111,7 +111,7 @@ export default function PricingPage() {
               key={plan.title}
               whileHover={{ scale: 1.02, backgroundColor: "var(--surface-2)" }}
               transition={{ duration: 0.3 }}
-              className={`relative flex flex-col rounded-[2.5rem] border p-10 transition-colors ${
+              className={`relative flex flex-col rounded-[2rem] border p-8 transition-colors ${
                 plan.featured
                   ? "bg-surface-1 border-primary/50"
                   : "bg-surface-1/40 border-border-medium"
@@ -123,17 +123,19 @@ export default function PricingPage() {
                 </div>
               )}
 
-              <div className="mb-10">
-                <div className={`mb-8 flex h-16 w-16 items-center justify-center rounded-2xl border text-2xl ${
-                  plan.featured ? "bg-primary/10 border-primary/20 text-primary" : "bg-white/5 border-border-medium text-text-secondary"
-                }`}>
-                  {plan.icon}
+              <div className="mb-6">
+                <div className="flex items-center gap-5 mb-5">
+                  <div className={`flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl border text-2xl ${
+                    plan.featured ? "bg-primary/10 border-primary/20 text-primary" : "bg-white/5 border-border-medium text-text-secondary"
+                  }`}>
+                    {plan.icon}
+                  </div>
+                  <h3 className="text-4xl font-black tracking-tight">{plan.title}</h3>
                 </div>
-                <h3 className="text-3xl font-bold mb-3">{plan.title}</h3>
                 <p className="text-base text-text-muted leading-relaxed">{plan.description}</p>
               </div>
 
-              <div className="mb-10">
+              <div className="mb-6">
                 <div className="flex items-baseline gap-2">
                   <span className="text-4xl font-bold text-text-muted">$</span>
                   <AnimatePresence mode="wait">
@@ -160,7 +162,7 @@ export default function PricingPage() {
                 )}
               </div>
 
-              <div className="flex-1 space-y-5 mb-10">
+              <div className="flex-1 space-y-3.5 mb-6">
                 {plan.perks.map((perk) => (
                   <div key={perk} className="flex items-start gap-4">
                     <div className={`mt-1 flex h-5 w-5 shrink-0 items-center justify-center rounded-full ${plan.featured ? "bg-primary text-white" : "bg-white/10 text-text-muted"}`}>
@@ -171,7 +173,7 @@ export default function PricingPage() {
                 ))}
               </div>
 
-              <button className={`w-full rounded-2xl py-5 font-black uppercase tracking-widest transition-all active:scale-[0.98] ${
+              <button className={`w-full rounded-2xl py-4 font-black uppercase tracking-widest transition-all active:scale-[0.98] ${
                 plan.featured
                   ? "bg-primary text-white hover:bg-primary-hover"
                   : "bg-white/5 border border-border-medium text-white hover:bg-white/10"
