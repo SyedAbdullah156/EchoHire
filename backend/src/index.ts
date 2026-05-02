@@ -26,6 +26,24 @@ const startServer = async () => {
         console.log(`🚀 Server running on port ${PORT}`);
         console.log(`🔌 WebSocket Server initialized`);
     });
+
+    // Graceful shutdown logic
+    const gracefulShutdown = (signal: string) => {
+        console.log(`\n🛑 ${signal} received. Shutting down gracefully...`);
+        server.close(() => {
+            console.log('✅ Server closed. Exiting process.');
+            process.exit(0);
+        });
+        
+        // Force exit after 3 seconds if cleanup hangs
+        setTimeout(() => {
+            console.error('⚠️ Could not close connections in time, forceful shutdown');
+            process.exit(1);
+        }, 3000);
+    };
+
+    process.on('SIGINT', () => gracefulShutdown('SIGINT'));
+    process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
 };
 
 startServer();
