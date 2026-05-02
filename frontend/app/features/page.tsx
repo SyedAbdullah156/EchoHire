@@ -179,10 +179,11 @@ export default function FeaturesPage() {
             {features.map((feature, i) => (
               <motion.div 
                 key={i} 
+                id={i === 0 ? "ai-interviewing" : i === 1 ? "code-execution" : "analytics"}
                 initial={{ opacity: 0, x: -20 }}
                 whileInView={{ opacity: 1, x: 0 }}
                 viewport={{ margin: "-20%" }}
-                className="min-h-[60vh] flex flex-col justify-center space-y-8"
+                className="min-h-[60vh] flex flex-col justify-center space-y-8 scroll-mt-32"
               >
                 <div className={`w-20 h-20 rounded-[2rem] border-2 flex items-center justify-center ${feature.color}`}>
                   {feature.icon}
