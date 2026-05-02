@@ -60,11 +60,7 @@ export default function AIInterviewPage() {
   };
 
   return (
-    <main className="min-h-screen bg-[#020617] text-slate-200 selection:bg-blue-500/30">
-      <section className="mx-auto flex max-w-[1600px] flex-col gap-6 px-4 py-8 lg:flex-row md:px-8">
-        <DashboardSidebar active="ai-interview" />
-
-        <div className="flex-1 space-y-6">
+    <div className="space-y-6">
           {/* Header: Context & Status */}
           <header className="flex flex-col md:flex-row md:items-center justify-between gap-4 rounded-3xl border border-slate-800/60 bg-[#0f172a]/40 p-6 backdrop-blur-md">
             <div className="space-y-1">
@@ -205,9 +201,6 @@ export default function AIInterviewPage() {
               </div>
             </div>
           </div>
-        </div>
-      </section>
-
       {/* Confirmation Overlay: HCI Aesthetic & Minimalist Design */}
       {showEndConfirm && (
         <div className="fixed inset-0 z-[5000] flex items-center justify-center p-4 backdrop-blur-sm bg-black/60">
@@ -236,6 +229,6 @@ export default function AIInterviewPage() {
           </div>
         </div>
       )}
-    </main>
+    </div>
   );
 }

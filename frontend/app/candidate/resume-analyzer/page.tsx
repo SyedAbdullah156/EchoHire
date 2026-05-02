@@ -241,6 +241,7 @@ export default function ResumeAnalyzerPage() {
   const [result, setResult] = useState<AnalysisResult | null>(null);
   const [errorMsg, setErrorMsg] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
+  const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://127.0.0.1:5050";
 
   const handleFile = (incoming: File) => {
     const allowed = ["application/pdf", "application/vnd.openxmlformats-officedocument.wordprocessingml.document"];
@@ -283,7 +284,7 @@ export default function ResumeAnalyzerPage() {
       const fd = new FormData();
       fd.append("resume", file);
 
-      const res = await fetch("/resume-analyzer/api", {
+      const res = await fetch(`${API_BASE_URL}/api/resume/scan`, {
         method: "POST",
         body: fd,
       });
@@ -291,7 +292,7 @@ export default function ResumeAnalyzerPage() {
       const json = await res.json();
 
       if (!res.ok || !json.success) {
-        throw new Error(json.error || "Analysis failed. Please try again.");
+        throw new Error(json.message || json.error || "Analysis failed. Please try again.");
       }
 
       setResult(json.data);
@@ -305,11 +306,7 @@ export default function ResumeAnalyzerPage() {
   };
 
   return (
-    <main className="min-h-screen bg-[#030712] text-white">
-      <section className="mx-auto flex max-w-[1500px] flex-col gap-5 px-4 pb-12 pt-8 lg:flex-row md:px-6">
-        <DashboardSidebar active="resume-analyzer" />
-
-        <div className="flex-1 min-w-0 space-y-6">
+    <div className="space-y-6">
           {/* Page Header */}
           <header className="space-y-1">
             <h1 className="text-2xl font-bold text-white md:text-3xl">
@@ -470,7 +467,5 @@ export default function ResumeAnalyzerPage() {
             )}
           </AnimatePresence>
         </div>
-      </section>
-    </main>
   );
 }

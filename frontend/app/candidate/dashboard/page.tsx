@@ -1,11 +1,10 @@
 "use client";
 
 import { Suspense, useState, useEffect } from "react";
-import DashboardSidebar from "@/components/DashboardSidebar";
-import ActionAlert from "../../components/dashboard/ActionAlert";
-import ProgressAreaChart from "../../components/dashboard/ProgressAreaChart";
-import QuickActionsFab from "../../components/dashboard/QuickActionsFab";
-import StatCard from "../../components/dashboard/StatCard";
+import ActionAlert from "@/components/dashboard/ActionAlert";
+import ProgressAreaChart from "@/components/dashboard/ProgressAreaChart";
+import QuickActionsFab from "@/components/dashboard/QuickActionsFab";
+import StatCard from "@/components/dashboard/StatCard";
 import { motion, Variants, AnimatePresence } from "framer-motion";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
@@ -90,18 +89,12 @@ function DashboardContent() {
   }
 
   return (
-    <main className="min-h-screen bg-[#050b18] text-[#e2e8f0] selection:bg-blue-500/30 antialiased">
-      <section className="mx-auto flex max-w-[1580px] flex-col gap-6 px-4 pb-12 pt-8 lg:flex-row md:px-8">
-
-        {/* Persistent Navigation */}
-        <DashboardSidebar active="dashboard" />
-
-        <motion.div
-          variants={containerVariants}
-          initial="hidden"
-          animate="visible"
-          className="flex-1 space-y-6"
-        >
+    <motion.div
+      variants={containerVariants}
+      initial="hidden"
+      animate="visible"
+      className="space-y-6"
+    >
           {/* Top Status Bar - HCI: Visibility of System Status */}
           <motion.div variants={itemVariants} className="flex flex-wrap items-center justify-between gap-4">
             <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-[#4a5d89]">
@@ -249,8 +242,6 @@ function DashboardContent() {
           {/* User Presence & Floating Actions */}
           <QuickActionsFab streak={8} />
         </motion.div>
-      </section>
-    </main>
   );
 }
 

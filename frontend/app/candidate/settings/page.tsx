@@ -1,5 +1,4 @@
 import Link from "next/link";
-import DashboardSidebar from "@/components/DashboardSidebar";
 import { 
   ShieldCheck, 
   BellRing, 
@@ -12,20 +11,16 @@ import {
 
 export default function SettingsPage() {
   return (
-    <main className="min-h-screen bg-[#050b18] text-[#e2e8f0] selection:bg-blue-500/30">
-      <section className="mx-auto flex max-w-[1500px] flex-col gap-10 px-4 pb-12 pt-8 lg:flex-row md:px-8">
-        <DashboardSidebar active="settings" />
-
-        <div className="flex-1 space-y-8">
-          {/* Top Navigation Bar - User Control and Freedom */}
-          <div className="flex items-center justify-between">
-            <Link 
-              href="/dashboard" 
-              className="group flex items-center gap-2 text-sm font-medium text-[#9fb1d8] hover:text-white transition-all"
-            >
-              <ArrowLeft size={18} className="transition-transform group-hover:-translate-x-1" />
-              Return to Dashboard
-            </Link>
+    <div className="space-y-8">
+      {/* Top Navigation Bar - User Control and Freedom */}
+      <div className="flex items-center justify-between">
+        <Link 
+          href="/candidate/dashboard" 
+          className="group flex items-center gap-2 text-sm font-medium text-[#9fb1d8] hover:text-white transition-all"
+        >
+          <ArrowLeft size={18} className="transition-transform group-hover:-translate-x-1" />
+          Return to Dashboard
+        </Link>
             <div className="flex items-center gap-2 text-xs font-mono text-[#4a5d89]">
               <span>SERVER STATUS:</span>
               <span className="flex h-2 w-2 rounded-full bg-emerald-500 animate-pulse"></span>
@@ -132,8 +127,6 @@ export default function SettingsPage() {
                 </button>
             </div>
           </div>
-        </div>
-      </section>
-    </main>
+    </div>
   );
 }
