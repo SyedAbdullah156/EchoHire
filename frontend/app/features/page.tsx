@@ -99,15 +99,15 @@ const features: Feature[] = [
             </div>
           </div>
           <div className="h-3 w-full bg-white/5 rounded-full overflow-hidden">
-            <motion.div 
+            <motion.div
               initial={{ width: 0 }}
               whileInView={{ width: "98%" }}
               transition={{ duration: 1.5, ease: "easeOut" }}
-              className="h-full bg-primary" 
+              className="h-full bg-primary"
             />
           </div>
         </div>
-        
+
         <div className="grid grid-cols-2 gap-6">
           {[
             { label: "Code Quality", value: "84%", color: "text-emerald-400" },
@@ -133,7 +133,7 @@ const fadeInUp: Variants = {
 
 export default function FeaturesPage() {
   const containerRef = useRef<HTMLDivElement>(null);
-  
+
   return (
     <main className="min-h-screen bg-background text-foreground selection:bg-primary/30">
       <Navbar />
@@ -151,7 +151,7 @@ export default function FeaturesPage() {
             <Zap size={14} className="fill-current" />
             Core Capabilities
           </motion.div>
-          <motion.h1 
+          <motion.h1
             initial="hidden"
             animate="visible"
             variants={fadeInUp}
@@ -173,12 +173,12 @@ export default function FeaturesPage() {
       {/* Sticky Scroll Section */}
       <section ref={containerRef} className="max-w-7xl mx-auto px-6 py-40">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-32">
-          
+
           {/* Left Column: Text Content */}
           <div className="space-y-64 py-32">
             {features.map((feature, i) => (
-              <motion.div 
-                key={i} 
+              <motion.div
+                key={i}
                 id={i === 0 ? "ai-interviewing" : i === 1 ? "code-execution" : "analytics"}
                 initial={{ opacity: 0, x: -20 }}
                 whileInView={{ opacity: 1, x: 0 }}
@@ -205,8 +205,8 @@ export default function FeaturesPage() {
           {/* Right Column: Sticky Visuals */}
           <div className="hidden lg:block relative">
             <div className="sticky top-40 h-[600px] w-full rounded-[3rem] border border-border-medium bg-surface-1 overflow-hidden">
-               <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(34,125,255,0.05)_0%,transparent_50%)]" />
-               <StickyVisuals features={features} containerRef={containerRef} />
+              <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(34,125,255,0.05)_0%,transparent_50%)]" />
+              <StickyVisuals features={features} containerRef={containerRef} />
             </div>
           </div>
         </div>
@@ -247,15 +247,15 @@ function StickyVisuals({ features, containerRef }: { features: Feature[], contai
   return (
     <div className="relative w-full h-full">
       {features.map((feature, i) => {
-        const start = i / features.length;
-        const end = (i + 1) / features.length;
-        
+        const ranges: [number, number][] = [[0, 0.3], [0.3, 0.5], [0.5, 1.0]];
+        const range = ranges[i];
+
         return (
-          <VisualCard 
-            key={i} 
-            visual={feature.visual} 
-            progress={scrollYProgress} 
-            range={[start, end]} 
+          <VisualCard
+            key={i}
+            visual={feature.visual}
+            progress={scrollYProgress}
+            range={range}
           />
         );
       })}
@@ -267,13 +267,13 @@ function VisualCard({ visual, progress, range }: { visual: React.ReactNode, prog
   // Calculate local offsets for smooth fade-in/out within the card's active range
   const buffer = (range[1] - range[0]) * 0.15;
   const input = [range[0], range[0] + buffer, range[1] - buffer, range[1]];
-  
+
   const opacity = useTransform(progress, input, [0, 1, 1, 0]);
   const scale = useTransform(progress, input, [0.95, 1, 1, 0.95]);
   const y = useTransform(progress, input, [20, 0, 0, -20]);
 
   return (
-    <motion.div 
+    <motion.div
       style={{ opacity, scale, y }}
       className="absolute inset-0 flex items-center justify-center p-6"
     >
