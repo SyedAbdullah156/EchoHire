@@ -1,12 +1,12 @@
 "use client";
 
 import { motion, AnimatePresence } from "framer-motion";
-import { FiArrowLeft, FiMail, FiLock, FiUser, FiArrowRight, FiShield, FiGithub, FiCheck, FiCpu, FiBarChart2, FiAward, FiEye, FiEyeOff, FiAlertCircle, FiCheckCircle } from "react-icons/fi";
+import { FiArrowLeft, FiMail, FiLock, FiUser, FiArrowRight, FiShield, FiGithub, FiCheck, FiCpu, FiBarChart2, FiAward, FiEye, FiEyeOff } from "react-icons/fi";
 import { FcGoogle } from "react-icons/fc";
-import { FormEvent, useMemo, useState, useEffect } from "react";
+import { FormEvent, useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { authSchema, emailSchema, signupPasswordSchema } from "@/lib/validation";
+import { authSchema, emailSchema } from "@/lib/validation";
 import Link from "next/link";
 import { loginAction, registerAction } from "./actions";
 import { GoogleOAuthProvider, useGoogleLogin } from "@react-oauth/google";
@@ -174,7 +174,14 @@ function AuthContent() {
       else if (fieldName === "password" && mode === "signin" && !value) fieldError = "Password is required";
       else if (fieldName === "name" && mode === "signup" && value.length < 2) fieldError = "Name is too short";
       else if (fieldName === "confirmPassword" && mode === "signup" && value !== password) fieldError = "Passwords do not match";
-    } catch (err: any) { fieldError = err.issues?.[0]?.message || "Invalid input"; }
+    } catch (err: unknown) { 
+      if (err && typeof err === 'object' && 'issues' in err) {
+        const zodErr = err as { issues: { message: string }[] };
+        fieldError = zodErr.issues?.[0]?.message || "Invalid input";
+      } else {
+        fieldError = "Invalid input";
+      }
+    }
     setErrors(prev => ({ ...prev, [fieldName]: fieldError }));
   };
 
@@ -205,7 +212,7 @@ function AuthContent() {
       try {
         // Implementation for Google login would go here
         toast.info("Google Authentication integration in progress.");
-      } catch (err) {
+      } catch {
         toast.error("Google login failed.");
       } finally {
         setIsSubmitting(false);
