@@ -1,6 +1,6 @@
 "use client";
 
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence, Variants } from "framer-motion";
 import { FiArrowLeft, FiMail, FiLock, FiUser, FiArrowRight, FiShield, FiGithub, FiCheck, FiCpu, FiBarChart2, FiAward, FiEye, FiEyeOff } from "react-icons/fi";
 import { FcGoogle } from "react-icons/fc";
 import { FormEvent, useState, useEffect } from "react";
@@ -33,9 +33,10 @@ const TESTIMONIALS = [
   }
 ];
 
-const SHAKE_VARIANTS = {
+const SHAKE_VARIANTS: Variants = {
+  default: { x: 0 },
   shake: {
-    x: [0, -6, 6, -6, 6, 0],
+    x: [0, -10, 10, -10, 10, 0],
     transition: { duration: 0.4, ease: "easeInOut" }
   }
 };
@@ -73,8 +74,8 @@ function FloatingInput({
     <div className="relative w-full group">
       <motion.div
         variants={SHAKE_VARIANTS}
-        animate={error ? "shake" : "default"}
-        className={`relative flex items-center min-h-[56px] rounded-xl border transition-all duration-200 
+        animate={error && !isFocused ? "shake" : "default"}
+        className={`relative flex items-center min-h-[56px] rounded-xl border transition-[border-color,background-color] duration-200 
           ${isFocused ? "border-primary bg-surface-2" : "border-border-medium bg-surface-1 hover:border-text-muted"}
           ${error ? "border-rose-500/50 bg-rose-500/5" : ""}
         `}
@@ -166,7 +167,7 @@ function AuthContent() {
         if (!/[A-Z]/.test(value)) missing.push("one uppercase letter");
         if (!/[0-9]/.test(value)) missing.push("one number");
         if (!/[^A-Za-z0-9]/.test(value)) missing.push("one special character");
-        
+
         if (missing.length > 0) {
           fieldError = `Password must include at least: ${missing.join(", ")}`;
         }
@@ -174,7 +175,7 @@ function AuthContent() {
       else if (fieldName === "password" && mode === "signin" && !value) fieldError = "Password is required";
       else if (fieldName === "name" && mode === "signup" && value.length < 2) fieldError = "Name is too short";
       else if (fieldName === "confirmPassword" && mode === "signup" && value !== password) fieldError = "Passwords do not match";
-    } catch (err: unknown) { 
+    } catch (err: unknown) {
       if (err && typeof err === 'object' && 'issues' in err) {
         const zodErr = err as { issues: { message: string }[] };
         fieldError = zodErr.issues?.[0]?.message || "Invalid input";
@@ -388,7 +389,7 @@ function AuthContent() {
                   </div>
 
                   {/* Main Form */}
-                  <form onSubmit={handleSubmit} className="space-y-5">
+                  <form onSubmit={handleSubmit} noValidate className="space-y-5">
                     {mode === "signup" && (
                       <FloatingInput
                         name="name"
@@ -537,7 +538,7 @@ function AuthContent() {
             </motion.div>
 
             <p className="mt-12 text-[10px] text-text-muted uppercase tracking-[0.2em] font-bold opacity-50">
-              &copy; 2024 EchoHire Labs &middot; Privacy First Architecture
+              &copy; 2026 EchoHire Inc. &middot; Privacy First Architecture
             </p>
           </div>
         </section>
