@@ -1,40 +1,23 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { useState, useMemo } from "react";
 import { 
   FiMessageSquare, 
-  FiClock, 
-  FiCheckCircle, 
-  FiAlertCircle,
   FiSearch,
   FiSend,
-  FiUser,
-  FiBriefcase,
   FiMoreVertical
 } from "react-icons/fi";
 import { useTicketSocket } from "@/hooks/useTicketSocket";
 
-type Ticket = {
-  id: string;
-  userName: string;
-  userRole: "candidate" | "recruiter";
-  subject: string;
-  lastMessage: string;
-  timestamp: string;
-  status: "awaiting" | "active" | "resolved";
-  unread?: boolean;
-};
-
-const MOCK_TICKETS: Ticket[] = [];
+type TicketStatus = "all" | "open" | "closed";
 
 export default function AdminTicketingDashboard() {
   const [selectedTicketId, setSelectedTicketId] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
-  const [activeTab, setActiveTab] = useState<"all" | "awaiting" | "active" | "resolved">("all");
+  const [activeTab, setActiveTab] = useState<TicketStatus>("all");
   
   // Use socket for the selected ticket AND the global ticket queue
-  const { messages, ticketList, status, sendMessage } = useTicketSocket(selectedTicketId || undefined, "admin");
+  const { messages, ticketList, sendMessage } = useTicketSocket(selectedTicketId || undefined, "admin");
   const [inputValue, setInputValue] = useState("");
 
   const selectedTicket = useMemo(() => 
@@ -76,10 +59,10 @@ export default function AdminTicketingDashboard() {
           </div>
 
           <div className="flex gap-2 p-1 rounded-xl bg-surface-1 border border-white/5">
-            {["all", "awaiting", "active"].map((tab) => (
+            {(["all", "open", "closed"] as TicketStatus[]).map((tab) => (
               <button
                 key={tab}
-                onClick={() => setActiveTab(tab as any)}
+                onClick={() => setActiveTab(tab)}
                 className={`flex-1 py-1.5 text-[10px] font-bold uppercase tracking-widest rounded-lg transition-all ${
                   activeTab === tab ? "bg-primary text-white" : "text-text-muted hover:text-white"
                 }`}
@@ -101,27 +84,18 @@ export default function AdminTicketingDashboard() {
                   : "hover:bg-white/[0.03] border border-transparent"
               }`}
             >
-              {/* unread indicator / status indicator */}
-              {ticket.unread && (
-                <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 rounded-r-full bg-primary" />
-              )}
-
               <div className="flex justify-between items-start mb-1">
                 <div className="flex items-center gap-2">
-                  <div className={`text-[9px] font-black uppercase tracking-tighter px-1.5 py-0.5 rounded border ${
-                    ticket.userRole === "recruiter" 
-                      ? "border-purple-500/30 text-purple-400 bg-purple-500/5" 
-                      : "border-blue-500/30 text-blue-400 bg-blue-500/5"
-                  }`}>
-                    {ticket.userRole}
+                  <div className="text-[9px] font-black uppercase tracking-tighter px-1.5 py-0.5 rounded border border-blue-500/30 text-blue-400 bg-blue-500/5">
+                    USER
                   </div>
                 </div>
-                <span className={`text-[10px] font-medium ${ticket.unread ? "text-primary font-bold" : "text-slate-500"}`}>
-                  {ticket.timestamp}
+                <span className="text-[10px] font-medium text-slate-500">
+                  {new Date(ticket.updatedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                 </span>
               </div>
 
-              <h4 className={`text-sm truncate pr-4 ${ticket.unread ? "text-white font-bold" : "text-slate-200"}`}>
+              <h4 className="text-sm truncate pr-4 text-slate-200">
                 {ticket.userName}
               </h4>
               <p className="text-xs text-text-muted truncate mt-0.5">{ticket.subject}</p>
@@ -164,14 +138,12 @@ export default function AdminTicketingDashboard() {
 
             {/* Messages Feed */}
             <div className="flex-1 overflow-y-auto p-8 space-y-6">
-               {/* Initial System Message */}
                <div className="flex justify-center">
                   <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-600 bg-white/5 px-3 py-1 rounded-full border border-white/5">
-                    Conversation Started • {selectedTicket.timestamp}
+                    Conversation Started
                   </span>
                </div>
 
-               {/* Messages */}
                {messages.map((msg, i) => {
                   const isAdmin = msg.senderRole === "admin";
                   return (

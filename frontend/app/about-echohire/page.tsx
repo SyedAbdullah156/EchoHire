@@ -52,8 +52,8 @@ export default function AboutEchoHirePage() {
               Career Growth, <span className="bg-gradient-to-r from-blue-400 to-purple-500 bg-clip-text text-transparent">Powered by Practical AI.</span>
             </h1>
             <p className="mt-6 max-w-2xl text-lg leading-relaxed text-[#9fb1d8]">
-              EchoHire isn't just another job board. We are a focused laboratory for career advancement, 
-              designed to bridge the gap between "applying" and "landing" through high-fidelity AI simulation.
+              EchoHire isn&apos;t just another job board. We are a focused laboratory for career advancement, 
+              designed to bridge the gap between &quot;applying&quot; and &quot;landing&quot; through high-fidelity AI simulation.
             </p>
           </div>
         </header>

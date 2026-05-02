@@ -15,7 +15,7 @@ const recruiterSetupSchema = z.object({
   }),
 });
 
-export async function setupRecruiterProfile(data: any) {
+export async function setupRecruiterProfile(data: unknown) {
   try {
     // 1. Validate data
     const validatedData = recruiterSetupSchema.parse(data);

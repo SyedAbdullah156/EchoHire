@@ -296,7 +296,7 @@ export default function CandidateDirectory() {
                   <div className="space-y-3">
                     {selectedCandidate.analysis.recommendedQuestions.map((q, i) => (
                       <div key={i} className="p-4 rounded-2xl bg-surface-2 border border-border-subtle text-[11px] text-text-secondary italic leading-relaxed">
-                        "{q}"
+                        &ldquo;{q}&rdquo;
                       </div>
                     ))}
                   </div>

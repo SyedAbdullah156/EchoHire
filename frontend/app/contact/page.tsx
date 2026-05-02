@@ -38,7 +38,7 @@ export default function ContactPage() {
                 Get in <span className="text-primary text-glow">Touch</span>.
               </h1>
               <p className="text-xl text-text-secondary leading-relaxed max-w-lg">
-                Have questions about our AI features or need help with your account? We're here to help you accelerate your career.
+                Have questions about our AI features or need help with your account? We&apos;re here to help you accelerate your career.
               </p>
             </div>
 

@@ -53,7 +53,7 @@ export default function SettingsPage() {
                     <div className="h-12 w-12 rounded-full bg-gradient-to-br from-blue-500 to-purple-600" />
                     <div>
                         <p className="font-semibold text-white">Hassan Ali</p>
-                        <p className="text-xs text-[#9fb1d8]">CS Student @ FAST'27</p>
+                        <p className="text-xs text-[#9fb1d8]">CS Student @ FAST&apos;27</p>
                     </div>
                  </div>
                  <button className="text-sm font-medium text-blue-400 hover:underline">Edit Profile</button>

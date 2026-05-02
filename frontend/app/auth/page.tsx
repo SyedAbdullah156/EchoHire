@@ -6,20 +6,15 @@ import { FcGoogle } from "react-icons/fc";
 import { FormEvent, useMemo, useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { authSchema, getZodFieldMessage } from "@/lib/validation";
-import { getApiErrorMessage } from "@/lib/api-error";
+import { authSchema } from "@/lib/validation";
 import Link from "next/link";
 import { loginAction, registerAction } from "./actions";
 import { GoogleOAuthProvider, useGoogleLogin } from "@react-oauth/google";
 
 // --- Configuration & Constants ---
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://127.0.0.1:5050";
-const PROFILE_STORAGE_KEY = "echohire-profile";
-const TOKEN_STORAGE_KEY = "echohire-token";
-
 const TESTIMONIALS = [
   {
-    quote: "EchoHire's AI interview prep reduced my anxiety and helped me land a Senior Dev role at a top fintech.",
+    quote: "EchoHire&apos;s AI interview prep reduced my anxiety and helped me land a Senior Dev role at a top fintech.",
     author: "Sarah J.",
     role: "Senior Software Engineer",
     icon: <FiCpu className="text-primary" />
@@ -53,7 +48,7 @@ function FloatingInput({
   value: string;
   onChange: (val: string) => void;
   type?: string;
-  icon?: any;
+  icon?: React.ElementType;
   required?: boolean;
   error?: string;
 }) {
@@ -184,13 +179,8 @@ function AuthContent() {
     return () => clearInterval(interval);
   }, []);
 
-  const persistSession = (token: string, profile: { name: string; email: string; role: string }) => {
-    localStorage.setItem(TOKEN_STORAGE_KEY, token);
-    localStorage.setItem(PROFILE_STORAGE_KEY, JSON.stringify(profile));
-  };
-
   const handleGoogleLogin = useGoogleLogin({
-    onSuccess: async (tokenResponse) => {
+    onSuccess: async () => {
       setIsSubmitting(true);
       try {
         // Implementation for Google login would go here
@@ -360,7 +350,7 @@ function AuthContent() {
                       ? "Enter your credentials to continue your career journey."
                       : mode === "signup"
                         ? "Join 15,000+ engineers optimizing their future."
-                        : "Enter your email and we'll send you a secure login link."
+                        : "Enter your email and we&apos;ll send you a secure login link."
                     }
                   </p>
                 </div>
@@ -428,11 +418,11 @@ function AuthContent() {
                       <div className="pt-2">
                         <p className="text-[10px] font-bold uppercase tracking-widest text-text-muted mb-3 ml-1">Select Role</p>
                         <div className="grid grid-cols-2 gap-3">
-                          {["candidate", "recruiter"].map((r) => (
+                          {(["candidate", "recruiter"] as const).map((r) => (
                             <button
                               key={r}
                               type="button"
-                              onClick={() => setRole(r as any)}
+                              onClick={() => setRole(r)}
                               className={`h-11 rounded-xl border text-xs font-bold uppercase tracking-widest transition-all
                               ${role === r
                                   ? "bg-primary border-primary text-white"
@@ -485,7 +475,7 @@ function AuthContent() {
                 {/* Mode Switchers */}
                 <div className="pt-8 text-center border-t border-border-subtle">
                   <p className="text-sm text-text-muted">
-                    {mode === "signin" ? "Don't have an account?" : "Already have an account?"}
+                    {mode === "signin" ? "Don&apos;t have an account?" : "Already have an account?"}
                     {" "}
                     <button
                       onClick={() => setMode(mode === "signin" ? "signup" : "signin")}

@@ -22,7 +22,7 @@ export async function middleware(request: NextRequest) {
       const { payload } = await jwtVerify(token, SECRET);
       const role = payload.role as string;
       return NextResponse.redirect(new URL(getDashboardRoute(role), request.url));
-    } catch (e) {
+    } catch {
       // Invalid token, allow access to auth
     }
   }

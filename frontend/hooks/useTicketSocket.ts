@@ -11,19 +11,29 @@ type Message = {
   ticketId: string;
 };
 
+type Ticket = {
+  id: string;
+  userName: string;
+  subject: string;
+  status: "open" | "closed";
+  lastMessage?: string;
+  updatedAt: string;
+};
+
 type ConnectionStatus = "connecting" | "connected" | "disconnected" | "error";
 
 export function useTicketSocket(ticketId?: string, role: string = "candidate") {
   const [messages, setMessages] = useState<Message[]>([]);
-  const [ticketList, setTicketList] = useState<any[]>([]);
+  const [ticketList, setTicketList] = useState<Ticket[]>([]);
   const [status, setStatus] = useState<ConnectionStatus>("disconnected");
   const socketRef = useRef<WebSocket | null>(null);
   const reconnectTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const connectRef = useRef<() => void>(undefined);
 
   const connect = useCallback(() => {
     if (socketRef.current?.readyState === WebSocket.OPEN) return;
 
-    setStatus("connecting");
+    setTimeout(() => setStatus("connecting"), 0);
     
     // Connect to the backend WebSocket server
     const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL || "http://127.0.0.1:5050";
@@ -35,7 +45,6 @@ export function useTicketSocket(ticketId?: string, role: string = "candidate") {
 
       socket.onopen = () => {
         setStatus("connected");
-        console.log("WebSocket Connected");
         socket.send(JSON.stringify({ 
           type: "join_room", 
           ticketId, 
@@ -66,22 +75,33 @@ export function useTicketSocket(ticketId?: string, role: string = "candidate") {
 
       socket.onclose = () => {
         setStatus("disconnected");
-        console.log("WebSocket Disconnected. Retrying in 5s...");
-        reconnectTimeoutRef.current = setTimeout(connect, 5000);
+        reconnectTimeoutRef.current = setTimeout(() => {
+          connectRef.current?.();
+        }, 5000);
       };
 
       socket.onerror = () => {
         setStatus("error");
       };
-    } catch (err) {
+    } catch {
       setStatus("error");
-      reconnectTimeoutRef.current = setTimeout(connect, 5000);
+      reconnectTimeoutRef.current = setTimeout(() => {
+        connectRef.current?.();
+      }, 5000);
     }
-  }, [ticketId]);
+  }, [ticketId, role]);
 
   useEffect(() => {
-    connect();
+    connectRef.current = connect;
+  }, [connect]);
+
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      connect();
+    }, 0);
+    
     return () => {
+      clearTimeout(timeoutId);
       if (socketRef.current) {
         socketRef.current.close();
       }
@@ -91,7 +111,12 @@ export function useTicketSocket(ticketId?: string, role: string = "candidate") {
     };
   }, [connect]);
 
-  const sendMessage = useCallback((content: string, senderId: string, senderRole: Message["senderRole"], extra: any = {}) => {
+  const sendMessage = useCallback((
+    content: string, 
+    senderId: string, 
+    senderRole: Message["senderRole"], 
+    extra: Record<string, unknown> = {}
+  ) => {
     if (socketRef.current?.readyState !== WebSocket.OPEN) return false;
 
     const newMessage = {

@@ -1,14 +1,22 @@
 "use client";
 
 import { useRef } from "react";
-import { motion, useScroll, useTransform, Variants, AnimatePresence } from "framer-motion";
-import { Brain, Code, Cpu, LineChart, ShieldCheck, Zap, ArrowRight } from "lucide-react";
+import { motion, useScroll, useTransform, Variants, MotionValue } from "framer-motion";
+import { Brain, Code, LineChart, ShieldCheck, Zap, ArrowRight } from "lucide-react";
 import Navbar from "@/components/Navbar";
 
-const features = [
+type Feature = {
+  title: string;
+  description: string;
+  icon: React.ReactNode;
+  color: string;
+  visual: React.ReactNode;
+};
+
+const features: Feature[] = [
   {
     title: "AI-Native Interviewing",
-    description: "Move beyond rigid coding tests. Our AI conducts dynamic, conversational interviews that probe for depth of knowledge, architectural thinking, and communication skills—just like a senior engineer would.",
+    description: "Move beyond rigid coding tests. Our AI conducts dynamic, conversational interviews that probe for depth of knowledge, architectural thinking, and communication skills&mdash;just like a senior engineer would.",
     icon: <Brain className="w-8 h-8" />,
     color: "bg-primary/10 text-primary border-primary/20",
     visual: (
@@ -17,14 +25,14 @@ const features = [
           <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-white shrink-0 font-bold">AI</div>
           <div className="bg-surface-2 border border-border-medium p-5 rounded-3xl rounded-tl-none shadow-xl">
             <p className="text-white leading-relaxed">
-              "That's an interesting approach to the caching layer. Why did you choose a **Redlock** implementation over a simple TTL for this specific distributed scenario?"
+              &quot;That&apos;s an interesting approach to the caching layer. Why did you choose a **Redlock** implementation over a simple TTL for this specific distributed scenario?&quot;
             </p>
           </div>
         </div>
         <div className="flex gap-4 justify-end">
           <div className="bg-primary/10 border border-primary/20 p-5 rounded-3xl rounded-tr-none text-white max-w-[85%]">
             <p className="leading-relaxed">
-              "Since we're dealing with critical transaction data across multiple nodes, Redlock ensures mutual exclusion that a standard TTL-based cache wouldn't guarantee during split-brain scenarios."
+              &quot;Since we&apos;re dealing with critical transaction data across multiple nodes, Redlock ensures mutual exclusion that a standard TTL-based cache wouldn&apos;t guarantee during split-brain scenarios.&quot;
             </p>
           </div>
           <div className="w-10 h-10 rounded-full bg-surface-2 border border-border-medium flex items-center justify-center shrink-0 font-bold text-text-muted">JD</div>
@@ -66,7 +74,7 @@ const features = [
               Running tests...
             </div>
             <div className="p-3 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs">
-              ✓ Test load_balancing_logic passed (0.4s)
+              &check; Test load_balancing_logic passed (0.4s)
             </div>
           </div>
         </div>
@@ -229,7 +237,7 @@ export default function FeaturesPage() {
   );
 }
 
-function StickyVisuals({ features, containerRef }: { features: any[], containerRef: React.RefObject<HTMLDivElement | null> }) {
+function StickyVisuals({ features, containerRef }: { features: Feature[], containerRef: React.RefObject<HTMLDivElement | null> }) {
   const { scrollYProgress } = useScroll({
     target: containerRef,
     offset: ["start start", "end end"]
@@ -254,7 +262,7 @@ function StickyVisuals({ features, containerRef }: { features: any[], containerR
   );
 }
 
-function VisualCard({ visual, progress, range }: { visual: React.ReactNode, progress: any, range: [number, number] }) {
+function VisualCard({ visual, progress, range }: { visual: React.ReactNode, progress: MotionValue<number>, range: [number, number] }) {
   // Calculate local offsets for smooth fade-in/out within the card's active range
   const buffer = (range[1] - range[0]) * 0.15;
   const input = [range[0], range[0] + buffer, range[1] - buffer, range[1]];

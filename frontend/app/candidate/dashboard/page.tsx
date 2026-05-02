@@ -52,14 +52,12 @@ function DashboardContent() {
   const searchParams = useSearchParams();
   const shouldCompleteProfile = searchParams.get("completeProfile") === "1";
   const [dataError, setDataError] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const loadData = async () => {
       try {
         // Simulate initial data fetch
         await new Promise((resolve) => setTimeout(resolve, 600));
-        setIsLoading(false);
       } catch {
         setDataError(true);
         toast.error("Critical: Failed to sync dashboard data.");
@@ -76,7 +74,7 @@ function DashboardContent() {
             <FiRefreshCw size={40} className="animate-spin-slow" />
           </div>
           <h2 className="text-2xl font-bold">Connection Interrupted</h2>
-          <p className="text-[#93a5cc]">We couldn't reach the AI Engine. Please check your connection and try again.</p>
+          <p className="text-[#93a5cc]">We couldn&apos;t reach the AI Engine. Please check your connection and try again.</p>
           <button
             onClick={() => window.location.reload()}
             className="w-full rounded-xl bg-blue-600 py-3 font-bold transition-all hover:bg-blue-500 active:scale-95 shadow-lg shadow-blue-600/20"
@@ -127,7 +125,7 @@ function DashboardContent() {
                     </p>
                   </div>
                   <Link
-                    href="/profile"
+                    href="/candidate/profile"
                     className="whitespace-nowrap rounded-xl bg-blue-600 px-8 py-2.5 text-sm font-bold text-white shadow-lg shadow-blue-600/25 hover:bg-blue-500 transition-all active:scale-95"
                   >
                     Complete Profile
@@ -154,7 +152,7 @@ function DashboardContent() {
               value="Google Senior SE"
               subtitle="Scheduled: Sept 5th, 2:00 PM"
               ctaLabel="Resume Simulation"
-              ctaHref="/ai-interview"
+              ctaHref="/candidate/ai-interview"
               icon={FiAward}
               className="border-blue-500/20 bg-gradient-to-br from-[#0d162a] to-[#0a1223]"
             />
@@ -163,7 +161,7 @@ function DashboardContent() {
               value="82 / 100"
               subtitle="Global Ranking: Top 15%"
               ctaLabel="Enhance Profile"
-              ctaHref="/linkedin-optimizer"
+              ctaHref="/candidate/linkedin-optimizer"
               icon={FiBarChart2}
             />
             <StatCard
@@ -171,7 +169,7 @@ function DashboardContent() {
               value="92 / 100"
               subtitle="Status: ATS Optimized"
               ctaLabel="Analyze PDF"
-              ctaHref="/resume-analyzer"
+              ctaHref="/candidate/resume-analyzer"
               icon={FiFileText}
             />
           </motion.div>

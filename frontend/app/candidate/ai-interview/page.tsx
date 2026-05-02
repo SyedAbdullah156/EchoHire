@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import DashboardSidebar from "@/components/DashboardSidebar";
 import { 
   FiMic, FiMicOff, FiMonitor, FiPhoneOff, FiSend, 
   FiVideo, FiVideoOff, FiLayers, FiMessageSquare, FiAlertCircle 
@@ -38,10 +37,12 @@ export default function AIInterviewPage() {
           setStream(newStream);
           if (videoRef.current) videoRef.current.srcObject = newStream;
         } else {
-          stream?.getTracks().forEach(track => track.stop());
-          setStream(null);
+          setStream((prev) => {
+            prev?.getTracks().forEach(track => track.stop());
+            return null;
+          });
         }
-      } catch (err) {
+      } catch {
         setIsVideoOff(true);
         toast.error("Camera access denied. Please check system permissions.");
       }
@@ -49,7 +50,10 @@ export default function AIInterviewPage() {
     setupCamera();
 
     return () => {
-      stream?.getTracks().forEach(track => track.stop());
+      setStream((prev) => {
+        prev?.getTracks().forEach(track => track.stop());
+        return null;
+      });
     };
   }, [isVideoOff]);
 
@@ -157,7 +161,7 @@ export default function AIInterviewPage() {
                 </div>
                 <h4 className="text-[10px] font-black text-blue-500 uppercase tracking-[0.3em] mb-4">Prompt</h4>
                 <p className="text-xl md:text-2xl font-bold text-white leading-relaxed tracking-tight">
-                  "How do you handle production incidents under high pressure while maintaining team morale?"
+                  &quot;How do you handle production incidents under high pressure while maintaining team morale?&quot;
                 </p>
               </div>
             </div>

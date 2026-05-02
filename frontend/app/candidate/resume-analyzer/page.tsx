@@ -2,7 +2,6 @@
 
 import { useCallback, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import DashboardSidebar from "@/components/DashboardSidebar";
 import {
   FiUploadCloud,
   FiFileText,

@@ -3,9 +3,6 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
-  FiUser, 
-  FiBriefcase, 
-  FiBell, 
   FiCheck, 
   FiCamera, 
   FiSearch, 

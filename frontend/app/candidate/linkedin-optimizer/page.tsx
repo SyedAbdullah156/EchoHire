@@ -2,7 +2,6 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
-import DashboardSidebar from "@/components/DashboardSidebar";
 import { FiCheckCircle, FiUploadCloud, FiInfo, FiArrowLeft, FiAlertCircle, FiLoader, FiSearch, FiCpu, FiBarChart, FiLink, FiFileText, FiType } from "react-icons/fi";
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
@@ -49,10 +48,10 @@ export default function LinkedinOptimizerPage() {
       interval = setInterval(() => {
         setLoadingStep((prev) => (prev < LOADING_STEPS.length - 1 ? prev + 1 : prev));
       }, 2000);
-    } else {
-      setLoadingStep(0);
     }
-    return () => clearInterval(interval);
+    return () => {
+      if (interval) clearInterval(interval);
+    };
   }, [isSubmitting]);
 
   // Smooth Count-up animation
@@ -85,6 +84,7 @@ export default function LinkedinOptimizerPage() {
     setAnalysis(null);
     setScore(0);
     setTargetScore(0);
+    setLoadingStep(0);
     
     // Validation
     if (mode === "pdf" && !pdfFile) return toast.error("Please upload your PDF export first.");
@@ -99,8 +99,6 @@ export default function LinkedinOptimizerPage() {
         formData.append("file", pdfFile!);
         response = await fetch(`${API_BASE_URL}/api/linkedin/analyze-pdf`, { method: "POST", body: formData });
       } else {
-        // For URL mode, we actually guide them or mock it if no scraper is ready.
-        // For now, we'll treat "text" and "url" as text analysis.
         const textToAnalyze = mode === "url" 
           ? `Analysis for LinkedIn Profile: ${linkedinUrl}. (Note: Deep scraping is limited by LinkedIn privacy. Please use PDF method for a full audit.)`
           : profileText;
@@ -198,14 +196,14 @@ export default function LinkedinOptimizerPage() {
                           <input ref={fileInputRef} type="file" accept=".pdf" className="hidden" onChange={onPdfChange} disabled={isSubmitting} />
                           <FiUploadCloud className={`mx-auto text-5xl mb-4 transition-colors ${pdfFile ? "text-emerald-400" : "text-slate-600 group-hover:text-blue-400"}`} />
                           <h3 className="text-lg font-bold text-white">{pdfFile ? pdfFile.name : "Drop LinkedIn PDF here"}</h3>
-                          <p className="text-sm text-slate-500 mt-1 mb-4">Max 5MB • PDF Format</p>
+                          <p className="text-sm text-slate-500 mt-1 mb-4">Max 5MB &bull; PDF Format</p>
                           <button className="rounded-full bg-slate-800 px-6 py-2 text-xs font-bold text-white hover:bg-slate-700 transition-all">
                             {pdfFile ? "Change File" : "Select File"}
                           </button>
                         </div>
                         <div className="flex items-center gap-3 rounded-2xl bg-blue-500/5 border border-blue-500/10 p-4 text-xs text-blue-300">
                           <FiInfo className="flex-shrink-0 text-base" />
-                          <span><strong>Recommended:</strong> Go to your LinkedIn profile → More → Save to PDF. This includes your full experience and skill tags.</span>
+                          <span><strong>Recommended:</strong> Go to your LinkedIn profile &rarr; More &rarr; Save to PDF. This includes your full experience and skill tags.</span>
                         </div>
                       </motion.div>
                     )}
@@ -330,7 +328,7 @@ export default function LinkedinOptimizerPage() {
                     {analysis?.improvedHeadline && (
                       <div className="space-y-3">
                         <h4 className="text-xs font-bold uppercase tracking-widest text-slate-500">AI Suggested Headline</h4>
-                        <div className="rounded-2xl border border-blue-500/20 bg-blue-500/5 p-4 text-sm text-blue-100 italic leading-relaxed">"{analysis.improvedHeadline}"</div>
+                        <div className="rounded-2xl border border-blue-500/20 bg-blue-500/5 p-4 text-sm text-blue-100 italic leading-relaxed">&ldquo;{analysis.improvedHeadline}&rdquo;</div>
                       </div>
                     )}
 

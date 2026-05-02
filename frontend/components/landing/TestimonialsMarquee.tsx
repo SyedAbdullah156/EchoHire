@@ -2,12 +2,12 @@ import React from "react";
 
 const testimonials = [
   {
-    quote: "EchoHire's AI completely changed how we screen engineers. We've cut our hiring time in half without sacrificing quality.",
+    quote: "EchoHire&apos;s AI completely changed how we screen engineers. We&apos;ve cut our hiring time in half without sacrificing quality.",
     author: "Sarah Jenkins",
     role: "VP of Engineering, CloudSync",
   },
   {
-    quote: "The interactive IDE and unbiased scoring give us a much clearer picture of a candidate's actual abilities compared to traditional whiteboarding.",
+    quote: "The interactive IDE and unbiased scoring give us a much clearer picture of a candidate&apos;s actual abilities compared to traditional whiteboarding.",
     author: "Marcus Chen",
     role: "Engineering Manager, TechFlow",
   },
@@ -42,7 +42,7 @@ export default function TestimonialsMarquee() {
                 className="w-[350px] md:w-[450px] shrink-0 rounded-3xl border border-white/10 bg-[#070d1a] p-8 flex flex-col justify-between"
               >
                 <p className="text-lg text-[#dbe7ff] leading-relaxed mb-8">
-                  "{testimonial.quote}"
+                  &ldquo;{testimonial.quote}&rdquo;
                 </p>
                 <div>
                   <h4 className="font-bold text-white">{testimonial.author}</h4>

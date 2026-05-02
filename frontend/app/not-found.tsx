@@ -1,11 +1,35 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { FiArrowLeft, FiSearch, FiHome } from "react-icons/fi";
+import { FiArrowLeft, FiHome } from "react-icons/fi";
 import Link from "next/link";
 import Navbar from "@/components/Navbar";
+import { useState, useEffect } from "react";
+
+type Particle = {
+  id: number;
+  x: number[];
+  duration: number;
+  top: string;
+  left: string;
+};
 
 export default function NotFound() {
+  const [particles, setParticles] = useState<Particle[]>([]);
+
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      setParticles([...Array(6)].map((_, i) => ({
+        id: i,
+        x: [0, Math.random() * 50 - 25, 0],
+        duration: 5 + Math.random() * 5,
+        top: `${Math.random() * 100}%`,
+        left: `${Math.random() * 100}%`,
+      })));
+    }, 0);
+    return () => clearTimeout(timeoutId);
+  }, []);
+
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col selection:bg-primary/30 overflow-hidden relative">
       <Navbar />
@@ -36,7 +60,7 @@ export default function NotFound() {
               Page <span className="text-primary text-glow">Not Found</span>
             </h2>
             <p className="text-text-secondary text-lg leading-relaxed max-w-md mx-auto">
-              The page you're looking for was moved, deleted, or never existed in this dimension. Let's get you back on track.
+              The page you&apos;re looking for was moved, deleted, or never existed in this dimension. Let&apos;s get you back on track.
             </p>
           </div>
 
@@ -58,8 +82,8 @@ export default function NotFound() {
 
           {/* Quick Links */}
           <div className="pt-12 flex flex-wrap justify-center gap-x-8 gap-y-4 opacity-50 grayscale hover:grayscale-0 transition-all duration-700">
-             <Link href="/resume-analyzer" className="text-[10px] font-black uppercase tracking-widest text-white hover:text-primary transition-colors">Resume Analyzer</Link>
-             <Link href="/linkedin-optimizer" className="text-[10px] font-black uppercase tracking-widest text-white hover:text-primary transition-colors">LinkedIn Optimizer</Link>
+             <Link href="/candidate/resume-analyzer" className="text-[10px] font-black uppercase tracking-widest text-white hover:text-primary transition-colors">Resume Analyzer</Link>
+             <Link href="/candidate/linkedin-optimizer" className="text-[10px] font-black uppercase tracking-widest text-white hover:text-primary transition-colors">LinkedIn Optimizer</Link>
              <Link href="/pricing" className="text-[10px] font-black uppercase tracking-widest text-white hover:text-primary transition-colors">Pricing</Link>
           </div>
         </motion.div>
@@ -70,23 +94,23 @@ export default function NotFound() {
       <div className="absolute inset-0 bg-[radial-gradient(#227dff_1px,transparent_1px)] [background-size:64px_64px] opacity-[0.03] pointer-events-none" />
       
       {/* Animated Floating Particles */}
-      {[...Array(6)].map((_, i) => (
+      {particles.map((p) => (
         <motion.div
-          key={i}
+          key={p.id}
           animate={{
             y: [0, -100, 0],
-            x: [0, Math.random() * 50 - 25, 0],
+            x: p.x,
             opacity: [0, 0.4, 0]
           }}
           transition={{
-            duration: 5 + Math.random() * 5,
+            duration: p.duration,
             repeat: Infinity,
-            delay: i * 2
+            delay: p.id * 2
           }}
           className="absolute h-1 w-1 bg-primary rounded-full blur-sm"
           style={{
-            top: `${Math.random() * 100}%`,
-            left: `${Math.random() * 100}%`,
+            top: p.top,
+            left: p.left,
           }}
         />
       ))}
