@@ -107,7 +107,7 @@ export default function AboutPage() {
           <h2 className="text-3xl font-black text-white mb-8">The Story</h2>
           <div className="space-y-6 text-lg text-text-secondary leading-relaxed">
             <p>
-              It started in a small apartment with a simple realization: recruitment algorithms were filtering out brilliant people just because they didn&apos;t know how to &quot;speak&quot; to the AI.
+              {"It started in a small apartment with a simple realization: recruitment algorithms were filtering out brilliant people just because they didn't know how to \"speak\" to the AI."}
             </p>
             <p>
               We decided to build an AI that could teach candidates how to pass the robots and shine during the human interview. Today, EchoHire is used by tens of thousands of professionals worldwide to land their dream roles.

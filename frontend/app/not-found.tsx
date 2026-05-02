@@ -60,7 +60,7 @@ export default function NotFound() {
               Page <span className="text-primary text-glow">Not Found</span>
             </h2>
             <p className="text-text-secondary text-lg leading-relaxed max-w-md mx-auto">
-              The page you&apos;re looking for was moved, deleted, or never existed in this dimension. Let&apos;s get you back on track.
+              {"The page you're looking for was moved, deleted, or never existed in this dimension. Let's get you back on track."}
             </p>
           </div>
 

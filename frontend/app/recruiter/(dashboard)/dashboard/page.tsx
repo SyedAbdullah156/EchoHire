@@ -35,7 +35,7 @@ export default function RecruiterDashboard() {
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div className="space-y-1">
           <h1 className="text-3xl font-black text-white tracking-tight">Overview</h1>
-          <p className="text-sm text-text-muted">Welcome back, Jane. Here&apos;s what&apos;s happening today.</p>
+          <p className="text-sm text-text-muted">{"Welcome back, Jane. Here's what's happening today."}</p>
         </div>
         <Link 
           href="/recruiter/jobs/new"

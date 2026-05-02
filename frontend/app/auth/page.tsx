@@ -14,7 +14,7 @@ import { GoogleOAuthProvider, useGoogleLogin } from "@react-oauth/google";
 // --- Configuration & Constants ---
 const TESTIMONIALS = [
   {
-    quote: "EchoHire&apos;s AI interview prep reduced my anxiety and helped me land a Senior Dev role at a top fintech.",
+    quote: "EchoHire's AI interview prep reduced my anxiety and helped me land a Senior Dev role at a top fintech.",
     author: "Sarah J.",
     role: "Senior Software Engineer",
     icon: <FiCpu className="text-primary" />
@@ -350,7 +350,7 @@ function AuthContent() {
                       ? "Enter your credentials to continue your career journey."
                       : mode === "signup"
                         ? "Join 15,000+ engineers optimizing their future."
-                        : "Enter your email and we&apos;ll send you a secure login link."
+                        : "Enter your email and we'll send you a secure login link."
                     }
                   </p>
                 </div>
@@ -475,7 +475,7 @@ function AuthContent() {
                 {/* Mode Switchers */}
                 <div className="pt-8 text-center border-t border-border-subtle">
                   <p className="text-sm text-text-muted">
-                    {mode === "signin" ? "Don&apos;t have an account?" : "Already have an account?"}
+                    {mode === "signin" ? "Don't have an account?" : "Already have an account?"}
                     {" "}
                     <button
                       onClick={() => setMode(mode === "signin" ? "signup" : "signin")}

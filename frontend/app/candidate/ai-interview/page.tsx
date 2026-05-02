@@ -161,7 +161,7 @@ export default function AIInterviewPage() {
                 </div>
                 <h4 className="text-[10px] font-black text-blue-500 uppercase tracking-[0.3em] mb-4">Prompt</h4>
                 <p className="text-xl md:text-2xl font-bold text-white leading-relaxed tracking-tight">
-                  &quot;How do you handle production incidents under high pressure while maintaining team morale?&quot;
+                  {"\"How do you handle production incidents under high pressure while maintaining team morale?\""}
                 </p>
               </div>
             </div>

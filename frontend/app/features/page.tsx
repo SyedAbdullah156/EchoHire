@@ -25,14 +25,14 @@ const features: Feature[] = [
           <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-white shrink-0 font-bold">AI</div>
           <div className="bg-surface-2 border border-border-medium p-5 rounded-3xl rounded-tl-none shadow-xl">
             <p className="text-white leading-relaxed">
-              &quot;That&apos;s an interesting approach to the caching layer. Why did you choose a **Redlock** implementation over a simple TTL for this specific distributed scenario?&quot;
+              {"\"That's an interesting approach to the caching layer. Why did you choose a **Redlock** implementation over a simple TTL for this specific distributed scenario?\""}
             </p>
           </div>
         </div>
         <div className="flex gap-4 justify-end">
           <div className="bg-primary/10 border border-primary/20 p-5 rounded-3xl rounded-tr-none text-white max-w-[85%]">
             <p className="leading-relaxed">
-              &quot;Since we&apos;re dealing with critical transaction data across multiple nodes, Redlock ensures mutual exclusion that a standard TTL-based cache wouldn&apos;t guarantee during split-brain scenarios.&quot;
+              {"\"Since we're dealing with critical transaction data across multiple nodes, Redlock ensures mutual exclusion that a standard TTL-based cache wouldn't guarantee during split-brain scenarios.\""}
             </p>
           </div>
           <div className="w-10 h-10 rounded-full bg-surface-2 border border-border-medium flex items-center justify-center shrink-0 font-bold text-text-muted">JD</div>

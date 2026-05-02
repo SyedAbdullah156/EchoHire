@@ -74,7 +74,7 @@ function DashboardContent() {
             <FiRefreshCw size={40} className="animate-spin-slow" />
           </div>
           <h2 className="text-2xl font-bold">Connection Interrupted</h2>
-          <p className="text-[#93a5cc]">We couldn&apos;t reach the AI Engine. Please check your connection and try again.</p>
+          <p className="text-[#93a5cc]">{"We couldn't reach the AI Engine. Please check your connection and try again."}</p>
           <button
             onClick={() => window.location.reload()}
             className="w-full rounded-xl bg-blue-600 py-3 font-bold transition-all hover:bg-blue-500 active:scale-95 shadow-lg shadow-blue-600/20"

@@ -57,7 +57,7 @@ export default function FeaturesBento() {
             </div>
             <h3 className="mb-3 text-2xl font-bold text-white">Conversational AI Interviews</h3>
             <p className="max-w-xl text-[#98a7cb] leading-relaxed">
-              Move beyond rigid multiple-choice tests. Our AI conducts dynamic interviews that adapt in real-time to the candidate&apos;s skill level, evaluating not just the final answer, but their problem-solving approach.
+              {"Move beyond rigid multiple-choice tests. Our AI conducts dynamic interviews that adapt in real-time to the candidate's skill level, evaluating not just the final answer, but their problem-solving approach."}
             </p>
           </div>
           <div className="mt-8 h-2 w-full rounded-full bg-[#0d162a] overflow-hidden">
