@@ -64,6 +64,9 @@ export const startRoundService = async (
         throw new AppError("Access denied", 403);
 
     const round = interview.rounds[roundIndex];
+
+    // Checking if round exist (user not passed index out of bounds)
+    if (!round) throw new AppError("Round not found", 404);
     if (round.status === "completed")
         throw new AppError("Round already completed", 400);
 
@@ -113,6 +116,7 @@ export const answerInRoundService = async (
         throw new AppError("Access denied", 403);
 
     const current_round = interview.rounds[roundIndex];
+    if (!current_round) throw new AppError("Round not found", 404);
     if (current_round.status !== "ongoing")
         throw new AppError("Round is not active", 400);
 

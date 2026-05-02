@@ -4,9 +4,10 @@ import {
     getMyInterviews,
     getInterview,
 } from "../controllers/interview.controller";
-import { protect, restrictTo } from "../middlewares/auth.middleware";
+import { protect } from "../middlewares/auth.middleware";
 import { validate } from "../middlewares/validate.middleware";
 import { createInterviewSchema } from "../validations/interview.validation";
+import { objectIdSchema } from "../validations/common.validation";
 
 const router = Router();
 
@@ -24,6 +25,6 @@ router.get("/my-interviews", protect, getMyInterviews);
 
 // GET /api/interviews/:id
 // Gets a specific interview by its ID
-router.get("/:id", protect, getInterview);
+router.get("/:id", protect, validate(objectIdSchema), getInterview);
 
 export default router;

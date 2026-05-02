@@ -1,10 +1,7 @@
 import { z } from "zod";
 import { RoundType } from "../constants/roundtypes.constants";
 import { JOB_LIMITS } from "../constants/job.constants";
-
-const objectIdSchema = z
-    .string()
-    .regex(/^[0-9a-fA-F]{24}$/, "Invalid ID format");
+import { mongoIdString } from "./common.validation";
 
 const jobRoundSchema = z.object({
     type: z.nativeEnum(RoundType, {
@@ -64,7 +61,7 @@ const jobBodySchema = z.object({
             message: "Deadline must be in the future",
         }),
 
-    company_id: objectIdSchema,
+    company_id: mongoIdString,
 
     is_active: z.boolean().optional().default(true),
 });
@@ -77,11 +74,4 @@ export const createJobSchema = z.object({
 // Update Job (makes all fields optional)
 export const updateJobSchema = z.object({
     body: jobBodySchema.partial(),
-});
-
-// Params validation (e.g., /api/jobs/:id)
-export const jobParamsSchema = z.object({
-    params: z.object({
-        id: objectIdSchema,
-    }),
 });

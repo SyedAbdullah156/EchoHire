@@ -9,6 +9,7 @@ import {
 } from "../controllers/aiInterview.controller";
 import { z } from "zod";
 import upload from "../config/multer.config";
+import { interviewRoundParamsSchema } from "../validations/interview.validation";
 
 const router = Router();
 
@@ -24,20 +25,35 @@ const answerSchema = z.object({
         .strict(),
 });
 
-// Using zero-based index for rounds (e.g., /rounds/0/start for Round 1)
-router.post("/:interviewId/rounds/:roundIndex/start", protect, startRound);
+router.post(
+    "/:interviewId/rounds/:roundIndex/start", 
+    protect, 
+    validate(interviewRoundParamsSchema),
+    startRound
+);
+
 router.post(
     "/:interviewId/rounds/:roundIndex/answer",
     protect,
+    validate(interviewRoundParamsSchema),
     validate(answerSchema),
     answerInRound,
 );
+
 router.post(
     "/:interviewId/rounds/:roundIndex/voice-answer",
     protect,
+    validate(interviewRoundParamsSchema),
     upload.single("audio"),
     voiceAnswer,
 );
-router.get("/:interviewId/rounds/:roundIndex", protect, getRound);
+
+// 4. Get Round
+router.get(
+    "/:interviewId/rounds/:roundIndex", 
+    protect, 
+    validate(interviewRoundParamsSchema),
+    getRound
+);
 
 export default router;

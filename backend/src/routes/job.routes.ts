@@ -4,7 +4,6 @@ import { validate } from "../middlewares/validate.middleware";
 import {
     createJobSchema,
     updateJobSchema,
-    jobParamsSchema,
 } from "../validations/job.validation";
 import {
     createJob,
@@ -13,12 +12,13 @@ import {
     updateJob,
     deleteJob,
 } from "../controllers/job.controller";
+import { objectIdSchema } from "../validations/common.validation";
 
 const router = Router();
 
 // Public: View all jobs
 router.get("/", getAllJobs);
-router.get("/:id", validate(jobParamsSchema), getJobById);
+router.get("/:id", validate(objectIdSchema), getJobById);
 
 // Protected: Management
 router.post(
@@ -33,7 +33,7 @@ router.put(
     "/:id",
     protect,
     restrictTo("admin", "company"),
-    validate(jobParamsSchema),
+    validate(objectIdSchema),
     validate(updateJobSchema),
     updateJob,
 );
@@ -42,7 +42,7 @@ router.delete(
     "/:id",
     protect,
     restrictTo("admin", "company"),
-    validate(jobParamsSchema),
+    validate(objectIdSchema),
     deleteJob,
 );
 

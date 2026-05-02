@@ -3,10 +3,7 @@ import { RoundType } from "../constants/roundtypes.constants";
 import { VIOLATION_TYPES } from "../constants/violations.constants";
 import { ROUND_STATUS, INTERVIEW_STATUS } from "../constants/status.constants";
 import { INTERVIEW_LIMITS } from "../constants/interview.constants";
-
-const objectIdSchema = z
-    .string()
-    .regex(/^[0-9a-fA-F]{24}$/, "Invalid ID format");
+import { mongoIdString } from "./common.validation";
 
 const optionalUrl = z
     .string()
@@ -78,8 +75,8 @@ const violationZodSchema = z.object({
 });
 
 const interviewBodySchema = z.object({
-    job_id: objectIdSchema,
-    user_id: objectIdSchema,
+    job_id: mongoIdString,
+    user_id: mongoIdString,
 
     status: z
         .string()
@@ -122,7 +119,7 @@ const interviewBodySchema = z.object({
  */
 export const createInterviewSchema = z.object({
     body: z.object({
-        job_id: objectIdSchema,
+        job_id: mongoIdString,
         cv_url: optionalUrl,
     }),
 });
@@ -134,11 +131,9 @@ export const updateInterviewSchema = z.object({
     body: interviewBodySchema.partial(),
 });
 
-/**
- * URL Parameter validation
- */
-export const interviewParamsSchema = z.object({
+export const interviewRoundParamsSchema = z.object({
     params: z.object({
-        id: objectIdSchema,
-    }),
+        interviewId: mongoIdString, 
+        roundIndex: z.string().regex(/^\d+$/, "Round index must be a non-negative number") 
+    })
 });

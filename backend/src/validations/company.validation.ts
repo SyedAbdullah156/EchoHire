@@ -1,10 +1,6 @@
 import { z } from "zod";
 import { COMPANY_LIMITS } from "../constants/company.constants";
-
-// Reusable ID validation
-const objectIdSchema = z
-    .string()
-    .regex(/^[0-9a-fA-F]{24}$/, "Invalid ID format");
+import { mongoIdString } from "./common.validation";
 
 // Main Schema Validation
 const companyBodySchema = z.object({
@@ -37,7 +33,7 @@ const companyBodySchema = z.object({
 
     logo: z.string().optional(),
 
-    owner_id: objectIdSchema.optional() // The controller can fill this from the authenticated user or a provided header/body value.
+    owner_id: mongoIdString.optional(),
 });
 
 // Actual Use Cases
@@ -47,10 +43,4 @@ export const createCompanySchema = z.object({
 
 export const updateCompanySchema = z.object({
     body: companyBodySchema.partial(),
-});
-
-export const companyParamsSchema = z.object({
-    params: z.object({
-        id: objectIdSchema,
-    }),
 });

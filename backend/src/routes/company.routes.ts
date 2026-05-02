@@ -11,10 +11,10 @@ import { validate } from "../middlewares/validate.middleware";
 import {
     createCompanySchema,
     updateCompanySchema,
-    companyParamsSchema,
 } from "../validations/company.validation";
 import upload from "../config/multer.config";
 import { uploadLogoToCloudinary } from "../middlewares/cloudinary.middleware";
+import { objectIdSchema } from "../validations/common.validation";
 
 const router = express.Router();
 
@@ -23,7 +23,7 @@ const router = express.Router();
  * Anyone can view companies (like a job board)
  */
 router.get("/", getAllCompanies);
-router.get("/:id", validate(companyParamsSchema), getCompanyById);
+router.get("/:id", validate(objectIdSchema), getCompanyById);
 
 /**
  * PROTECTED ROUTES
@@ -48,6 +48,6 @@ router.patch(
     updateCompany,
 );
 
-router.delete("/:id", protect, restrictTo("admin"), deleteCompany);
+router.delete("/:id", protect, restrictTo("admin"), validate(objectIdSchema), deleteCompany);
 
 export default router;
