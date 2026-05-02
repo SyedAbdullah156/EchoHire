@@ -29,8 +29,8 @@ router.post(
 );
 
 // GET /api/interviews
-// Admin: Get all interviews in the system
-router.get("/", protect, restrictTo("admin"), getAllInterviews);
+// Admin/Recruiter: Get interviews (Recruiters get their company's interviews)
+router.get("/", protect, restrictTo("admin", "recruiter"), getAllInterviews);
 
 // GET /api/interviews/my-interviews
 // Candidate: Gets all interviews they applied for

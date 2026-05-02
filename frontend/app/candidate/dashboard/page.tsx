@@ -261,26 +261,40 @@ function DashboardContent() {
           </motion.div>
 
           <div className="grid gap-6 xl:grid-cols-[1.8fr_1fr]">
-            {/* Chart - HCI: Aesthetic and Minimalist Design */}
-            <motion.section
-              variants={itemVariants}
-              className="rounded-[2.5rem] border border-[#243253] bg-[#0d162a]/80 p-8 backdrop-blur-md shadow-xl"
-            >
-              <div className="flex items-center justify-between mb-8">
-                <div>
-                  <h2 className="text-2xl font-bold text-white flex items-center gap-2">
-                    <FiTrendingUp className="text-blue-400" /> Growth Velocity
-                  </h2>
-                  <p className="text-sm text-[#9fb1d8]">Aggregate score improvement over time</p>
+            <div className="space-y-6">
+              {/* Chart - HCI: Aesthetic and Minimalist Design */}
+              <motion.section
+                variants={itemVariants}
+                className="rounded-[2.5rem] border border-[#243253] bg-[#0d162a]/80 p-6 backdrop-blur-md shadow-xl self-start"
+              >
+                <div className="flex items-center justify-between mb-8">
+                  <div>
+                    <h2 className="text-2xl font-bold text-white flex items-center gap-2">
+                      <FiTrendingUp className="text-blue-400" /> Growth Velocity
+                    </h2>
+                    <p className="text-sm text-[#9fb1d8]">Aggregate score improvement over time</p>
+                  </div>
+                  <div className="flex gap-2">
+                    <span className="rounded-lg bg-[#050b18] px-3 py-1 text-[10px] font-bold text-blue-400 border border-[#243253]">MONTHLY</span>
+                  </div>
                 </div>
-                <div className="flex gap-2">
-                  <span className="rounded-lg bg-[#050b18] px-3 py-1 text-[10px] font-bold text-blue-400 border border-[#243253]">MONTHLY</span>
+                <div className="mt-4">
+                  <ProgressAreaChart data={performanceData} />
                 </div>
-              </div>
-              <div className="mt-8">
-                <ProgressAreaChart data={performanceData} />
-              </div>
-            </motion.section>
+              </motion.section>
+
+              {/* Action Alerts - HCI: Help Users Recognize, Diagnose, and Recover */}
+              <motion.div variants={itemVariants}>
+                <ActionAlert
+                  title="Daily Sprint"
+                  items={[
+                    "Optimize Profile: Add FAST'27 Experience",
+                    "Code: Implement LRU Cache",
+                    "ATS: Upload fresh PDF version",
+                  ]}
+                />
+              </motion.div>
+            </div>
 
             {/* Side Panel */}
             <div className="space-y-6">
@@ -312,18 +326,6 @@ function DashboardContent() {
               {/* Job Alerts - New Notification System */}
               <motion.div variants={itemVariants}>
                 <JobNotifications />
-              </motion.div>
-
-              {/* Action Alerts - HCI: Help Users Recognize, Diagnose, and Recover */}
-              <motion.div variants={itemVariants}>
-                <ActionAlert
-                  title="Daily Sprint"
-                  items={[
-                    "Optimize Profile: Add FAST'27 Experience",
-                    "Code: Implement LRU Cache",
-                    "ATS: Upload fresh PDF version",
-                  ]}
-                />
               </motion.div>
             </div>
           </div>

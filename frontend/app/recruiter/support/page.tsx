@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import DashboardSidebar from "@/components/DashboardSidebar";
+import RecruiterSidebar from "@/components/RecruiterSidebar";
 import { 
   Search, 
   MessageCircle, 
@@ -12,17 +12,17 @@ import {
   LifeBuoy
 } from "lucide-react";
 
-export default function SupportPage() {
+export default function RecruiterSupportPage() {
   return (
     <main className="min-h-screen bg-[#050b18] text-[#e2e8f0] flex flex-col lg:flex-row p-4 lg:p-8 gap-8 antialiased">
-      <DashboardSidebar active="support" />
+      <RecruiterSidebar />
 
       <div className="flex-1 flex flex-col min-w-0 space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
         <div className="bg-[#050b18]/80 backdrop-blur-md border-b border-slate-800/60 pb-6 mb-2 rounded-3xl">
           {/* Breadcrumb Navigation */}
           <nav className="flex items-center text-sm text-[#9fb1d8] mb-6 px-2">
             <Link 
-              href="/dashboard" 
+              href="/recruiter/dashboard" 
               className="group flex items-center gap-2 hover:text-white transition-colors"
             >
               <ArrowLeft size={16} className="transition-transform group-hover:-translate-x-1" /> 
@@ -32,12 +32,12 @@ export default function SupportPage() {
 
           <header className="px-2">
             <div className="flex items-center gap-3 mb-2">
-              <LifeBuoy className="text-[#2a7df7]" size={28} />
-              <span className="text-xs font-bold uppercase tracking-widest text-[#4a5d89]">Help Center</span>
+              <LifeBuoy className="text-primary" size={28} />
+              <span className="text-xs font-bold uppercase tracking-widest text-[#4a5d89]">Recruiter Help Center</span>
             </div>
-            <h1 className="text-4xl lg:text-5xl font-extrabold tracking-tight text-white leading-tight">How can we help?</h1>
+            <h1 className="text-4xl lg:text-5xl font-extrabold tracking-tight text-white leading-tight">Recruiter Support</h1>
             <p className="mt-4 text-lg text-[#9fb1d8] max-w-2xl leading-relaxed">
-              Search our documentation or contact our engineering team for technical assistance.
+              Find guides on job management, candidate analysis, and AI interview configuration.
             </p>
           </header>
         </div>
@@ -48,21 +48,21 @@ export default function SupportPage() {
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-[#4a5d89]" size={20} />
             <input 
               type="text" 
-              placeholder="Search for articles, guides, or keywords..."
-              className="w-full rounded-2xl border border-[#243253] bg-[#0d162a] py-4 pl-12 pr-4 text-white placeholder-[#4a5d89] transition-all focus:border-blue-500 focus:outline-none focus:ring-4 focus:ring-blue-500/10 shadow-lg"
+              placeholder="Search for recruiter guides, API docs, or keywords..."
+              className="w-full rounded-2xl border border-[#243253] bg-[#0d162a] py-4 pl-12 pr-4 text-white placeholder-[#4a5d89] transition-all focus:border-primary focus:outline-none focus:ring-4 focus:ring-primary/10 shadow-lg"
             />
           </div>
 
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-            {/* Quick Guides Card */}
-            <Link href="/faq" className="group flex flex-col justify-between rounded-3xl border border-[#243253] bg-[#0d162a]/80 p-6 backdrop-blur-md transition-all hover:border-[#32466f] hover:shadow-xl hover:shadow-blue-500/5 cursor-pointer">
+            {/* Recruiter Guides Card */}
+            <Link href="/faq" className="group flex flex-col justify-between rounded-3xl border border-[#243253] bg-[#0d162a]/80 p-6 backdrop-blur-md transition-all hover:border-[#32466f] hover:shadow-xl hover:shadow-primary/5 cursor-pointer">
               <div>
-                <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-blue-500/10 text-blue-400">
+                <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10 text-primary">
                   <BookOpen size={24} />
                 </div>
-                <h2 className="text-xl font-bold text-white">Common Questions</h2>
+                <h2 className="text-xl font-bold text-white">Recruiting Guides</h2>
                 <ul className="mt-4 space-y-3 text-sm text-[#c3d0ed]">
-                  {['Starting an AI Interview', 'Resume Upload Guide', 'Improving ATS Scores'].map((item) => (
+                  {['Configuring AI Questions', 'Managing Candidate Pipeline', 'Understanding AI Scores'].map((item) => (
                     <li key={item} className="flex items-center justify-between group/link transition-colors">
                       {item}
                       <ExternalLink size={14} className="opacity-60 group-hover:opacity-100 transition-opacity" />
@@ -70,7 +70,7 @@ export default function SupportPage() {
                   ))}
                 </ul>
               </div>
-              <div className="mt-6 text-sm font-semibold text-blue-400 group-hover:text-blue-300 self-start flex items-center gap-2">
+              <div className="mt-6 text-sm font-semibold text-primary group-hover:text-primary/80 self-start flex items-center gap-2">
                 View Knowledge Base <ExternalLink size={14} />
               </div>
             </Link>
@@ -82,38 +82,38 @@ export default function SupportPage() {
               </div>
               <h2 className="text-xl font-bold text-white">Direct Assistance</h2>
               <p className="mt-3 text-sm leading-relaxed text-[#c3d0ed] flex-1">
-                Have a specific technical issue or account question? Open a priority ticket with our team.
+                Have a technical issue or need help with candidate management? Open a priority ticket with our recruiter support team.
               </p>
               <button 
                 onClick={() => window.dispatchEvent(new Event("open-support-chat"))}
-                className="mt-6 w-full rounded-xl bg-gradient-to-r from-[#2a7df7] to-[#372e8f] py-3 text-sm font-bold text-white shadow-lg shadow-blue-500/20 transition-transform active:scale-95 cursor-pointer"
+                className="mt-6 w-full rounded-xl bg-primary py-3 text-sm font-bold text-white shadow-lg shadow-primary/20 transition-transform active:scale-95 cursor-pointer"
               >
                 Create Support Ticket
               </button>
             </article>
 
-            {/* Quick Contact Card */}
+            {/* Contact Card */}
             <article className="rounded-3xl border border-[#243253] bg-[#0d162a]/80 p-6 backdrop-blur-md transition-all hover:border-[#32466f]">
               <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-emerald-500/10 text-emerald-400">
                 <Mail size={24} />
               </div>
-              <h2 className="text-xl font-bold text-white">Contact EchoHire</h2>
+              <h2 className="text-xl font-bold text-white">Contact Sales</h2>
               <div className="mt-4 space-y-2">
-                <p className="text-sm font-medium text-white">support@echohire.ai</p>
-                <p className="text-xs text-[#9fb1d8]">Average Response: &lt; 24 hours</p>
+                <p className="text-sm font-medium text-white">recruiter-success@echohire.ai</p>
+                <p className="text-xs text-[#9fb1d8]">Average Response: &lt; 4 hours</p>
                 <div className="mt-4 flex items-center gap-2 rounded-lg bg-[#050b18] p-3 border border-[#243253]">
                     <div className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
-                    <span className="text-[10px] font-bold text-emerald-500 uppercase">Live Support Online</span>
+                    <span className="text-[10px] font-bold text-emerald-500 uppercase">Premium Support Online</span>
                 </div>
               </div>
             </article>
           </div>
 
-          {/* User Feedback Loop */}
+          {/* Recruiter Feedback Loop */}
           <footer className="rounded-[2rem] bg-[#0d162a]/40 p-8 text-center border border-[#243253] backdrop-blur-sm max-w-4xl mx-auto">
-            <p className="text-sm text-[#9fb1d8] mb-4">Did you find what you were looking for?</p>
+            <p className="text-sm text-[#9fb1d8] mb-4">Was this help center useful for your recruiting workflow?</p>
             <div className="flex justify-center gap-4">
-               <button className="text-xs font-bold bg-[#0a1223] px-6 py-2.5 rounded-xl border border-[#243253] hover:border-blue-500 transition-colors">Yes, thanks!</button>
+               <button className="text-xs font-bold bg-[#0a1223] px-6 py-2.5 rounded-xl border border-[#243253] hover:border-primary transition-colors">Yes, thanks!</button>
                <button className="text-xs font-bold bg-[#0a1223] px-6 py-2.5 rounded-xl border border-[#243253] hover:border-red-500 transition-colors">Not really</button>
             </div>
           </footer>

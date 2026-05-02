@@ -36,7 +36,7 @@ const recruiterItems: SidebarItem[] = [
 
 const accountItems: SidebarItem[] = [
   { key: "settings", label: "Settings", icon: FiSettings, href: "/recruiter/settings" },
-  { key: "support", label: "Support", icon: FiHelpCircle, href: "/support" },
+  { key: "support", label: "Support", icon: FiHelpCircle, href: "/recruiter/support" },
   { key: "logout", label: "Logout", icon: FiLogOut, href: "/auth" },
 ];
 

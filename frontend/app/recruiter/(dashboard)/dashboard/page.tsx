@@ -14,65 +14,69 @@ import {
   FiLock
 } from "react-icons/fi";
 import Link from "next/link";
-
-const STATS = [
-  { label: "Active Jobs", value: "12", sub: "+2 this week", icon: <FiBriefcase /> },
-  { label: "Total Candidates", value: "842", sub: "+12.5% increase", icon: <FiTrendingUp /> },
-  { label: "AI Interviews", value: "156", sub: "24 pending review", icon: <FiClock /> },
-  { label: "Success Hires", value: "38", sub: "Across 8 teams", icon: <FiCheckCircle /> },
-];
-
-const RECENT_CANDIDATES = [
-  { name: "Alex Rivera", role: "Sr. Frontend Engineer", score: 94, status: "High Match", date: "2h ago" },
-  { name: "Sarah Chen", role: "Product Designer", score: 88, status: "Strong", date: "5h ago" },
-  { name: "Marcus Thorne", role: "Backend Developer", score: 72, status: "Under Review", date: "1d ago" },
-  { name: "Elena Volkov", role: "DevOps Engineer", score: 91, status: "High Match", date: "1d ago" },
-  { name: "Julian Pierce", role: "QA Engineer", score: 64, status: "Screened", date: "2d ago" },
-];
-
 import { useState, useEffect } from "react";
 import { useUserProfile } from "@/hooks/useUserProfile";
 
+
+interface DashboardStat {
+  label: string;
+  value: string;
+  sub: string;
+  icon: React.ReactNode;
+}
+
+interface DashboardCandidate {
+  name: string;
+  role: string;
+  score: number;
+  status: string;
+  date: string;
+}
+
 export default function RecruiterDashboard() {
   const { name, isApproved } = useUserProfile();
-  const [stats, setStats] = useState(STATS);
-  const [recentCandidates, setRecentCandidates] = useState(RECENT_CANDIDATES);
+  const [stats, setStats] = useState<DashboardStat[]>([]);
+  const [recentCandidates, setRecentCandidates] = useState<DashboardCandidate[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const fetchDashboardData = async () => {
+      setIsLoading(true);
       try {
         const [jobsRes, interviewsRes] = await Promise.all([
           fetch("/api/jobs"),
-          fetch("/api/interviews/all")
+          fetch("/api/interviews")
         ]);
 
         if (jobsRes.ok && interviewsRes.ok) {
           const jobsData = await jobsRes.json();
           const interviewsData = await interviewsRes.json();
 
-          const activeJobs = jobsData.data?.length || 0;
-          const totalInterviews = interviewsData.data?.length || 0;
-          const completedInterviews = interviewsData.data?.filter((i: { status: string }) => i.status === "completed").length || 0;
+          const activeJobs = jobsData.data?.filter((j: { is_active: boolean }) => j.is_active).length || 0;
+          const allInterviews = interviewsData.data || [];
+          const totalCandidates = allInterviews.length;
+          const completedInterviews = allInterviews.filter((i: { status: string }) => i.status === "completed").length;
+          const hiredCount = allInterviews.filter((i: { status: string }) => i.status === "hired").length;
 
           setStats([
             { label: "Active Jobs", value: activeJobs.toString(), sub: "Real-time updates", icon: <FiBriefcase /> },
-            { label: "Total Candidates", value: totalInterviews.toString(), sub: "Across all postings", icon: <FiTrendingUp /> },
-            { label: "AI Interviews", value: totalInterviews.toString(), sub: `${completedInterviews} completed`, icon: <FiClock /> },
-            { label: "Success Hires", value: "38", sub: "Goal: 50", icon: <FiCheckCircle /> },
+            { label: "Total Candidates", value: totalCandidates.toString(), sub: "Across all postings", icon: <FiTrendingUp /> },
+            { label: "AI Interviews", value: completedInterviews.toString(), sub: `${completedInterviews} completed`, icon: <FiClock /> },
+            { label: "Success Hires", value: hiredCount.toString(), sub: "Goal: 50", icon: <FiCheckCircle /> },
           ]);
 
-          if (interviewsData.data) {
-            const mapped = interviewsData.data.slice(0, 5).map((int: { 
+          if (allInterviews.length > 0) {
+            const mapped = allInterviews.slice(0, 5).map((int: { 
               user_id?: { name?: string }; 
               job_id?: { role?: string }; 
               score?: number; 
-              status?: string; 
+              status: string; 
               createdAt: string; 
             }) => ({
               name: int.user_id?.name || "Unknown",
               role: int.job_id?.role || "General",
               score: int.score || 0,
-              status: int.status === "completed" ? "Screened" : "In Progress",
+              status: int.status.charAt(0).toUpperCase() + int.status.slice(1),
               date: new Date(int.createdAt).toLocaleDateString()
             }));
             setRecentCandidates(mapped);
@@ -85,6 +89,15 @@ export default function RecruiterDashboard() {
 
     fetchDashboardData();
   }, []);
+
+  if (isLoading) {
+    return (
+      <div className="p-8 lg:p-10 flex flex-col items-center justify-center min-h-[400px] text-primary animate-pulse">
+        <FiClock size={48} className="mb-4" />
+        <p className="text-xs font-black uppercase tracking-widest">Synchronizing Dashboard Data...</p>
+      </div>
+    );
+  }
   return (
     <div className="p-8 lg:p-10 space-y-10">
       
@@ -130,7 +143,7 @@ export default function RecruiterDashboard() {
 
       {/* --- Bento Grid Stats --- */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-        {stats.map((stat, i) => (
+        {stats.map((stat: DashboardStat, i: number) => (
           <motion.div
             key={stat.label}
             initial={{ opacity: 0, y: 20 }}
@@ -176,7 +189,7 @@ export default function RecruiterDashboard() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-border-subtle">
-                  {recentCandidates.map((candidate, i) => (
+                  {recentCandidates.map((candidate: DashboardCandidate, i: number) => (
                     <tr key={i} className="group hover:bg-surface-2/30 transition-colors">
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-3">

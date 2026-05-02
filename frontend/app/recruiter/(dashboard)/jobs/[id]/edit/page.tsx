@@ -1,8 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
+  FiArrowLeft,
   FiCpu,
   FiCheckCircle,
   FiFileText,
@@ -11,18 +12,21 @@ import {
   FiChevronRight,
   FiPlus,
   FiTrash2,
-  FiHelpCircle
+  FiHelpCircle,
+  FiLoader
 } from "react-icons/fi";
 import Link from "next/link";
 import { toast } from "sonner";
-import { useRouter } from "next/navigation";
+import { useRouter, useParams } from "next/navigation";
 
 const TECH_STACK_OPTIONS = ["React", "TypeScript", "Node.js", "Python", "Go", "AWS", "Docker", "PostgreSQL", "Next.js"];
 const SOFT_SKILLS = ["Leadership", "Communication", "Problem Solving", "Collaboration", "Critical Thinking"];
 
-export default function NewJobPage() {
+export default function EditJobPage() {
   const router = useRouter();
-  const [title, setTitle] = useState(""); // This is the Role
+  const { id } = useParams();
+  
+  const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [deadline, setDeadline] = useState("");
   const [department, setDepartment] = useState("Engineering");
@@ -33,7 +37,40 @@ export default function NewJobPage() {
   const [difficulty, setDifficulty] = useState(5);
   const [customQuestions, setCustomQuestions] = useState<string[]>([]);
   const [newQuestion, setNewQuestion] = useState("");
-  const [isPublishing, setIsPublishing] = useState(false);
+  const [isUpdating, setIsUpdating] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchJob = async () => {
+      try {
+        const res = await fetch(`/api/jobs/${id}`);
+        if (res.ok) {
+          const result = await res.json();
+          const job = result.data;
+          
+          setTitle(job.role || "");
+          setDescription(job.description || "");
+          setDeadline(job.deadline ? new Date(job.deadline).toISOString().split('T')[0] : "");
+          setDepartment(job.department || "Engineering");
+          setLocation(job.location || "");
+          setSalaryRange(job.salary_range || "");
+          setSelectedTech(job.framework || []);
+          setSelectedSoftSkills(job.soft_skills || []);
+          setDifficulty(job.difficulty || 5);
+          setCustomQuestions(job.custom_questions || []);
+        } else {
+          toast.error("Failed to load job details.");
+          router.push("/recruiter/jobs");
+        }
+      } catch (error) {
+        toast.error("Error fetching job data.");
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    if (id) fetchJob();
+  }, [id, router]);
 
   const handleAddQuestion = () => {
     if (newQuestion.trim()) {
@@ -46,15 +83,15 @@ export default function NewJobPage() {
     setCustomQuestions(customQuestions.filter((_, i) => i !== index));
   };
 
-  const handlePublish = async () => {
+  const handleUpdate = async () => {
     if (!title || !description || !deadline || !location) {
       return toast.error("Please fill in all required fields.");
     }
 
-    setIsPublishing(true);
+    setIsUpdating(true);
     try {
-      const res = await fetch("/api/jobs", {
-        method: "POST",
+      const res = await fetch(`/api/jobs/${id}`, {
+        method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           name: `${department} - ${title}`,
@@ -68,28 +105,21 @@ export default function NewJobPage() {
           framework: selectedTech,
           requirements: [...selectedTech, ...selectedSoftSkills],
           custom_questions: customQuestions,
-          deadline: deadline,
-          rounds: [
-            { type: "TechnicalScreening", max_questions: 1 },
-            { type: "FrameworkProficiency", max_questions: 3 },
-            { type: "CodingAssessment", max_questions: 1 },
-            { type: "SystemArchitecture", max_questions: 1 }
-          ],
-          is_active: true
+          deadline: deadline
         }),
       });
 
       const result = await res.json();
       if (res.ok) {
-        toast.success("Job Posting Published Successfully!");
+        toast.success("Job Posting Updated Successfully!");
         router.push("/recruiter/jobs");
       } else {
-        toast.error(result.message || "Failed to publish job.");
+        toast.error(result.message || "Failed to update job.");
       }
     } catch (error) {
       toast.error("Failed to connect to the server.");
     } finally {
-      setIsPublishing(false);
+      setIsUpdating(false);
     }
   };
 
@@ -101,14 +131,25 @@ export default function NewJobPage() {
     setSelectedSoftSkills(prev => prev.includes(skill) ? prev.filter(s => s !== skill) : [...prev, skill]);
   };
 
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-[#050b18]">
+        <div className="flex flex-col items-center gap-4 text-primary animate-pulse">
+          <FiLoader size={48} className="animate-spin" />
+          <p className="text-xs font-black uppercase tracking-widest">Loading Job Data...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="max-w-4xl mx-auto p-8 lg:p-12 pb-32">
 
       {/* --- Breadcrumbs --- */}
       <nav className="mb-12 flex items-center gap-4 text-xs font-bold uppercase tracking-widest text-text-muted">
-        <Link href="/recruiter/jobs" className="hover:text-primary transition-colors">Jobs</Link>
+        <Link href="/recruiter/jobs" className="hover:text-white transition-colors">Jobs</Link>
         <FiChevronRight className="opacity-30" />
-        <span className="text-white">Create New Posting</span>
+        <span className="text-white">Edit Posting</span>
       </nav>
 
       <div className="space-y-12">
@@ -116,10 +157,10 @@ export default function NewJobPage() {
         {/* --- Header Section --- */}
         <div className="space-y-4">
           <h1 className="text-4xl font-black text-white tracking-tight leading-tight">
-            Design Your <span className="text-primary text-glow">Ideal Candidate</span> Profile.
+            Refine Your <span className="text-primary text-glow">Job Posting</span>.
           </h1>
           <p className="text-sm text-text-secondary max-w-xl leading-relaxed">
-            Fill in the details below. Our AI will automatically configure the interview parameters based on your requirements.
+            Update the requirements and configuration below. Changes will be reflected in current AI interview sessions.
           </p>
         </div>
 
@@ -187,7 +228,7 @@ export default function NewJobPage() {
               </div>
             </div>
             <div className="space-y-2">
-              <label htmlFor="deadline" className="text-[10px] font-black uppercase tracking-widest text-text-muted ml-1 text-flex items-center gap-2">
+              <label htmlFor="deadline" className="text-[10px] font-black uppercase tracking-widest text-text-muted ml-1">
                 Application Deadline
               </label>
               <input
@@ -215,9 +256,6 @@ export default function NewJobPage() {
                 />
               </div>
             </div>
-            <div className="space-y-2 flex flex-col justify-end">
-              <p className="text-[9px] text-text-muted font-medium italic">This will be visible to candidates on the job board.</p>
-            </div>
           </div>
         </section>
 
@@ -230,7 +268,6 @@ export default function NewJobPage() {
             <h2 className="text-xl font-bold text-white">AI Assessment Setup</h2>
           </div>
 
-          {/* Difficulty Slider */}
           <div className="space-y-6">
             <div className="flex items-center justify-between">
               <label className="text-[10px] font-black uppercase tracking-widest text-text-muted ml-1">Technical Difficulty</label>
@@ -252,13 +289,8 @@ export default function NewJobPage() {
                 <div className="absolute right-0 top-1/2 -translate-y-1/2 h-4 w-4 rounded-full bg-white border-4 border-primary shadow-lg" />
               </motion.div>
             </div>
-            <div className="flex justify-between px-1">
-              <span className="text-[9px] font-bold text-text-muted uppercase">Junior</span>
-              <span className="text-[9px] font-bold text-text-muted uppercase">Architect</span>
-            </div>
           </div>
 
-          {/* Multi-Select Toggles */}
           <div className="space-y-4">
             <label className="text-[10px] font-black uppercase tracking-widest text-text-muted ml-1">Stack focus</label>
             <div className="flex flex-wrap gap-2">
@@ -266,7 +298,7 @@ export default function NewJobPage() {
                 <button
                   key={tech}
                   onClick={() => toggleTech(tech)}
-                  className={`h-10 px-4 rounded-xl border text-xs font-bold transition-all active:scale-95 ${selectedTech.includes(tech) ? "border-primary bg-primary/10 text-white shadow-lg shadow-primary/20" : "border-border-medium text-text-muted hover:border-primary/50 hover:text-white"
+                  className={`h-10 px-4 rounded-xl border text-xs font-bold transition-all active:scale-95 ${selectedTech.includes(tech) ? "border-primary bg-primary/10 text-white" : "border-border-medium text-text-muted hover:border-primary/50 hover:text-white"
                     }`}
                 >
                   {tech}
@@ -282,7 +314,7 @@ export default function NewJobPage() {
                 <button
                   key={skill}
                   onClick={() => toggleSoftSkill(skill)}
-                  className={`h-10 px-4 rounded-xl border text-xs font-bold transition-all active:scale-95 ${selectedSoftSkills.includes(skill) ? "border-primary bg-primary/10 text-white shadow-lg shadow-primary/20" : "border-border-medium text-text-muted hover:border-primary/50 hover:text-white"
+                  className={`h-10 px-4 rounded-xl border text-xs font-bold transition-all active:scale-95 ${selectedSoftSkills.includes(skill) ? "border-primary bg-primary/10 text-white" : "border-border-medium text-text-muted hover:border-primary/50 hover:text-white"
                     }`}
                 >
                   {skill}
@@ -292,7 +324,7 @@ export default function NewJobPage() {
           </div>
         </section>
 
-        {/* --- Section 3: Custom Question Bank --- */}
+        {/* --- Section 3: Question Bank --- */}
         <section className="p-10 rounded-[2.5rem] bg-surface-1 border border-border-medium space-y-8">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4 text-primary">
@@ -305,17 +337,13 @@ export default function NewJobPage() {
           </div>
 
           <div className="space-y-6">
-            <p className="text-xs text-text-secondary leading-relaxed">
-              Add specific questions you want the AI to include during the interview rounds. Leave empty to let the AI generate everything automatically.
-            </p>
-
             <div className="flex gap-4">
               <input
                 type="text"
                 value={newQuestion}
                 onChange={(e) => setNewQuestion(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && handleAddQuestion()}
-                placeholder="Enter a specific question (e.g. Describe your experience with Microservices)"
+                placeholder="Update or add specific questions..."
                 className="flex-1 h-[52px] bg-surface-2 border border-border-medium rounded-2xl px-6 text-sm text-white outline-none focus:border-primary/50 transition-all placeholder:text-text-muted/50"
               />
               <button
@@ -352,27 +380,21 @@ export default function NewJobPage() {
 
         {/* --- Action Bar --- */}
         <div className="fixed bottom-10 left-1/2 -translate-x-1/2 w-full max-w-4xl px-8 z-50">
-          <div className="p-4 rounded-[2rem] bg-surface-1/80 backdrop-blur-xl border border-border-medium flex items-center justify-between">
-            <div className="flex items-center gap-4 px-4 hidden sm:flex">
-              <FiZap className="text-primary" />
-              <p className="text-[10px] font-bold text-text-muted uppercase tracking-widest">AI Config Optimized</p>
-            </div>
-            <div className="flex items-center gap-3 w-full sm:w-auto">
+          <div className="p-4 rounded-[2rem] bg-surface-1/80 backdrop-blur-xl border border-border-medium flex items-center justify-end gap-3">
               <Link
-                href="/recruiter/dashboard"
-                className="flex-1 sm:flex-none h-12 px-6 rounded-xl border border-border-medium text-xs font-bold text-white flex items-center justify-center hover:bg-surface-2"
+                href="/recruiter/jobs"
+                className="h-12 px-6 rounded-xl border border-border-medium text-xs font-bold text-white flex items-center justify-center hover:bg-surface-2 transition-all"
               >
-                Save Draft
+                Cancel Changes
               </Link>
               <button
-                onClick={handlePublish}
-                disabled={isPublishing}
-                className="flex-1 sm:flex-none h-12 px-8 rounded-xl bg-primary text-white text-xs font-black uppercase tracking-widest flex items-center justify-center gap-3 hover:bg-primary-hover active:scale-[0.98] disabled:opacity-50 transition-all"
+                onClick={handleUpdate}
+                disabled={isUpdating}
+                className="h-12 px-8 rounded-xl bg-primary text-white text-xs font-black uppercase tracking-widest flex items-center justify-center gap-3 hover:bg-primary-hover active:scale-[0.98] disabled:opacity-50 transition-all shadow-lg shadow-primary/20"
               >
-                {isPublishing ? "Processing..." : "Publish & Activate AI"}
-                {!isPublishing && <FiCheckCircle />}
+                {isUpdating ? "Saving..." : "Save & Update Posting"}
+                {!isUpdating && <FiCheckCircle />}
               </button>
-            </div>
           </div>
         </div>
 

@@ -10,11 +10,16 @@ const progressData = [
   { week: "W7", score: 78 }, { week: "W8", score: 86 },
 ];
 
-export default function ProgressAreaChart({ data }: { data?: any[] }) {
+interface ChartDataItem {
+  week: string;
+  score: number;
+}
+
+export default function ProgressAreaChart({ data }: { data?: ChartDataItem[] }) {
   const chartData = data && data.length > 0 ? data : progressData;
   
   return (
-    <div className="h-[300px] w-full pt-4">
+    <div className="h-[240px] w-full pt-4">
       <ResponsiveContainer width="100%" height="100%" debounce={100}>
         <AreaChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
           <defs>

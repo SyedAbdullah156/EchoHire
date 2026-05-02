@@ -7,15 +7,25 @@ import {
   FiFilter, 
   FiMoreHorizontal, 
   FiBriefcase,
-  FiMapPin,
   FiUsers,
   FiClock
 } from "react-icons/fi";
 import Link from "next/link";
 import { useState, useEffect } from "react";
 
+interface Job {
+  _id: string;
+  role: string;
+  name: string;
+  location?: string;
+  is_active: boolean;
+  candidates?: number;
+  deadline: string;
+  createdAt: string;
+}
+
 export default function JobsPage() {
-  const [jobs, setJobs] = useState<any[]>([]);
+  const [jobs, setJobs] = useState<Job[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -122,9 +132,17 @@ export default function JobsPage() {
 
               <div className="mt-auto pt-6 border-t border-border-subtle flex items-center justify-between">
                 <p className="text-[10px] font-bold text-text-muted uppercase tracking-widest">Posted {new Date(job.createdAt).toLocaleDateString()}</p>
-                <button className="h-10 w-10 flex items-center justify-center rounded-xl bg-surface-2 border border-border-medium text-text-muted hover:text-white transition-all">
-                  <FiMoreHorizontal />
-                </button>
+                <div className="flex items-center gap-2">
+                  <Link 
+                    href={`/recruiter/jobs/${job._id}/edit`}
+                    className="h-10 px-4 flex items-center justify-center rounded-xl bg-primary/10 border border-primary/20 text-[10px] font-black uppercase tracking-widest text-primary hover:bg-primary hover:text-white transition-all"
+                  >
+                    Edit Posting
+                  </Link>
+                  <button className="h-10 w-10 flex items-center justify-center rounded-xl bg-surface-2 border border-border-medium text-text-muted hover:text-white transition-all">
+                    <FiMoreHorizontal />
+                  </button>
+                </div>
               </div>
             </motion.div>
           ))

@@ -1,9 +1,9 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import { FiHeadphones, FiMessageSquare, FiX, FiCpu, FiUser } from "react-icons/fi";
+import { FiMessageSquare, FiX, FiCpu, FiUser } from "react-icons/fi";
 import EchoBot from "@/components/EchoBot";
 import SupportChat from "@/components/support/SupportChat";
 import { useAuth } from "@/context/AuthContext";
@@ -14,6 +14,27 @@ export default function UnifiedChatLauncher() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [echoBotOpen, setEchoBotOpen] = useState(false);
   const [supportOpen, setSupportOpen] = useState(false);
+
+  useEffect(() => {
+    const openSupport = () => {
+      setSupportOpen(true);
+      setEchoBotOpen(false);
+      setMenuOpen(false);
+    };
+    const openAI = () => {
+      setEchoBotOpen(true);
+      setSupportOpen(false);
+      setMenuOpen(false);
+    };
+
+    window.addEventListener("open-support-chat", openSupport);
+    window.addEventListener("open-ai-chat", openAI);
+    
+    return () => {
+      window.removeEventListener("open-support-chat", openSupport);
+      window.removeEventListener("open-ai-chat", openAI);
+    };
+  }, []);
 
   const chatContext = useMemo(() => {
     if (pathname.startsWith("/candidate")) {

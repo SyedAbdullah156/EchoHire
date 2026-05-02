@@ -15,8 +15,7 @@ export default function QuickActionsFab() {
   const [isExpanded, setIsExpanded] = useState(false);
 
   return (
-    /* Changed right-16 to right-24 to move it one more step left */
-    <div className="fixed bottom-5 right-20 z-50 hidden xl:block">
+    <div className="fixed bottom-5 right-28 z-50 hidden xl:block">
       <motion.div initial={{ opacity: 0, scale: 0.9, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }}>
         <button
           onClick={() => setIsExpanded((prev) => !prev)}
