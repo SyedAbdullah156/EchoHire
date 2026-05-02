@@ -5,10 +5,11 @@ import { useState, useEffect } from "react";
 type UserProfile = {
   name: string;
   avatarDataUrl: string | null;
+  createdAt: string | null;
 };
 
 export function useUserProfile(): UserProfile {
-  const [profile, setProfile] = useState<UserProfile>({ name: "", avatarDataUrl: null });
+  const [profile, setProfile] = useState<UserProfile>({ name: "", avatarDataUrl: null, createdAt: null });
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -25,6 +26,7 @@ export function useUserProfile(): UserProfile {
         setProfile({
           name: body?.data?.name ?? "",
           avatarDataUrl: body?.data?.profile?.avatarDataUrl ?? null,
+          createdAt: body?.data?.createdAt ?? null,
         });
       } catch {
         // fail silently — avatar will fall back to initials

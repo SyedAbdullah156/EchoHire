@@ -4,7 +4,6 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import type { IconType } from "react-icons";
 import { FiBarChart2, FiBookOpen, FiChevronLeft, FiChevronRight, FiFileText, FiGrid, FiHelpCircle, FiLogOut, FiMenu, FiSettings, FiUser, FiX } from "react-icons/fi";
-import { logoutAction } from "@/app/auth/actions";
 
 type SidebarItem = {
   key: string;
@@ -39,7 +38,12 @@ function MenuItem({ item, isActive, collapsed, onNavigate }: {
       <button
         onClick={async () => {
           if (onNavigate) onNavigate();
-          await logoutAction();
+          try {
+            await fetch("/api/auth/logout", { method: "POST" });
+          } finally {
+            localStorage.removeItem("echohire-token");
+            window.location.href = "/auth";
+          }
         }}
         className={`group relative flex w-full items-center rounded-2xl px-3 py-3 transition-all duration-300 ${
           collapsed ? "justify-center" : "gap-4"

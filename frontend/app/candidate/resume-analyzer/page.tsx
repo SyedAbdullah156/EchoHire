@@ -21,6 +21,7 @@ import { toast } from "sonner";
 interface AnalysisResult {
   candidateName: string;
   overallScore: number;
+  bestFitJobs: string[];
   topSkills: string[];
   strengths: string[];
   weaknesses: string[];
@@ -40,18 +41,15 @@ function SkeletonBlock({ className }: { className?: string }) {
 function ResultsSkeleton() {
   return (
     <div className="space-y-4">
-      {/* Row 1: Name + Score */}
       <div className="grid gap-4 md:grid-cols-[1fr_auto]">
         <SkeletonBlock className="h-24" />
         <SkeletonBlock className="h-24 w-full md:w-40" />
       </div>
-      {/* Row 2: Skills + Strengths + Weaknesses */}
       <div className="grid gap-4 md:grid-cols-3">
         <SkeletonBlock className="h-48" />
         <SkeletonBlock className="h-48" />
         <SkeletonBlock className="h-48" />
       </div>
-      {/* Row 3: Questions */}
       <SkeletonBlock className="h-56" />
     </div>
   );
@@ -123,19 +121,42 @@ function ResultsDashboard({ result }: { result: AnalysisResult }) {
     >
       {/* Row 1: Candidate Name + Score */}
       <div className="grid gap-4 md:grid-cols-[1fr_auto]">
-        {/* Name Card */}
-        <div className="flex flex-col justify-center gap-1.5 rounded-2xl bg-[#0d162a] border border-white/5 px-6 py-5">
-          <div className="flex items-center gap-2 text-[#7f92be]">
-            <FiUser className="w-4 h-4" />
-            <span className="text-xs font-semibold uppercase tracking-widest">Candidate</span>
+        
+        {/* Centered Name Card with Vertical Jobs */}
+        <div className="flex flex-col items-center justify-between gap-8 rounded-2xl bg-[#0d162a] border border-white/5 px-8 py-6 sm:flex-row">
+          {/* Left: Identity Section */}
+          <div className="flex flex-col gap-1 text-center sm:text-left">
+            <div className="flex items-center justify-center gap-2 text-[#7f92be] sm:justify-start">
+              <FiUser className="w-4 h-4" />
+              <span className="text-xs font-semibold uppercase tracking-widest">Candidate</span>
+            </div>
+            <h2 className="text-3xl font-bold text-white md:text-4xl">
+              {result.candidateName}
+            </h2>
           </div>
-          <h2 className="text-2xl font-bold text-white md:text-3xl">
-            {result.candidateName}
-          </h2>
+
+          {/* Right: Best-Fit Jobs (Vertical List) */}
+          {result.bestFitJobs?.length > 0 && (
+            <div className="flex flex-col items-center space-y-3 sm:items-start sm:border-l sm:border-white/10 sm:pl-8">
+              <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#7f92be]">
+                Suggested Roles
+              </p>
+              <div className="flex flex-col gap-2">
+                {result.bestFitJobs.slice(0, 3).map((job) => (
+                  <span
+                    key={job}
+                    className="inline-flex items-center justify-center rounded-lg border border-[#332989]/40 bg-[#332989]/20 px-3 py-1.5 text-xs font-medium text-[#c9bcff] whitespace-nowrap"
+                  >
+                    {job}
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Score Card */}
-        <div className="relative flex flex-col items-center justify-center gap-1 rounded-2xl bg-[#0d162a] border border-white/5 px-8 py-5">
+        <div className="relative flex flex-col items-center justify-center gap-1 rounded-2xl bg-[#0d162a] border border-white/5 px-10 py-6">
           <div className="flex items-center gap-2 text-[#7f92be] mb-2">
             <FiAward className="w-4 h-4" />
             <span className="text-xs font-semibold uppercase tracking-widest">ATS Score</span>
@@ -155,7 +176,6 @@ function ResultsDashboard({ result }: { result: AnalysisResult }) {
 
       {/* Row 2: Top Skills + Strengths + Weaknesses */}
       <div className="grid gap-4 md:grid-cols-3">
-        {/* Top Skills */}
         <div className="rounded-2xl bg-[#070d1a] border border-white/5 px-5 py-5 space-y-4">
           <div className="flex items-center gap-2 text-[#7f92be]">
             <FiZap className="w-4 h-4" />
@@ -173,7 +193,6 @@ function ResultsDashboard({ result }: { result: AnalysisResult }) {
           </div>
         </div>
 
-        {/* Strengths */}
         <div className="rounded-2xl bg-[#070d1a] border border-white/5 px-5 py-5 space-y-4">
           <div className="flex items-center gap-2 text-[#7f92be]">
             <FiCheckCircle className="w-4 h-4 text-emerald-400" />
@@ -189,7 +208,6 @@ function ResultsDashboard({ result }: { result: AnalysisResult }) {
           </ul>
         </div>
 
-        {/* Weaknesses */}
         <div className="rounded-2xl bg-[#070d1a] border border-white/5 px-5 py-5 space-y-4">
           <div className="flex items-center gap-2 text-[#7f92be]">
             <FiAlertTriangle className="w-4 h-4 text-amber-400" />
@@ -206,7 +224,7 @@ function ResultsDashboard({ result }: { result: AnalysisResult }) {
         </div>
       </div>
 
-      {/* Row 3: Interview Questions (full-width) */}
+      {/* Row 3: Interview Questions */}
       <div className="rounded-2xl bg-[#0d162a] border border-white/5 px-6 py-6 space-y-4">
         <div className="flex items-center gap-2 text-[#7f92be]">
           <FiMessageSquare className="w-4 h-4 text-[#227dff]" />
@@ -306,165 +324,160 @@ export default function ResumeAnalyzerPage() {
 
   return (
     <div className="space-y-6">
-          {/* Page Header */}
-          <header className="space-y-1">
-            <h1 className="text-2xl font-bold text-white md:text-3xl">
-              Resume Scanner & ATS Analyzer
-            </h1>
-            <p className="text-sm text-[#7f92be] md:text-base">
-              Upload your resume. Our AI recruiter will score, analyze, and generate targeted interview questions.
-            </p>
-          </header>
+      <header className="space-y-1">
+        <h1 className="text-2xl font-bold text-white md:text-3xl">
+          Resume Scanner & ATS Analyzer
+        </h1>
+        <p className="text-sm text-[#7f92be] md:text-base">
+          Upload your resume. Our AI recruiter will score, analyze, and generate targeted interview questions.
+        </p>
+      </header>
 
-          {/* Upload Zone + File Info */}
-          <div className="rounded-2xl bg-[#0d162a] border border-white/5 p-6 space-y-5">
-            {/* Drop Zone */}
-            <div
-              onDrop={onDrop}
-              onDragOver={onDragOver}
-              onDragLeave={onDragLeave}
-              onClick={() => !file && inputRef.current?.click()}
-              className={`relative grid min-h-[200px] place-items-center rounded-xl border-2 border-dashed transition-colors cursor-pointer select-none ${
-                isDragging
-                  ? "border-[#227dff] bg-[#227dff]/5"
-                  : file
-                  ? "border-white/10 bg-white/[0.02] cursor-default"
-                  : "border-white/10 bg-[#070d1a] hover:border-[#227dff]/40 hover:bg-[#227dff]/5"
-              }`}
-            >
-              <input
-                ref={inputRef}
-                type="file"
-                accept=".pdf,.docx"
-                className="hidden"
-                onChange={(e) => {
-                  const f = e.target.files?.[0];
-                  if (f) handleFile(f);
-                }}
-              />
-              <AnimatePresence mode="wait">
-                {file ? (
-                  <motion.div
-                    key="file"
-                    initial={{ opacity: 0, scale: 0.96 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    exit={{ opacity: 0 }}
-                    className="flex flex-col items-center gap-3 p-4 text-center"
-                  >
-                    <FiFileText className="w-10 h-10 text-[#227dff]" />
-                    <div>
-                      <p className="font-semibold text-white">{file.name}</p>
-                      <p className="text-sm text-[#7f92be]">
-                        {(file.size / 1024).toFixed(1)} KB · {file.type === "application/pdf" ? "PDF" : "DOCX"}
-                      </p>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={(e) => { e.stopPropagation(); clearFile(); }}
-                      className="flex items-center gap-1.5 rounded-lg border border-white/10 bg-white/5 px-3 py-1.5 text-sm text-[#dbe7ff] transition-colors hover:bg-white/10"
-                    >
-                      <FiX className="w-3.5 h-3.5" />
-                      Remove
-                    </button>
-                  </motion.div>
-                ) : (
-                  <motion.div
-                    key="idle"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                    className="flex flex-col items-center gap-3 p-6 text-center"
-                  >
-                    <FiUploadCloud className={`w-12 h-12 transition-colors ${isDragging ? "text-[#227dff]" : "text-[#5c6f94]"}`} />
-                    <div>
-                      <p className="text-lg font-semibold text-[#dbe7ff]">
-                        {isDragging ? "Drop your resume here" : "Drag & drop your resume"}
-                      </p>
-                      <p className="mt-1 text-sm text-[#5c6f94]">or click to browse — PDF or DOCX</p>
-                    </div>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </div>
-
-            {/* Action Buttons */}
-            <div className="flex flex-wrap items-center gap-3">
-              {!file && (
-                <button
-                  type="button"
-                  onClick={() => inputRef.current?.click()}
-                  className="min-h-[44px] rounded-xl border border-white/10 bg-white/5 px-5 py-2.5 text-sm font-medium text-[#dbe7ff] transition-colors hover:bg-white/10"
-                >
-                  Choose File
-                </button>
-              )}
-              {file && pageState !== "loading" && (
-                <button
-                  type="button"
-                  onClick={analyzeResume}
-                  className="min-h-[44px] rounded-xl bg-gradient-to-r from-[#227dff] to-[#332989] px-6 py-2.5 text-sm font-semibold text-white transition-all hover:brightness-110 disabled:opacity-50"
-                >
-                  Analyze Resume
-                </button>
-              )}
-              {pageState === "result" && (
-                <button
-                  type="button"
-                  onClick={clearFile}
-                  className="flex min-h-[44px] items-center gap-2 rounded-xl border border-white/10 bg-white/5 px-5 py-2.5 text-sm font-medium text-[#dbe7ff] transition-colors hover:bg-white/10"
-                >
-                  <FiRefreshCw className="w-4 h-4" />
-                  Analyze Another
-                </button>
-              )}
-            </div>
-          </div>
-
-          {/* Results Area */}
+      <div className="rounded-2xl bg-[#0d162a] border border-white/5 p-6 space-y-5">
+        <div
+          onDrop={onDrop}
+          onDragOver={onDragOver}
+          onDragLeave={onDragLeave}
+          onClick={() => !file && inputRef.current?.click()}
+          className={`relative grid min-h-[200px] place-items-center rounded-xl border-2 border-dashed transition-colors cursor-pointer select-none ${
+            isDragging
+              ? "border-[#227dff] bg-[#227dff]/5"
+              : file
+              ? "border-white/10 bg-white/[0.02] cursor-default"
+              : "border-white/10 bg-[#070d1a] hover:border-[#227dff]/40 hover:bg-[#227dff]/5"
+          }`}
+        >
+          <input
+            ref={inputRef}
+            type="file"
+            accept=".pdf,.docx"
+            className="hidden"
+            onChange={(e) => {
+              const f = e.target.files?.[0];
+              if (f) handleFile(f);
+            }}
+          />
           <AnimatePresence mode="wait">
-            {pageState === "loading" && (
+            {file ? (
               <motion.div
-                key="skeleton"
+                key="file"
+                initial={{ opacity: 0, scale: 0.96 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0 }}
+                className="flex flex-col items-center gap-3 p-4 text-center"
+              >
+                <FiFileText className="w-10 h-10 text-[#227dff]" />
+                <div>
+                  <p className="font-semibold text-white">{file.name}</p>
+                  <p className="text-sm text-[#7f92be]">
+                    {(file.size / 1024).toFixed(1)} KB · {file.type === "application/pdf" ? "PDF" : "DOCX"}
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={(e) => { e.stopPropagation(); clearFile(); }}
+                  className="flex items-center gap-1.5 rounded-lg border border-white/10 bg-white/5 px-3 py-1.5 text-sm text-[#dbe7ff] transition-colors hover:bg-white/10"
+                >
+                  <FiX className="w-3.5 h-3.5" />
+                  Remove
+                </button>
+              </motion.div>
+            ) : (
+              <motion.div
+                key="idle"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
+                className="flex flex-col items-center gap-3 p-6 text-center"
               >
-                <div className="mb-4 flex items-center gap-3">
-                  <div className="h-2 w-2 rounded-full bg-[#227dff] animate-ping" />
-                  <p className="text-sm text-[#7f92be]">
-                    Gemini AI is analyzing your resume…
+                <FiUploadCloud className={`w-12 h-12 transition-colors ${isDragging ? "text-[#227dff]" : "text-[#5c6f94]"}`} />
+                <div>
+                  <p className="text-lg font-semibold text-[#dbe7ff]">
+                    {isDragging ? "Drop your resume here" : "Drag & drop your resume"}
                   </p>
+                  <p className="mt-1 text-sm text-[#5c6f94]">or click to browse — PDF or DOCX</p>
                 </div>
-                <ResultsSkeleton />
-              </motion.div>
-            )}
-
-            {pageState === "error" && (
-              <motion.div
-                key="error"
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0 }}
-                className="rounded-2xl border border-red-500/20 bg-red-500/5 px-6 py-5"
-              >
-                <p className="font-semibold text-red-400">Analysis Failed</p>
-                <p className="mt-1 text-sm text-red-300/70">{errorMsg}</p>
-                <button
-                  type="button"
-                  onClick={analyzeResume}
-                  className="mt-4 min-h-[40px] rounded-lg border border-red-500/30 bg-red-500/10 px-4 py-2 text-sm text-red-300 transition-colors hover:bg-red-500/20"
-                >
-                  Try Again
-                </button>
-              </motion.div>
-            )}
-
-            {pageState === "result" && result && (
-              <motion.div key="result" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-                <ResultsDashboard result={result} />
               </motion.div>
             )}
           </AnimatePresence>
         </div>
+
+        <div className="flex flex-wrap items-center gap-3">
+          {!file && (
+            <button
+              type="button"
+              onClick={() => inputRef.current?.click()}
+              className="min-h-[44px] rounded-xl border border-white/10 bg-white/5 px-5 py-2.5 text-sm font-medium text-[#dbe7ff] transition-colors hover:bg-white/10"
+            >
+              Choose File
+            </button>
+          )}
+          {file && pageState !== "loading" && (
+            <button
+              type="button"
+              onClick={analyzeResume}
+              className="min-h-[44px] rounded-xl bg-gradient-to-r from-[#227dff] to-[#332989] px-6 py-2.5 text-sm font-semibold text-white transition-all hover:brightness-110 disabled:opacity-50"
+            >
+              Analyze Resume
+            </button>
+          )}
+          {pageState === "result" && (
+            <button
+              type="button"
+              onClick={clearFile}
+              className="flex min-h-[44px] items-center gap-2 rounded-xl border border-white/10 bg-white/5 px-5 py-2.5 text-sm font-medium text-[#dbe7ff] transition-colors hover:bg-white/10"
+            >
+              <FiRefreshCw className="w-4 h-4" />
+              Analyze Another
+            </button>
+          )}
+        </div>
+      </div>
+
+      <AnimatePresence mode="wait">
+        {pageState === "loading" && (
+          <motion.div
+            key="skeleton"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+          >
+            <div className="mb-4 flex items-center gap-3">
+              <div className="h-2 w-2 rounded-full bg-[#227dff] animate-ping" />
+              <p className="text-sm text-[#7f92be]">
+                Gemini AI is analyzing your resume…
+              </p>
+            </div>
+            <ResultsSkeleton />
+          </motion.div>
+        )}
+
+        {pageState === "error" && (
+          <motion.div
+            key="error"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0 }}
+            className="rounded-2xl border border-red-500/20 bg-red-500/5 px-6 py-5"
+          >
+            <p className="font-semibold text-red-400">Analysis Failed</p>
+            <p className="mt-1 text-sm text-red-300/70">{errorMsg}</p>
+            <button
+              type="button"
+              onClick={analyzeResume}
+              className="mt-4 min-h-[40px] rounded-lg border border-red-500/30 bg-red-500/10 px-4 py-2 text-sm text-red-300 transition-colors hover:bg-red-500/20"
+            >
+              Try Again
+            </button>
+          </motion.div>
+        )}
+
+        {pageState === "result" && result && (
+          <motion.div key="result" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+            <ResultsDashboard result={result} />
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
   );
 }

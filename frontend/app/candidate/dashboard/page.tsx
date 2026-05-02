@@ -5,6 +5,7 @@ import ActionAlert from "@/components/dashboard/ActionAlert";
 import ProgressAreaChart from "@/components/dashboard/ProgressAreaChart";
 import QuickActionsFab from "@/components/dashboard/QuickActionsFab";
 import StatCard from "@/components/dashboard/StatCard";
+import { useUserProfile } from "@/hooks/useUserProfile";
 import { motion, Variants, AnimatePresence } from "framer-motion";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
@@ -52,6 +53,17 @@ function DashboardContent() {
   const searchParams = useSearchParams();
   const shouldCompleteProfile = searchParams.get("completeProfile") === "1";
   const [dataError, setDataError] = useState(false);
+  const [planName, setPlanName] = useState("Free");
+  const { name, createdAt } = useUserProfile();
+  const displayName = name || "Candidate";
+  const trialDurationDays = 14;
+  const trialStart = createdAt ? new Date(createdAt) : null;
+  const trialEnd = trialStart
+    ? new Date(trialStart.getTime() + trialDurationDays * 24 * 60 * 60 * 1000)
+    : null;
+  const msLeft = trialEnd ? trialEnd.getTime() - Date.now() : null;
+  const daysLeft = msLeft !== null ? Math.ceil(msLeft / (24 * 60 * 60 * 1000)) : null;
+  const trialExpired = daysLeft !== null ? daysLeft <= 0 : false;
 
   useEffect(() => {
     const loadData = async () => {
@@ -64,6 +76,11 @@ function DashboardContent() {
       }
     };
     loadData();
+  }, []);
+
+  useEffect(() => {
+    const savedPlan = localStorage.getItem("echohire-plan");
+    if (savedPlan) setPlanName(savedPlan);
   }, []);
 
   if (dataError) {
@@ -136,13 +153,27 @@ function DashboardContent() {
           </AnimatePresence>
 
           {/* Hero Section */}
-          <motion.header variants={itemVariants} className="space-y-1">
+          <motion.header variants={itemVariants} className="space-y-2">
             <h1 className="text-4xl font-extrabold tracking-tight text-white md:text-5xl">
-              Welcome, <span className="bg-gradient-to-r from-blue-400 to-purple-500 bg-clip-text text-transparent">Uzair Ahmad</span>
+              Welcome, <span className="bg-gradient-to-r from-blue-400 to-purple-500 bg-clip-text text-transparent">{displayName}</span>
             </h1>
             <p className="text-[#9fb1d8] text-lg">
               System analysis complete. You have <span className="text-white font-semibold">3 pending tasks</span> for today.
             </p>
+            <div className="inline-flex flex-wrap items-center gap-3 rounded-2xl border border-[#243253] bg-[#0d162a]/80 px-4 py-3 text-sm">
+              <span className="rounded-lg bg-blue-500/15 px-2.5 py-1 text-xs font-bold uppercase tracking-wide text-blue-300">
+                Plan: {planName}
+              </span>
+              {planName.toLowerCase() === "free" ? (
+                <span className={`font-semibold ${trialExpired ? "text-red-300" : "text-emerald-300"}`}>
+                  {trialExpired
+                    ? "Free trial ended"
+                    : `${daysLeft ?? trialDurationDays} day${(daysLeft ?? trialDurationDays) === 1 ? "" : "s"} left in free trial`}
+                </span>
+              ) : (
+                <span className="font-semibold text-emerald-300">Your premium plan is active</span>
+              )}
+            </div>
           </motion.header>
 
           {/* StatCards Grid - HCI: Recognition rather than Recall */}
@@ -238,7 +269,7 @@ function DashboardContent() {
           </div>
 
           {/* User Presence & Floating Actions */}
-          <QuickActionsFab streak={8} />
+          <QuickActionsFab />
         </motion.div>
   );
 }
