@@ -4,7 +4,6 @@ import { ReactNode } from "react";
 import Link from "next/link";
 import { FiGrid, FiUsers, FiMessageSquare, FiSettings, FiLogOut, FiActivity } from "react-icons/fi";
 import { usePathname } from "next/navigation";
-import { logoutAction } from "@/app/auth/actions";
 
 export default function AdminLayout({ children }: { children: ReactNode }) {
   const pathname = usePathname();
@@ -53,7 +52,14 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
 
         <div className="mt-auto">
           <button 
-            onClick={() => logoutAction()}
+            onClick={async () => {
+              try {
+                await fetch("/api/auth/logout", { method: "POST" });
+              } finally {
+                localStorage.removeItem("echohire-token");
+                window.location.href = "/auth";
+              }
+            }}
             className="flex w-full items-center gap-3 px-4 py-3 rounded-2xl text-rose-400 hover:bg-rose-400/10 transition-all font-bold text-sm"
           >
             <FiLogOut size={18} />

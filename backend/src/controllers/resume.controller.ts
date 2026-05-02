@@ -57,6 +57,7 @@ Return this exact JSON structure:
 {
   "candidateName": "string (extract from resume, or 'Unknown Candidate')",
   "overallScore": number (0-100, ATS compatibility score),
+  "bestFitJobs": ["job title 1", "job title 2", "job title 3", "...up to 5 concise titles"],
   "topSkills": ["skill1", "skill2", "skill3", "...up to 10"],
   "strengths": ["strength1", "strength2", "strength3", "...up to 5"],
   "weaknesses": ["weakness1", "weakness2", "weakness3", "...up to 5"],
@@ -80,6 +81,7 @@ Return this exact JSON structure:
         if (
             typeof data.candidateName !== "string" ||
             typeof data.overallScore !== "number" ||
+            !Array.isArray(data.bestFitJobs) ||
             !Array.isArray(data.topSkills) ||
             !Array.isArray(data.strengths) ||
             !Array.isArray(data.weaknesses) ||

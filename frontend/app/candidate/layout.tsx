@@ -5,7 +5,6 @@ import Link from "next/link";
 import { FiSearch, FiBell } from "react-icons/fi";
 import DashboardSidebar from "@/components/DashboardSidebar";
 import { usePathname } from "next/navigation";
-import SupportChat from "@/components/support/SupportChat";
 import { useUserProfile } from "@/hooks/useUserProfile";
 
 export default function CandidateLayout({ children }: { children: ReactNode }) {
@@ -71,9 +70,6 @@ export default function CandidateLayout({ children }: { children: ReactNode }) {
           {children}
         </main>
       </div>
-
-      {/* Support Chat Component */}
-      <SupportChat userId="candidate-001" userRole="candidate" />
     </div>
   );
 }

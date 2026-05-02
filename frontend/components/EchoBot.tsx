@@ -118,8 +118,21 @@ const SUGGESTED_PROMPTS = [
 
 // ─── Main EchoBot Widget ──────────────────────────────────────────────────────
 
-export default function EchoBot() {
-  const [isOpen, setIsOpen] = useState(false);
+type EchoBotProps = {
+  showLauncher?: boolean;
+  isOpen?: boolean;
+  onOpenChange?: (open: boolean) => void;
+};
+
+export default function EchoBot({ showLauncher = true, isOpen: controlledOpen, onOpenChange }: EchoBotProps) {
+  const [internalOpen, setInternalOpen] = useState(false);
+  const isOpen = controlledOpen ?? internalOpen;
+  const setIsOpen = (open: boolean) => {
+    if (controlledOpen === undefined) {
+      setInternalOpen(open);
+    }
+    onOpenChange?.(open);
+  };
   const [messages, setMessages] = useState<Message[]>([
     {
       id: "welcome",
@@ -330,37 +343,39 @@ export default function EchoBot() {
       </AnimatePresence>
 
       {/* Floating Action Button */}
-      <motion.button
-        onClick={() => setIsOpen((v) => !v)}
-        whileHover={{ scale: 1.05 }}
-        whileTap={{ scale: 0.95 }}
-        className="fixed bottom-5 right-5 z-50 flex h-[56px] w-[56px] items-center justify-center rounded-full bg-gradient-to-br from-[#227dff] to-[#332989] text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#227dff]"
-        aria-label="Open EchoBot chat"
-      >
-        <AnimatePresence mode="wait">
-          {isOpen ? (
-            <motion.span
-              key="close"
-              initial={{ rotate: -90, opacity: 0 }}
-              animate={{ rotate: 0, opacity: 1 }}
-              exit={{ rotate: 90, opacity: 0 }}
-              transition={{ duration: 0.15 }}
-            >
-              <FiX className="h-5 w-5" />
-            </motion.span>
-          ) : (
-            <motion.span
-              key="open"
-              initial={{ rotate: 90, opacity: 0 }}
-              animate={{ rotate: 0, opacity: 1 }}
-              exit={{ rotate: -90, opacity: 0 }}
-              transition={{ duration: 0.15 }}
-            >
-              <FiMessageSquare className="h-5 w-5" />
-            </motion.span>
-          )}
-        </AnimatePresence>
-      </motion.button>
+      {showLauncher && (
+        <motion.button
+          onClick={() => setIsOpen(!isOpen)}
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+          className="fixed bottom-5 right-5 z-50 flex h-[56px] w-[56px] items-center justify-center rounded-full bg-gradient-to-br from-[#227dff] to-[#332989] text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#227dff]"
+          aria-label="Open EchoBot chat"
+        >
+          <AnimatePresence mode="wait">
+            {isOpen ? (
+              <motion.span
+                key="close"
+                initial={{ rotate: -90, opacity: 0 }}
+                animate={{ rotate: 0, opacity: 1 }}
+                exit={{ rotate: 90, opacity: 0 }}
+                transition={{ duration: 0.15 }}
+              >
+                <FiX className="h-5 w-5" />
+              </motion.span>
+            ) : (
+              <motion.span
+                key="open"
+                initial={{ rotate: 90, opacity: 0 }}
+                animate={{ rotate: 0, opacity: 1 }}
+                exit={{ rotate: -90, opacity: 0 }}
+                transition={{ duration: 0.15 }}
+              >
+                <FiMessageSquare className="h-5 w-5" />
+              </motion.span>
+            )}
+          </AnimatePresence>
+        </motion.button>
+      )}
     </>
   );
 }

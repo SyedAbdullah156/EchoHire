@@ -4,7 +4,6 @@ import { ReactNode } from "react";
 import Link from "next/link";
 import { FiSearch, FiBell } from "react-icons/fi";
 import RecruiterSidebar from "@/components/RecruiterSidebar";
-import SupportChat from "@/components/support/SupportChat";
 import { useUserProfile } from "@/hooks/useUserProfile";
 
 export default function RecruiterLayout({ children }: { children: ReactNode }) {
@@ -68,9 +67,6 @@ export default function RecruiterLayout({ children }: { children: ReactNode }) {
           {children}
         </main>
       </div>
-
-      {/* Support Chat Component */}
-      <SupportChat userId="recruiter-001" userRole="recruiter" />
     </div>
   );
 }
