@@ -25,9 +25,7 @@ export const analyzeLinkedinPdf = async (
 
         const buffer = req.file.buffer;
         // pdf-parse ships ESM/CJS builds; dynamic import avoids TS/ts-node interop issues
-        const pdfParse = (await import("pdf-parse")).default as unknown as (
-            dataBuffer: Buffer,
-        ) => Promise<{ text?: string }>;
+        const pdfParse = require("pdf-parse");
         const parsed = await pdfParse(buffer);
         const extractedRaw = (parsed.text ?? "").replace(/\s+\n/g, "\n").trim();
 
@@ -52,6 +50,29 @@ export const analyzeLinkedinPdf = async (
                 extractedChars: extractedRaw.length,
                 truncated: extractedRaw.length > extractedText.length,
             },
+        });
+    } catch (error) {
+        next(error);
+    }
+};
+
+export const analyzeLinkedinText = async (
+    req: Request,
+    res: Response,
+    next: NextFunction,
+) => {
+    try {
+        const { text } = req.body;
+        if (!text || text.length < 50) {
+            throw new AppError("Please provide valid profile text for analysis.", 400);
+        }
+
+        const cleanText = text.length > MAX_EXTRACTED_CHARS ? text.slice(0, MAX_EXTRACTED_CHARS) : text;
+        const analysis = await analyzeLinkedinProfileWithGemini(cleanText);
+
+        res.status(200).json({
+            success: true,
+            data: analysis,
         });
     } catch (error) {
         next(error);
