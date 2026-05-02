@@ -54,6 +54,20 @@ const userSchema = new Schema<TUser>(
             interviewFocus: { type: String },
             careerGoal: { type: String },
             avatarDataUrl: { type: String },
+            // Recruiter Specific
+            jobTitle: { type: String },
+            companyId: { type: Schema.Types.ObjectId, ref: "Company" },
+            companyName: { type: String },
+            companyWebsite: { type: String },
+            companySize: { type: String },
+            industry: { type: String },
+            recruitingFocus: { type: String },
+            bio: { type: String },
+            notifications: {
+                email: { type: Boolean, default: true },
+                desktop: { type: Boolean, default: true },
+                marketing: { type: Boolean, default: false },
+            },
         },
     },
     {

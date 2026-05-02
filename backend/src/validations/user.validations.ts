@@ -110,8 +110,52 @@ const profileFieldsSchema = z
             .trim()
             .optional()
             .or(z.literal("")),
-    })
-    .strict();
+        // Recruiter-specific fields
+        jobTitle: z
+            .string()
+            .trim()
+            .max(100, "Job title must be at most 100 characters")
+            .optional(),
+        companyName: z
+            .string()
+            .trim()
+            .max(120, "Company name must be at most 120 characters")
+            .optional(),
+        companyWebsite: z
+            .string()
+            .trim()
+            .url("Invalid company website URL")
+            .optional()
+            .or(z.literal("")),
+        companySize: z
+            .string()
+            .trim()
+            .max(50)
+            .optional(),
+        industry: z
+            .string()
+            .trim()
+            .max(100)
+            .optional(),
+        recruitingFocus: z
+            .string()
+            .trim()
+            .max(250)
+            .optional(),
+        bio: z
+            .string()
+            .trim()
+            .max(1000)
+            .optional(),
+        notifications: z
+            .object({
+                email: z.boolean().optional(),
+                desktop: z.boolean().optional(),
+                marketing: z.boolean().optional(),
+            })
+            .optional(),
+    });
+// Note: No .strict() — both candidate and recruiter fields are in one schema
 
 const userBodySchema = z
     .object({

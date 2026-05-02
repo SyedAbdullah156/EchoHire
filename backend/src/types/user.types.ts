@@ -16,6 +16,20 @@ export interface TProfile {
     interviewFocus?: string;
     careerGoal?: string;
     avatarDataUrl?: string;
+    // Recruiter Specific
+    jobTitle?: string;
+    companyId?: string;
+    companyName?: string;
+    companyWebsite?: string;
+    companySize?: string;
+    industry?: string;
+    recruitingFocus?: string;
+    bio?: string;
+    notifications?: {
+        email?: boolean;
+        desktop?: boolean;
+        marketing?: boolean;
+    };
 }
 
 export interface TUser {
