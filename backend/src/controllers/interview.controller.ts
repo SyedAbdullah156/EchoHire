@@ -53,12 +53,22 @@ export const getInterview = async (
     
         const interview = await InterviewService.getInterviewByIdService(id as string);
 
-        // Security Check: Only Admin or the Candidate who owns this interview can view it
+        // Security Check: 
+        // 1. Admin can view anything
+        // 2. Candidate who owns it can view it
+        // 3. Recruiter of the company that posted the job can view it
         const isAdmin = req.user.role === "admin";
         const isOwner = interview.user_id._id.toString() === req.user._id!.toString();
         
-        if (!isAdmin && !isOwner) {
-            throw new AppError("Access denied", 403);
+        let isJobRecruiter = false;
+        if (req.user.role === "recruiter") {
+            const recruiterCompanyId = (req.user as any).company_id?.toString();
+            const jobCompanyId = (interview.job_id as any).company_id?.toString();
+            isJobRecruiter = recruiterCompanyId === jobCompanyId;
+        }
+        
+        if (!isAdmin && !isOwner && !isJobRecruiter) {
+            throw new AppError("Access denied. You do not have permission to view this application.", 403);
         }
         
         res.status(200).json({
@@ -89,6 +99,38 @@ export const getMyInterviews = async (
         res.status(200).json({
             success: true,
             data: interviews,
+        });
+    } catch (error) {
+        next(error);
+    }
+};
+
+export const getAllInterviews = async (
+    req: AuthRequest,
+    res: Response,
+    next: NextFunction,
+) => {
+    try {
+        const interviews = await InterviewService.getAllInterviewsService();
+        res.status(200).json({
+            success: true,
+            data: interviews,
+        });
+    } catch (error) {
+        next(error);
+    }
+};
+
+export const deleteInterview = async (
+    req: AuthRequest,
+    res: Response,
+    next: NextFunction,
+) => {
+    try {
+        await InterviewService.deleteInterviewService(req.params.id.toString());
+        res.status(200).json({
+            success: true,
+            message: "Interview application deleted successfully by Admin",
         });
     } catch (error) {
         next(error);

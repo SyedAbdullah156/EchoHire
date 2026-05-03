@@ -27,15 +27,13 @@ export const register = async (
 ) => {
     try {
         const user = await createUserService(req.body);
-        const userObject: any = typeof user.toObject === "function" ? user.toObject() : { ...user };
-        delete userObject.password;
 
         const token = signToken(user._id.toString(), user.role);
 
         res.status(201).json({
             success: true,
             message: "Signup successful",
-            data: userObject,
+            data: user,
             token,
         });
     } catch (error) {

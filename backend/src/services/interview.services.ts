@@ -63,3 +63,18 @@ export const getUserInterviewsService = async (user_id: string) => {
         .populate("job_id", "name role company_id")
         .sort({ createdAt: -1 });
 };
+
+export const getAllInterviewsService = async () => {
+    return await Interview.find()
+        .populate("job_id", "name role company_id")
+        .populate("user_id", "name email")
+        .sort({ createdAt: -1 });
+};
+
+export const deleteInterviewService = async (id: string) => {
+    const result = await Interview.findByIdAndDelete(id);
+    if (!result) {
+        throw new AppError("Interview not found", 404);
+    }
+    return true;
+};

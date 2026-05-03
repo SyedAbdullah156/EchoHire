@@ -25,7 +25,7 @@ const userBodySchema = z
             .max(100, "Name must be at most 100 characters"),
         email: emailSchema,
         password: signupPasswordSchema,
-        role: z.enum(["candidate", "recruiter", "admin"]).optional(),
+        role: z.enum(["candidate", "recruiter", "admin"]),
     })
     .strict();
 

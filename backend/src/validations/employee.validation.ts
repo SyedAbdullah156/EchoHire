@@ -2,7 +2,6 @@ import { z } from "zod";
 import { mongoIdString } from "./common.validation";
 
 const employeeBodySchema = z.object({
-    company_id: mongoIdString.optional(),
     jobTitle: z
         .string()
         .trim()
@@ -27,10 +26,9 @@ const employeeBodySchema = z.object({
         .optional(),
 });
 
-export const createEmployeeSchema = z.object({
-    body: employeeBodySchema,
-});
-
 export const updateEmployeeSchema = z.object({
-    body: employeeBodySchema.partial(),
+    body: employeeBodySchema.partial().extend({
+        name: z.string().trim().min(2, "Name must be at least 2 characters").max(100).optional(),
+        email: z.string().trim().email("Invalid email").optional(),
+    }).strict(),
 });

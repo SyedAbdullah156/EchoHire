@@ -2,6 +2,7 @@ import { Request, Response, NextFunction } from "express";
 import { AuthRequest } from "../types/request.types";
 import * as jobService from "../services/job.services";
 import { AppError } from "../utils/AppError.utils";
+import { TEmployee } from "../types/employee.types";
 
 export const createJob = async (
     req: AuthRequest,
@@ -14,24 +15,14 @@ export const createJob = async (
         const jobData = { ...req.body };
 
         // Logic: For recruiters, we infer the company_id from their profile.
-        // For admins, we allow them to pass it in the body.
-        if (req.user.role === "recruiter") {
-            const companyId = req.user.profile?.companyId;
-            if (!companyId) {
-                throw new AppError(
-                    "Your account is not associated with a company. Please join a company first.",
-                    403,
-                );
-            }
-            jobData.company_id = companyId;
-        } else if (req.user.role === "admin") {
-            if (!jobData.company_id) {
-                throw new AppError("Admin must provide a company_id for the job", 400);
-            }
-        } else {
-            throw new AppError("Only recruiters and admins can create jobs", 403);
+        const companyId = (req.user as TEmployee).company_id;
+        if (!companyId) {
+            throw new AppError(
+                "Your account is not associated with a company. Please join a company first.",
+                403,
+            );
         }
-
+        jobData.company_id = companyId;
         const job = await jobService.createJobService(jobData);
 
         res.status(201).json({
@@ -88,9 +79,7 @@ export const updateJob = async (
         const updatedJob = await jobService.updateJobService(
             req.params.id.toString(),
             req.body,
-            req.user._id.toString(),
-            req.user.role,
-            req.user.profile?.companyId?.toString(),
+            (req.user as TEmployee).company_id?.toString(),
         );
 
         res.status(200).json({
@@ -113,9 +102,8 @@ export const deleteJob = async (
 
         await jobService.deleteJobService(
             req.params.id.toString(),
-            req.user._id.toString(),
             req.user.role,
-            req.user.profile?.companyId?.toString(),
+            (req.user as TEmployee).company_id?.toString(),
         );
 
         res.status(200).json({

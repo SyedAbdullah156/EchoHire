@@ -30,8 +30,6 @@ export const getJobByIdService = async (id: string) => {
 export const updateJobService = async (
     id: string,
     updateData: Partial<TJob>,
-    userId: string,
-    role: string,
     userCompanyId?: string,
 ) => {
     const job = await Job.findById(id).populate("company_id");
@@ -39,14 +37,10 @@ export const updateJobService = async (
         throw new AppError("Job not found", 404);
     }
 
-    // Security Check: 
-    // 1. Admin can update anything.
-    // 2. User must belong to the company that posted the job.
     const jobCompanyId = (job.company_id as any)._id.toString();
-    const isAdmin = role === "admin";
     const isMember = userCompanyId === jobCompanyId;
 
-    if (!isAdmin && !isMember) {
+    if (!isMember) {
         throw new AppError("You do not have permission to update this job", 403);
     }
 
@@ -58,7 +52,6 @@ export const updateJobService = async (
 
 export const deleteJobService = async (
     id: string,
-    userId: string,
     role: string,
     userCompanyId?: string,
 ) => {

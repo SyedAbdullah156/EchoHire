@@ -52,6 +52,7 @@ export const updateUserService = async (id: string, inputData: Partial<TUser>) =
         }
     }
 
+    // Only Email and Passwords can be updated using User Service
     const updatePayload: Record<string, any> = {};
     if (name) updatePayload.name = name;
     if (email) updatePayload.email = email;

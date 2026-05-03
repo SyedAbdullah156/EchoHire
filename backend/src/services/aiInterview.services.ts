@@ -289,8 +289,8 @@ export const answerInRoundStreamingService = async (
     onChunk: (chunk: string) => void,
     audioBuffer?: Buffer,
 ) => {
-    const interview: any =
-        await Interview.findById(interviewId).populate("job_id");
+    // 1. Initial fetch and security check
+    const interview: any = await Interview.findById(interviewId).populate("job_id");
     if (!interview) throw new AppError("Interview Not found", 404);
     if (interview.user_id.toString() !== userId)
         throw new AppError("Access denied", 403);
@@ -305,26 +305,23 @@ export const answerInRoundStreamingService = async (
     const history = formatHistory(currentRound.qa_pairs);
     const jobRole = interview.job_id?.role || "Software Engineering";
 
+    // 2. Build and send streaming request
     const prompt = `You are a professional Technical Interviewer for a ${jobRole} position.
 Current Round: ${currentRound.type}
-Progress: Question ${currentQuestionIndex + 1} of ${maxQuestions} (The candidate just answered question ${currentQuestionIndex + 1})
+Progress: Question ${currentQuestionIndex + 1} of ${maxQuestions}
 
 INTERVIEW HISTORY:
 ${history}
 
 LATEST ANSWER FROM CANDIDATE: "${candidateAnswer || "The candidate provided a voice response."}"
 
-Evaluate the answer. 
-${currentQuestionIndex + 1 >= maxQuestions 
-    ? "This was the FINAL question. Do NOT ask a new question. Set [COMPLETE] to true and in [QUESTION] just say 'Interview complete'." 
-    : "Ask the next technical question."}
-
+Evaluate the answer and decide whether to ask the next question or complete the round.
 STRICT FORMAT: 
 [EVALUATION] your feedback here
 [QUESTION] your next question here
 [COMPLETE] ${currentQuestionIndex + 1 >= maxQuestions ? "true" : "false"}`;
 
-    const model = getGeminiModel(false); // Text mode for streaming
+    const model = getGeminiModel(false);
     const parts: any[] = [prompt];
     if (audioBuffer) {
         parts.push({
@@ -341,10 +338,10 @@ STRICT FORMAT:
     for await (const chunk of result.stream) {
         const text = chunk.text();
         fullResponse += text;
-        onChunk(text); // Send chunk to controller/SSE
+        onChunk(text);
     }
 
-    // After stream finishes, parse and save to DB
+    // 3. Post-stream processing: Parse and update the ALREADY fetched document
     const evaluation =
         fullResponse.match(/\[EVALUATION\](.*?)\[QUESTION\]/s)?.[1]?.trim() ||
         "Good answer.";
@@ -353,24 +350,19 @@ STRICT FORMAT:
         "Next question...";
     const isComplete = /\[COMPLETE\]\s*(:?\s*true|yes)/i.test(fullResponse);
 
-    const updatedInterview: any =
-        await Interview.findById(interviewId).populate("job_id");
-    const targetRound = updatedInterview.rounds[roundIndex];
-    const targetQuestionIndex = targetRound.qa_pairs.length - 1;
-
-    targetRound.qa_pairs[targetQuestionIndex].candidate_answer =
+    currentRound.qa_pairs[currentQuestionIndex].candidate_answer =
         candidateAnswer || "[Audio Response]";
-    targetRound.qa_pairs[targetQuestionIndex].ai_evaluation = evaluation;
+    currentRound.qa_pairs[currentQuestionIndex].ai_evaluation = evaluation;
 
-    if (isComplete || targetRound.qa_pairs.length >= maxQuestions) {
-        await _finalizeRound(updatedInterview, roundIndex);
+    if (isComplete || currentRound.qa_pairs.length >= maxQuestions) {
+        await _finalizeRound(interview, roundIndex);
     } else {
-        targetRound.qa_pairs.push({
+        currentRound.qa_pairs.push({
             question: nextQuestion,
             timestamp: new Date(),
         });
     }
 
-    updatedInterview.markModified("rounds");
-    await updatedInterview.save();
+    interview.markModified("rounds");
+    await interview.save();
 };

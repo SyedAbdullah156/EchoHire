@@ -113,35 +113,34 @@ export const getRound = async (
 };
 
 export const answerInRoundStreaming = async (
-    req: Request,
+    req: AuthRequest,
     res: Response,
     next: NextFunction,
 ) => {
     try {
-        const { id, roundIndex } = req.params;
-        const { candidateAnswer } = req.body;
-        const userId = (req as any).user._id.toString();
+        const { interviewId, roundIndex } = req.params;
+        const { content } = req.body;
+        const userId = req.user!._id!.toString();
 
         res.setHeader("Content-Type", "text/event-stream");
         res.setHeader("Cache-Control", "no-cache");
         res.setHeader("Connection", "keep-alive");
 
         await AiService.answerInRoundStreamingService(
-            getNormalizedParam(id),
+            interviewId.toString(),
             Number(roundIndex),
-            getNormalizedParam(candidateAnswer),
+            content,
             userId,
             (chunk) => {
                 res.write(`data: ${JSON.stringify({ chunk })}\n\n`);
             },
-            (req as any).file?.buffer,
+            req.file?.buffer,
         );
 
         res.write(`data: [DONE]\n\n`);
         res.end();
     } catch (error) {
         if (res.headersSent) {
-            // Headers already sent, can't use standard error middleware
             res.write(`data: ${JSON.stringify({ error: "Stream interrupted due to a server error." })}\n\n`);
             res.end();
         } else {

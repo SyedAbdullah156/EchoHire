@@ -63,16 +63,12 @@ export const updateCompany = async (
     next: NextFunction,
 ) => {
     try {
-        // Compile update data including possible new logo
-        const updateData = {
-            ...req.body,
-        };
+        const updateData = { ...req.body };
+        const userId = req.user!._id!.toString();
 
         const company = await companyService.updateCompanyService(
-            req.params.id as string,
             updateData,
-            req.user!._id!.toString(),
-            req.user!.role,
+            userId
         );
 
         res.status(200).json({ success: true, data: company });
@@ -88,14 +84,29 @@ export const deleteCompany = async (
 ) => {
     try {
         await companyService.deleteCompanyService(
-            req.params.id as string,
-            req.user!._id!.toString(),
-            req.user!.role,
+            req.user!._id!.toString()
         );
 
         res.status(200).json({
             success: true,
             message: "Company deleted successfully",
+        });
+    } catch (error) {
+        next(error);
+    }
+};
+
+export const deleteCompanyById = async (
+    req: AuthRequest,
+    res: Response,
+    next: NextFunction,
+) => {
+    try {
+        await companyService.deleteCompanyByIdService(req.params.id.toString());
+
+        res.status(200).json({
+            success: true,
+            message: "Company deleted successfully by Admin",
         });
     } catch (error) {
         next(error);
