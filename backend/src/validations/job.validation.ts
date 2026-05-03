@@ -61,17 +61,15 @@ const jobBodySchema = z.object({
             message: "Deadline must be in the future",
         }),
 
-    company_id: mongoIdString,
-
     is_active: z.boolean().optional().default(true),
 });
 
 // Create Job
 export const createJobSchema = z.object({
-    body: jobBodySchema,
+    body: jobBodySchema.strict(),
 });
 
 // Update Job (makes all fields optional)
 export const updateJobSchema = z.object({
-    body: jobBodySchema.partial(),
+    body: jobBodySchema.partial().strict(),
 });

@@ -16,143 +16,6 @@ const signupPasswordSchema = z
 
 const loginPasswordSchema = z.string().min(1, "Password is required");
 
-const profileFieldsSchema = z
-    .object({
-        phone: z
-            .string()
-            .trim()
-            .max(30, "Phone must be at most 30 characters")
-            .optional(),
-        cityCountry: z
-            .string()
-            .trim()
-            .max(100, "City/Country must be at most 100 characters")
-            .optional(),
-        linkedInUrl: z
-            .string()
-            .trim()
-            .url("Invalid LinkedIn URL")
-            .optional()
-            .or(z.literal("")),
-        githubUrl: z
-            .string()
-            .trim()
-            .url("Invalid GitHub URL")
-            .optional()
-            .or(z.literal("")),
-        portfolioUrl: z
-            .string()
-            .trim()
-            .url("Invalid portfolio URL")
-            .optional()
-            .or(z.literal("")),
-        targetRole: z
-            .string()
-            .trim()
-            .max(100, "Target role must be at most 100 characters")
-            .optional(),
-        yearsExperience: z
-            .string()
-            .trim()
-            .max(50, "Years of experience must be at most 50 characters")
-            .optional(),
-        currentStatus: z
-            .string()
-            .trim()
-            .max(100, "Current status must be at most 100 characters")
-            .optional(),
-        degree: z
-            .string()
-            .trim()
-            .max(100, "Degree must be at most 100 characters")
-            .optional(),
-        university: z
-            .string()
-            .trim()
-            .max(120, "University must be at most 120 characters")
-            .optional(),
-        graduationYear: z
-            .string()
-            .trim()
-            .max(10, "Graduation year must be at most 10 characters")
-            .optional(),
-        cgpa: z
-            .string()
-            .trim()
-            .max(20, "CGPA must be at most 20 characters")
-            .optional(),
-        coreSkills: z
-            .string()
-            .trim()
-            .max(250, "Core skills must be at most 250 characters")
-            .optional(),
-        preferredIndustry: z
-            .string()
-            .trim()
-            .max(120, "Preferred industry must be at most 120 characters")
-            .optional(),
-        interviewFocus: z
-            .string()
-            .trim()
-            .max(120, "Interview focus must be at most 120 characters")
-            .optional(),
-        careerGoal: z
-            .string()
-            .trim()
-            .max(1000, "Career goal must be at most 1000 characters")
-            .optional(),
-        avatarDataUrl: z
-            .string()
-            .trim()
-            .optional()
-            .or(z.literal("")),
-        // Recruiter-specific fields
-        jobTitle: z
-            .string()
-            .trim()
-            .max(100, "Job title must be at most 100 characters")
-            .optional(),
-        companyName: z
-            .string()
-            .trim()
-            .max(120, "Company name must be at most 120 characters")
-            .optional(),
-        companyWebsite: z
-            .string()
-            .trim()
-            .url("Invalid company website URL")
-            .optional()
-            .or(z.literal("")),
-        companySize: z
-            .string()
-            .trim()
-            .max(50)
-            .optional(),
-        industry: z
-            .string()
-            .trim()
-            .max(100)
-            .optional(),
-        recruitingFocus: z
-            .string()
-            .trim()
-            .max(250)
-            .optional(),
-        bio: z
-            .string()
-            .trim()
-            .max(1000)
-            .optional(),
-        notifications: z
-            .object({
-                email: z.boolean().optional(),
-                desktop: z.boolean().optional(),
-                marketing: z.boolean().optional(),
-            })
-            .optional(),
-    });
-// Note: No .strict() — both candidate and recruiter fields are in one schema
-
 const userBodySchema = z
     .object({
         name: z
@@ -162,8 +25,7 @@ const userBodySchema = z
             .max(100, "Name must be at most 100 characters"),
         email: emailSchema,
         password: signupPasswordSchema,
-        role: z.enum(["candidate", "recruiter", "admin"]).optional(),
-        profile: profileFieldsSchema.optional(),
+        role: z.enum(["candidate", "recruiter", "admin"]),
     })
     .strict();
 
@@ -210,6 +72,5 @@ export const updateProfileSchema = z.object({
                 .max(100, "Name must be at most 100 characters")
                 .optional(),
             email: emailSchema.optional(),
-            profile: profileFieldsSchema.optional(),
         })
 });

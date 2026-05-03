@@ -27,6 +27,7 @@ export const register = async (
 ) => {
     try {
         const user = await createUserService(req.body);
+
         const token = signToken(user._id.toString(), user.role);
 
         res.status(201).json({
@@ -69,7 +70,7 @@ export const login = async (
             throw new AppError("Invalid email or password", 401);
         }
 
-        const userObject = user.toObject();
+        const userObject: any = user.toObject();
         delete userObject.password;
 
         const token = signToken(user._id.toString(), user.role);
@@ -115,12 +116,9 @@ export const googleLogin = async (
                 name: payload.name || "Google User",
                 email: payload.email,
                 role: (role as "candidate" | "recruiter" | "admin") || "candidate",
+                googleId: payload.sub,
             });
             user = await User.findById(newUser._id);
-            if (user) {
-                user.googleId = payload.sub;
-                await user.save();
-            }
         } else if (!user.googleId) {
             user.googleId = payload.sub;
             await user.save();
@@ -130,7 +128,7 @@ export const googleLogin = async (
             throw new AppError("User creation failed", 500);
         }
 
-        const userObject = user.toObject();
+        const userObject: any = user.toObject();
         delete userObject.password;
 
         const token = signToken(user._id.toString(), user.role);

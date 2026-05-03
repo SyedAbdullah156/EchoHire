@@ -1,4 +1,4 @@
-import { Response, NextFunction } from "express";
+import { Request, Response, NextFunction } from "express";
 import { AuthRequest } from "../types/request.types";
 import { AppError } from "../utils/AppError.utils";
 import * as AiService from "../services/aiInterview.services";
@@ -21,7 +21,7 @@ export const startRound = async (
         const data = await AiService.startRoundService(
             req.params.interviewId.toString(),
             Number(req.params.roundIndex),
-            req.user._id as string,
+            req.user._id.toString(),
         );
         res.status(200).json({
             success: true,
@@ -47,7 +47,7 @@ export const answerInRound = async (
             req.params.interviewId.toString(),
             Number(req.params.roundIndex),
             req.body.content,
-            req.user._id as string,
+            req.user._id.toString(),
         );
         res.status(200).json({
             success: true,
@@ -74,7 +74,7 @@ export const voiceAnswer = async (
             req.params.interviewId.toString(),
             Number(req.params.roundIndex),
             undefined, // No text content
-            req.user._id as string,
+            req.user._id.toString(),
             req.file.buffer, // Audio buffer
         );
 
@@ -101,7 +101,7 @@ export const getRound = async (
         const data = await AiService.getRoundService(
             req.params.interviewId.toString(),
             Number(req.params.roundIndex),
-            req.user._id as string,
+            req.user._id.toString(),
         );
         res.status(200).json({
             success: true,
@@ -109,5 +109,42 @@ export const getRound = async (
         });
     } catch (error) {
         next(error);
+    }
+};
+
+export const answerInRoundStreaming = async (
+    req: AuthRequest,
+    res: Response,
+    next: NextFunction,
+) => {
+    try {
+        const { interviewId, roundIndex } = req.params;
+        const { content } = req.body;
+        const userId = req.user!._id!.toString();
+
+        res.setHeader("Content-Type", "text/event-stream");
+        res.setHeader("Cache-Control", "no-cache");
+        res.setHeader("Connection", "keep-alive");
+
+        await AiService.answerInRoundStreamingService(
+            interviewId.toString(),
+            Number(roundIndex),
+            content,
+            userId,
+            (chunk) => {
+                res.write(`data: ${JSON.stringify({ chunk })}\n\n`);
+            },
+            req.file?.buffer,
+        );
+
+        res.write(`data: [DONE]\n\n`);
+        res.end();
+    } catch (error) {
+        if (res.headersSent) {
+            res.write(`data: ${JSON.stringify({ error: "Stream interrupted due to a server error." })}\n\n`);
+            res.end();
+        } else {
+            next(error);
+        }
     }
 };

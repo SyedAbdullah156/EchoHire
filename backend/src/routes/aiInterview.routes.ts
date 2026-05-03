@@ -1,9 +1,10 @@
 import { Router } from "express";
-import { protect } from "../middlewares/auth.middleware";
+import { protect, restrictTo } from "../middlewares/auth.middleware";
 import { validate } from "../middlewares/validate.middleware";
 import {
     startRound,
     answerInRound,
+    answerInRoundStreaming,
     voiceAnswer,
     getRound,
 } from "../controllers/aiInterview.controller";
@@ -25,33 +26,37 @@ const answerSchema = z.object({
         .strict(),
 });
 
+router.use(protect, restrictTo("candidate"));
+
 router.post(
     "/:interviewId/rounds/:roundIndex/start", 
-    protect, 
     validate(interviewRoundParamsSchema),
     startRound
 );
 
 router.post(
     "/:interviewId/rounds/:roundIndex/answer",
-    protect,
     validate(interviewRoundParamsSchema),
     validate(answerSchema),
     answerInRound,
 );
 
 router.post(
+    "/:interviewId/rounds/:roundIndex/answer-stream",
+    validate(interviewRoundParamsSchema),
+    validate(answerSchema),
+    answerInRoundStreaming,
+);
+
+router.post(
     "/:interviewId/rounds/:roundIndex/voice-answer",
-    protect,
     validate(interviewRoundParamsSchema),
     upload.single("audio"),
     voiceAnswer,
 );
 
-// 4. Get Round
 router.get(
     "/:interviewId/rounds/:roundIndex", 
-    protect, 
     validate(interviewRoundParamsSchema),
     getRound
 );

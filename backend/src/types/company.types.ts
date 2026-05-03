@@ -5,5 +5,7 @@ export interface TCompany {
     description?: string;
     website?: string;
     logo?: string;
+    size?: string;
+    industry?: string;
     owner_id: mongoose.Types.ObjectId;
 }

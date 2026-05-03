@@ -1,6 +1,5 @@
 import { z } from "zod";
 import { COMPANY_LIMITS } from "../constants/company.constants";
-import { mongoIdString } from "./common.validation";
 
 // Main Schema Validation
 const companyBodySchema = z.object({
@@ -33,14 +32,15 @@ const companyBodySchema = z.object({
 
     logo: z.string().optional(),
 
-    owner_id: mongoIdString.optional(),
+    size: z.string().trim().max(50, "Company size must be at most 50 characters").optional(),
+    industry: z.string().trim().max(100, "Industry must be at most 100 characters").optional(),
 });
 
 // Actual Use Cases
 export const createCompanySchema = z.object({
-    body: companyBodySchema,
+    body: companyBodySchema.strict(),
 });
 
 export const updateCompanySchema = z.object({
-    body: companyBodySchema.partial(),
+    body: companyBodySchema.partial().strict(),
 });

@@ -40,6 +40,16 @@ const companySchema = new Schema<TCompany>(
             required: false,
             default: "https://placehold.co/400x400?text=Company+Logo",
         },
+        size: {
+            type: String,
+            required: false,
+            trim: true,
+        },
+        industry: {
+            type: String,
+            required: false,
+            trim: true,
+        },
         owner_id: {
             type: Schema.Types.ObjectId,
             ref: "User",

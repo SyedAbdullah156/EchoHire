@@ -24,15 +24,15 @@ router.get("/:id", validate(objectIdSchema), getJobById);
 router.post(
     "/",
     protect,
-    restrictTo("admin", "company"),
+    restrictTo("recruiter"),
     validate(createJobSchema),
     createJob,
 );
 
-router.put(
+router.patch(
     "/:id",
     protect,
-    restrictTo("admin", "company"),
+    restrictTo("recruiter"),
     validate(objectIdSchema),
     validate(updateJobSchema),
     updateJob,
@@ -41,7 +41,7 @@ router.put(
 router.delete(
     "/:id",
     protect,
-    restrictTo("admin", "company"),
+    restrictTo("admin", "recruiter"),
     validate(objectIdSchema),
     deleteJob,
 );
