@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { protect, restrictTo } from "../middlewares/auth.middleware";
+import { protect, restrictTo, optionalProtect } from "../middlewares/auth.middleware";
 import { validate } from "../middlewares/validate.middleware";
 import {
     createJobSchema,
@@ -16,8 +16,8 @@ import { objectIdSchema } from "../validations/common.validation";
 
 const router = Router();
 
-// Public: View all jobs
-router.get("/", getAllJobs);
+// Public: View all jobs (Optional filtering for recruiters)
+router.get("/", optionalProtect, getAllJobs);
 router.get("/:id", validate(objectIdSchema), getJobById);
 
 // Protected: Management

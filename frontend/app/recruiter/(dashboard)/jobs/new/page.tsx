@@ -20,7 +20,9 @@ const SOFT_SKILLS = ["Leadership", "Communication", "Problem Solving", "Collabor
 
 export default function NewJobPage() {
   const router = useRouter();
-  const [title, setTitle] = useState("");
+  const [title, setTitle] = useState(""); // This is the Role
+  const [description, setDescription] = useState("");
+  const [deadline, setDeadline] = useState("");
   const [department, setDepartment] = useState("Engineering");
   const [location, setLocation] = useState("");
   const [selectedTech, setSelectedTech] = useState<string[]>([]);
@@ -29,7 +31,9 @@ export default function NewJobPage() {
   const [isPublishing, setIsPublishing] = useState(false);
 
   const handlePublish = async () => {
-    if (!title || !location) return toast.error("Please fill in all basic details.");
+    if (!title || !description || !deadline || !location) {
+      return toast.error("Please fill in all required fields.");
+    }
     
     setIsPublishing(true);
     try {
@@ -37,13 +41,17 @@ export default function NewJobPage() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          title,
-          department,
-          location,
-          difficulty,
-          tech_stack: selectedTech,
-          soft_skills: selectedSoftSkills,
-          status: "active"
+          name: `${department} - ${title}`,
+          role: title,
+          description: description,
+          location: location,
+          framework: selectedTech,
+          deadline: deadline,
+          rounds: [
+            { type: "TechnicalScreening", max_questions: 5 },
+            { type: "BehavioralAnalysis", max_questions: 5 }
+          ],
+          is_active: true
         }),
       });
 
@@ -102,7 +110,7 @@ export default function NewJobPage() {
 
           <div className="grid md:grid-cols-2 gap-8">
             <div className="space-y-2">
-              <label htmlFor="job-title" className="text-[10px] font-black uppercase tracking-widest text-text-muted ml-1">Job Title</label>
+              <label htmlFor="job-title" className="text-[10px] font-black uppercase tracking-widest text-text-muted ml-1">Job Role</label>
               <input 
                 id="job-title"
                 type="text" 
@@ -129,18 +137,41 @@ export default function NewJobPage() {
           </div>
 
           <div className="space-y-2">
-            <label htmlFor="location" className="text-[10px] font-black uppercase tracking-widest text-text-muted ml-1 text-flex items-center gap-2">
-               Location <span className="text-[9px] lowercase opacity-50 font-normal italic">(Remote, Hybrid, On-site)</span>
-            </label>
-            <div className="relative">
-              <FiMapPin className="absolute left-6 top-1/2 -translate-y-1/2 text-text-muted" />
+            <label htmlFor="description" className="text-[10px] font-black uppercase tracking-widest text-text-muted ml-1">Job Description</label>
+            <textarea 
+              id="description"
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              placeholder="Describe the role, responsibilities, and requirements..." 
+              className="w-full h-32 bg-surface-2 border border-border-medium rounded-2xl p-6 text-sm text-white outline-none focus:border-primary/50 transition-all placeholder:text-text-muted/50 resize-none"
+            />
+          </div>
+
+          <div className="grid md:grid-cols-2 gap-8">
+            <div className="space-y-2">
+              <label htmlFor="location" className="text-[10px] font-black uppercase tracking-widest text-text-muted ml-1">Location</label>
+              <div className="relative">
+                <FiMapPin className="absolute left-6 top-1/2 -translate-y-1/2 text-text-muted" />
+                <input 
+                  id="location"
+                  type="text" 
+                  value={location}
+                  onChange={(e) => setLocation(e.target.value)}
+                  placeholder="e.g. San Francisco, CA (Hybrid)" 
+                  className="w-full h-[52px] bg-surface-2 border border-border-medium rounded-2xl pl-14 pr-6 text-sm text-white outline-none focus:border-primary/50 transition-all placeholder:text-text-muted/50"
+                />
+              </div>
+            </div>
+            <div className="space-y-2">
+              <label htmlFor="deadline" className="text-[10px] font-black uppercase tracking-widest text-text-muted ml-1 text-flex items-center gap-2">
+                 Application Deadline
+              </label>
               <input 
-                id="location"
-                type="text" 
-                value={location}
-                onChange={(e) => setLocation(e.target.value)}
-                placeholder="e.g. San Francisco, CA (Hybrid)" 
-                className="w-full h-[52px] bg-surface-2 border border-border-medium rounded-2xl pl-14 pr-6 text-sm text-white outline-none focus:border-primary/50 transition-all placeholder:text-text-muted/50"
+                id="deadline"
+                type="date" 
+                value={deadline}
+                onChange={(e) => setDeadline(e.target.value)}
+                className="w-full h-[52px] bg-surface-2 border border-border-medium rounded-2xl px-6 text-sm text-white outline-none focus:border-primary/50 transition-all"
               />
             </div>
           </div>

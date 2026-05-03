@@ -74,7 +74,14 @@ export const getAllJobs = async (
     next: NextFunction,
 ) => {
     try {
-        const jobs = await jobService.getAllJobsService();
+        let companyId;
+        const user = (req as any).user;
+        
+        if (user && user.role === "recruiter") {
+            companyId = (user as TEmployee).company_id;
+        }
+
+        const jobs = await jobService.getAllJobsService(companyId?.toString());
         res.status(200).json({
             success: true,
             count: jobs.length,

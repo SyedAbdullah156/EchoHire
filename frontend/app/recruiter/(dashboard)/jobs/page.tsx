@@ -12,41 +12,29 @@ import {
   FiClock
 } from "react-icons/fi";
 import Link from "next/link";
-
-const JOBS = [
-  { 
-    id: "JOB-101", 
-    title: "Senior Frontend Engineer", 
-    dept: "Engineering", 
-    location: "SF / Hybrid", 
-    candidates: 24, 
-    interviews: 8, 
-    status: "Active",
-    posted: "3 days ago"
-  },
-  { 
-    id: "JOB-102", 
-    title: "Product Designer", 
-    dept: "Design", 
-    location: "Remote", 
-    candidates: 156, 
-    interviews: 12, 
-    status: "Active",
-    posted: "5 days ago"
-  },
-  { 
-    id: "JOB-103", 
-    title: "Backend Developer", 
-    dept: "Engineering", 
-    location: "NY / On-site", 
-    candidates: 89, 
-    interviews: 4, 
-    status: "Draft",
-    posted: "1 week ago"
-  },
-];
+import { useState, useEffect } from "react";
 
 export default function JobsPage() {
+  const [jobs, setJobs] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchJobs = async () => {
+      try {
+        const res = await fetch("/api/jobs");
+        if (res.ok) {
+          const result = await res.json();
+          setJobs(result.data || []);
+        }
+      } catch (error) {
+        console.error("Failed to fetch jobs:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchJobs();
+  }, []);
+
   return (
     <div className="p-8 lg:p-12 space-y-10">
       
@@ -81,55 +69,66 @@ export default function JobsPage() {
 
       {/* --- Jobs Grid --- */}
       <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
-        {JOBS.map((job, i) => (
-          <motion.div
-            key={job.id}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: i * 0.1 }}
-            className="p-8 rounded-[2.5rem] bg-surface-1 border border-border-medium flex flex-col group hover:border-primary/30 transition-all"
-          >
-            <div className="flex items-center justify-between mb-6">
-              <div className="h-12 w-12 rounded-2xl bg-surface-2 border border-border-medium flex items-center justify-center text-primary">
-                <FiBriefcase size={20} />
-              </div>
-              <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest ${
-                job.status === "Active" ? "bg-emerald-500/10 text-emerald-500" : "bg-surface-2 text-text-muted"
-              }`}>
-                {job.status}
-              </span>
-            </div>
-
-            <div className="space-y-1 mb-8">
-              <h3 className="text-xl font-bold text-white group-hover:text-primary transition-colors">{job.title}</h3>
-              <p className="text-xs font-medium text-text-secondary">{job.dept} &middot; {job.location}</p>
-            </div>
-
-            <div className="grid grid-cols-2 gap-4 mb-8">
-              <div className="p-4 rounded-2xl bg-surface-2 border border-border-subtle space-y-1">
-                <div className="flex items-center gap-2 text-text-muted">
-                  <FiUsers size={12} />
-                  <span className="text-[10px] font-bold uppercase tracking-widest">Candidates</span>
+        {loading ? (
+          <div className="col-span-full py-20 text-center text-text-muted font-bold uppercase tracking-widest animate-pulse">
+            Loading your postings...
+          </div>
+        ) : jobs.length === 0 ? (
+          <div className="col-span-full py-20 text-center space-y-4">
+             <p className="text-text-muted font-bold uppercase tracking-widest">No jobs found.</p>
+             <Link href="/recruiter/jobs/new" className="text-primary hover:underline">Post your first job</Link>
+          </div>
+        ) : (
+          jobs.map((job, i) => (
+            <motion.div
+              key={job._id}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: i * 0.1 }}
+              className="p-8 rounded-[2.5rem] bg-surface-1 border border-border-medium flex flex-col group hover:border-primary/30 transition-all"
+            >
+              <div className="flex items-center justify-between mb-6">
+                <div className="h-12 w-12 rounded-2xl bg-surface-2 border border-border-medium flex items-center justify-center text-primary">
+                  <FiBriefcase size={20} />
                 </div>
-                <p className="text-lg font-black text-white">{job.candidates}</p>
+                <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest ${
+                  job.is_active ? "bg-emerald-500/10 text-emerald-500" : "bg-surface-2 text-text-muted"
+                }`}>
+                  {job.is_active ? "Active" : "Inactive"}
+                </span>
               </div>
-              <div className="p-4 rounded-2xl bg-surface-2 border border-border-subtle space-y-1">
-                <div className="flex items-center gap-2 text-text-muted">
-                  <FiClock size={12} />
-                  <span className="text-[10px] font-bold uppercase tracking-widest">Interviews</span>
-                </div>
-                <p className="text-lg font-black text-white">{job.interviews}</p>
-              </div>
-            </div>
 
-            <div className="mt-auto pt-6 border-t border-border-subtle flex items-center justify-between">
-              <p className="text-[10px] font-bold text-text-muted uppercase tracking-widest">Posted {job.posted}</p>
-              <button className="h-10 w-10 flex items-center justify-center rounded-xl bg-surface-2 border border-border-medium text-text-muted hover:text-white transition-all">
-                <FiMoreHorizontal />
-              </button>
-            </div>
-          </motion.div>
-        ))}
+              <div className="space-y-1 mb-8">
+                <h3 className="text-xl font-bold text-white group-hover:text-primary transition-colors">{job.role}</h3>
+                <p className="text-xs font-medium text-text-secondary">{job.name} &middot; {job.location || "Remote"}</p>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4 mb-8">
+                <div className="p-4 rounded-2xl bg-surface-2 border border-border-subtle space-y-1">
+                  <div className="flex items-center gap-2 text-text-muted">
+                    <FiUsers size={12} />
+                    <span className="text-[10px] font-bold uppercase tracking-widest">Candidates</span>
+                  </div>
+                  <p className="text-lg font-black text-white">{job.candidates || 0}</p>
+                </div>
+                <div className="p-4 rounded-2xl bg-surface-2 border border-border-subtle space-y-1">
+                  <div className="flex items-center gap-2 text-text-muted">
+                    <FiClock size={12} />
+                    <span className="text-[10px] font-bold uppercase tracking-widest">Deadline</span>
+                  </div>
+                  <p className="text-xs font-black text-white truncate">{new Date(job.deadline).toLocaleDateString()}</p>
+                </div>
+              </div>
+
+              <div className="mt-auto pt-6 border-t border-border-subtle flex items-center justify-between">
+                <p className="text-[10px] font-bold text-text-muted uppercase tracking-widest">Posted {new Date(job.createdAt).toLocaleDateString()}</p>
+                <button className="h-10 w-10 flex items-center justify-center rounded-xl bg-surface-2 border border-border-medium text-text-muted hover:text-white transition-all">
+                  <FiMoreHorizontal />
+                </button>
+              </div>
+            </motion.div>
+          ))
+        )}
       </div>
 
     </div>

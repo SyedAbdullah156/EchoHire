@@ -13,8 +13,13 @@ export const createJobService = async (jobData: any) => {
     return await Job.create(jobData);
 };
 
-export const getAllJobsService = async () => {
-    return await Job.find({ is_active: true })
+export const getAllJobsService = async (companyId?: string) => {
+    const query: any = { is_active: true };
+    if (companyId) {
+        query.company_id = companyId;
+    }
+    
+    return await Job.find(query)
         .populate("company_id", "name logo")
         .sort({ createdAt: -1 });
 };

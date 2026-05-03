@@ -79,8 +79,16 @@ export const getUserInterviewsService = async (user_id: string) => {
         .sort({ createdAt: -1 });
 };
 
-export const getAllInterviewsService = async () => {
-    return await Interview.find()
+export const getAllInterviewsService = async (companyId?: string) => {
+    let query = {};
+    if (companyId) {
+        // Find jobs belonging to this company
+        const companyJobs = await Job.find({ company_id: companyId }).select("_id");
+        const jobIds = companyJobs.map(j => j._id);
+        query = { job_id: { $in: jobIds } };
+    }
+
+    return await Interview.find(query)
         .populate("job_id", "name role company_id")
         .populate("user_id", "name email")
         .sort({ createdAt: -1 });

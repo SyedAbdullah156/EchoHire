@@ -112,7 +112,12 @@ export const getAllInterviews = async (
     next: NextFunction,
 ) => {
     try {
-        const interviews = await InterviewService.getAllInterviewsService();
+        let companyId;
+        if (req.user && req.user.role === "recruiter") {
+            companyId = (req.user as any).company_id;
+        }
+
+        const interviews = await InterviewService.getAllInterviewsService(companyId?.toString());
         res.status(200).json({
             success: true,
             data: interviews,

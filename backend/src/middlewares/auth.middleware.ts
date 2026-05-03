@@ -60,3 +60,38 @@ export const restrictTo = (...roles: string[]) => {
         next();
     };
 };
+
+export const optionalProtect = async (
+    req: AuthRequest,
+    res: Response,
+    next: NextFunction,
+) => {
+    try {
+        let token: string | undefined;
+        const authHeader = req.headers.authorization;
+
+        if (authHeader && authHeader.startsWith("Bearer ")) {
+            token = authHeader.split(" ")[1];
+        }
+
+        if (!token) {
+            return next();
+        }
+
+        const decoded = jwt.verify(
+            token,
+            process.env.JWT_SECRET as string,
+        ) as CustomJwtPayload;
+
+        const currentUser = await User.findById(decoded.id);
+
+        if (currentUser) {
+            req.user = currentUser;
+        }
+
+        next();
+    } catch (error) {
+        // If token is invalid, we just proceed without req.user
+        next();
+    }
+};

@@ -1,32 +1,77 @@
 "use client";
 
-import { useState } from "react";
-import { FiSearch, FiFilter, FiMoreVertical, FiUserPlus, FiMail, FiShield, FiTrash2 } from "react-icons/fi";
+import { useState, useEffect } from "react";
+import { 
+  FiSearch, 
+  FiFilter, 
+  FiMoreVertical, 
+  FiUserPlus, 
+  FiMail, 
+  FiShield, 
+  FiTrash2, 
+  FiCheckCircle, 
+  FiClock,
+  FiUser
+} from "react-icons/fi";
+import { toast } from "sonner";
 
 type User = {
-  id: string;
+  _id: string;
   name: string;
   email: string;
   role: "admin" | "recruiter" | "candidate";
-  status: "active" | "inactive";
-  joined: string;
+  isApproved: boolean;
+  createdAt: string;
 };
 
-const MOCK_USERS: User[] = [
-  { id: "1", name: "System Admin", email: "admin@echohire.ai", role: "admin", status: "active", joined: "Jan 12, 2024" },
-  { id: "2", name: "Alex Rivera", email: "alex@example.com", role: "candidate", status: "active", joined: "Feb 05, 2024" },
-  { id: "3", name: "Samantha Bell", email: "sam@company.com", role: "recruiter", status: "active", joined: "Mar 10, 2024" },
-  { id: "4", name: "Jordan Smith", email: "jordan@example.com", role: "candidate", status: "inactive", joined: "Apr 22, 2024" },
-  { id: "5", name: "Hassan Ali", email: "hassan@tech.com", role: "recruiter", status: "active", joined: "May 01, 2024" },
-];
-
 export default function UserManagementPage() {
-  const [users, setUsers] = useState<User[]>(MOCK_USERS);
+  const [users, setUsers] = useState<User[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState<"all" | "pending">("all");
   const [search, setSearch] = useState("");
 
+  const fetchUsers = async () => {
+    setLoading(true);
+    try {
+      const endpoint = activeTab === "all" ? "/api/admin/users" : "/api/admin/users/pending";
+      const res = await fetch(endpoint);
+      if (res.ok) {
+        const result = await res.json();
+        setUsers(result.data || []);
+      } else {
+        toast.error("Failed to fetch users");
+      }
+    } catch (error) {
+      toast.error("Error connecting to server");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchUsers();
+  }, [activeTab]);
+
+  const handleApprove = async (userId: string) => {
+    try {
+      const res = await fetch(`/api/admin/users/approve/${userId}`, {
+        method: "PUT",
+      });
+      if (res.ok) {
+        toast.success("Recruiter approved successfully");
+        fetchUsers(); // Refresh list
+      } else {
+        const error = await res.json();
+        toast.error(error.message || "Approval failed");
+      }
+    } catch (error) {
+      toast.error("Failed to approve recruiter");
+    }
+  };
+
   const filteredUsers = users.filter(u => 
-    u.name.toLowerCase().includes(search.toLowerCase()) || 
-    u.email.toLowerCase().includes(search.toLowerCase())
+    u.name?.toLowerCase().includes(search.toLowerCase()) || 
+    u.email?.toLowerCase().includes(search.toLowerCase())
   );
 
   return (
@@ -41,6 +86,29 @@ export default function UserManagementPage() {
           Add New User
         </button>
       </header>
+
+      {/* Tabs */}
+      <div className="flex items-center gap-2 p-1 bg-surface-2 rounded-2xl w-fit border border-white/5">
+        <button 
+          onClick={() => setActiveTab("all")}
+          className={`px-6 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${
+            activeTab === 'all' ? 'bg-primary text-white shadow-lg shadow-primary/20' : 'text-slate-500 hover:text-white'
+          }`}
+        >
+          All Users
+        </button>
+        <button 
+          onClick={() => setActiveTab("pending")}
+          className={`px-6 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all flex items-center gap-2 ${
+            activeTab === 'pending' ? 'bg-amber-500 text-white shadow-lg shadow-amber-500/20' : 'text-slate-500 hover:text-white'
+          }`}
+        >
+          Pending Approvals
+          {activeTab !== 'pending' && users.some(u => u.role === 'recruiter' && !u.isApproved) && (
+             <span className="h-2 w-2 rounded-full bg-amber-500 animate-pulse" />
+          )}
+        </button>
+      </div>
 
       {/* Filters & Search */}
       <div className="flex flex-col md:flex-row gap-4">
@@ -60,67 +128,99 @@ export default function UserManagementPage() {
       </div>
 
       {/* Users Table */}
-      <div className="rounded-[2rem] bg-surface-2 border border-white/5 overflow-hidden">
+      <div className="rounded-[2.5rem] bg-surface-2 border border-white/5 overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
               <tr className="border-b border-white/5 bg-white/[0.02]">
                 <th className="px-8 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-slate-500">User</th>
                 <th className="px-8 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-slate-500">Role</th>
-                <th className="px-8 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-slate-500">Status</th>
+                <th className="px-8 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-slate-500">Verification</th>
                 <th className="px-8 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-slate-500">Joined Date</th>
                 <th className="px-8 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 text-right">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-white/5">
-              {filteredUsers.map((user) => (
-                <tr key={user.id} className="group hover:bg-white/[0.01] transition-colors">
-                  <td className="px-8 py-5">
-                    <div className="flex items-center gap-4">
-                      <div className="w-10 h-10 rounded-xl bg-surface-1 border border-white/10 flex items-center justify-center font-bold text-slate-300">
-                        {user.name.charAt(0)}
-                      </div>
-                      <div>
-                        <p className="text-sm font-bold text-white leading-none">{user.name}</p>
-                        <p className="text-xs text-text-muted mt-1.5">{user.email}</p>
-                      </div>
-                    </div>
-                  </td>
-                  <td className="px-8 py-5">
-                    <span className={`text-[10px] font-black uppercase tracking-widest px-2 py-1 rounded border ${
-                      user.role === 'admin' ? 'border-amber-500/30 text-amber-500 bg-amber-500/5' :
-                      user.role === 'recruiter' ? 'border-purple-500/30 text-purple-500 bg-purple-500/5' :
-                      'border-blue-500/30 text-blue-500 bg-blue-500/5'
-                    }`}>
-                      {user.role}
-                    </span>
-                  </td>
-                  <td className="px-8 py-5">
-                    <div className="flex items-center gap-2">
-                      <div className={`h-1.5 w-1.5 rounded-full ${user.status === 'active' ? 'bg-emerald-500' : 'bg-slate-600'}`} />
-                      <span className={`text-xs font-bold ${user.status === 'active' ? 'text-emerald-500' : 'text-slate-600'}`}>
-                        {user.status === 'active' ? 'Active' : 'Inactive'}
-                      </span>
-                    </div>
-                  </td>
-                  <td className="px-8 py-5">
-                    <span className="text-xs font-medium text-slate-400">{user.joined}</span>
-                  </td>
-                  <td className="px-8 py-5 text-right">
-                    <div className="flex items-center justify-end gap-2">
-                      <button className="p-2.5 rounded-xl border border-white/5 text-slate-500 hover:text-white hover:bg-white/5 transition-all">
-                        <FiMail size={16} />
-                      </button>
-                      <button className="p-2.5 rounded-xl border border-white/5 text-slate-500 hover:text-primary hover:bg-primary/5 transition-all">
-                        <FiShield size={16} />
-                      </button>
-                      <button className="p-2.5 rounded-xl border border-white/5 text-slate-500 hover:text-rose-500 hover:bg-rose-500/5 transition-all">
-                        <FiTrash2 size={16} />
-                      </button>
+              {loading ? (
+                <tr>
+                  <td colSpan={5} className="px-8 py-20 text-center">
+                    <div className="flex flex-col items-center gap-4">
+                      <div className="w-10 h-10 border-4 border-primary border-t-transparent rounded-full animate-spin" />
+                      <p className="text-xs font-black uppercase tracking-[0.2em] text-slate-500">Syncing user directory...</p>
                     </div>
                   </td>
                 </tr>
-              ))}
+              ) : filteredUsers.length === 0 ? (
+                <tr>
+                  <td colSpan={5} className="px-8 py-20 text-center">
+                     <p className="text-xs font-black uppercase tracking-[0.2em] text-slate-500">No users found in this view.</p>
+                  </td>
+                </tr>
+              ) : (
+                filteredUsers.map((user) => (
+                  <tr key={user._id} className="group hover:bg-white/[0.01] transition-colors">
+                    <td className="px-8 py-5">
+                      <div className="flex items-center gap-4">
+                        <div className="w-10 h-10 rounded-xl bg-surface-1 border border-white/10 flex items-center justify-center font-bold text-slate-300">
+                          {user.name?.charAt(0) || <FiUser />}
+                        </div>
+                        <div>
+                          <p className="text-sm font-bold text-white leading-none">{user.name}</p>
+                          <p className="text-xs text-text-muted mt-1.5">{user.email}</p>
+                        </div>
+                      </div>
+                    </td>
+                    <td className="px-8 py-5">
+                      <span className={`text-[10px] font-black uppercase tracking-widest px-2 py-1 rounded border ${
+                        user.role === 'admin' ? 'border-amber-500/30 text-amber-500 bg-amber-500/5' :
+                        user.role === 'recruiter' ? 'border-purple-500/30 text-purple-500 bg-purple-500/5' :
+                        'border-blue-500/30 text-blue-500 bg-blue-500/5'
+                      }`}>
+                        {user.role}
+                      </span>
+                    </td>
+                    <td className="px-8 py-5">
+                      {user.role === 'recruiter' ? (
+                        <div className="flex items-center gap-2">
+                          <div className={`h-1.5 w-1.5 rounded-full ${user.isApproved ? 'bg-emerald-500' : 'bg-amber-500'}`} />
+                          <span className={`text-xs font-bold ${user.isApproved ? 'text-emerald-500' : 'text-amber-500'}`}>
+                            {user.isApproved ? 'Approved' : 'Pending'}
+                          </span>
+                        </div>
+                      ) : (
+                        <span className="text-xs font-bold text-slate-600">N/A</span>
+                      )}
+                    </td>
+                    <td className="px-8 py-5">
+                      <span className="text-xs font-medium text-slate-400">
+                        {new Date(user.createdAt).toLocaleDateString()}
+                      </span>
+                    </td>
+                    <td className="px-8 py-5 text-right">
+                      <div className="flex items-center justify-end gap-2">
+                        {user.role === 'recruiter' && !user.isApproved && (
+                          <button 
+                            onClick={() => handleApprove(user._id)}
+                            className="flex items-center gap-2 px-4 py-2 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-500 text-[10px] font-black uppercase tracking-widest hover:bg-emerald-500 hover:text-white transition-all"
+                          >
+                            <FiCheckCircle size={14} />
+                            Approve
+                          </button>
+                        )}
+                        <button className="p-2.5 rounded-xl border border-white/5 text-slate-500 hover:text-white hover:bg-white/5 transition-all">
+                          <FiMail size={16} />
+                        </button>
+                        <button className="p-2.5 rounded-xl border border-white/5 text-slate-500 hover:text-primary hover:bg-primary/5 transition-all">
+                          <FiShield size={16} />
+                        </button>
+                        <button className="p-2.5 rounded-xl border border-white/5 text-slate-500 hover:text-rose-500 hover:bg-rose-500/5 transition-all">
+                          <FiTrash2 size={16} />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))
+              )}
             </tbody>
           </table>
         </div>
