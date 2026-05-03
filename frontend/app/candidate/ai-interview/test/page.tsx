@@ -72,7 +72,7 @@ export default function AIInterviewPage() {
                         "Content-Type": "application/json",
                         Authorization: `Bearer ${token}`,
                     },
-                    body: JSON.stringify({ candidateAnswer: answer }),
+                    body: JSON.stringify({ content: answer }),
                 },
             );
 
