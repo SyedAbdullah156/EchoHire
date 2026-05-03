@@ -4,9 +4,9 @@ import Link from "next/link";
 import { ChangeEvent, useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { getZodFieldMessages, parseZodMessage, profileSchema } from "@/lib/validation";
-import { getApiErrorMessage } from "@/lib/api-error";
-
-const PROFILE_STORAGE_KEY = "echohire-profile";
+import { useAuth } from "@/context/AuthContext";
+import { FiUser, FiMail, FiPhone, FiMapPin, FiBriefcase, FiLink, FiGithub, FiLinkedin, FiAward, FiBook, FiSave, FiArrowLeft, FiCamera } from "react-icons/fi";
+import { motion } from "framer-motion";
 
 type ProfileData = {
   fullName: string;
@@ -30,16 +30,16 @@ type ProfileData = {
   avatarDataUrl: string;
 };
 
-const defaultProfile: ProfileData = {
-  fullName: "Hassan",
-  email: "hassan@example.com",
+const INITIAL_PROFILE: ProfileData = {
+  fullName: "",
+  email: "",
   phone: "",
   cityCountry: "",
   linkedInUrl: "",
   githubUrl: "",
   portfolioUrl: "",
-  targetRole: "Software Engineer",
-  yearsExperience: "0-1 years",
+  targetRole: "",
+  yearsExperience: "",
   currentStatus: "Student",
   degree: "",
   university: "",
@@ -53,368 +53,237 @@ const defaultProfile: ProfileData = {
 };
 
 export default function ProfilePage() {
-  const [profile, setProfile] = useState<ProfileData>(defaultProfile);
-  const [savedMessage, setSavedMessage] = useState("");
+  const { user, loading, refreshUser } = useAuth();
+  const [profile, setProfile] = useState<ProfileData>(INITIAL_PROFILE);
+  const [isSaving, setIsSaving] = useState(false);
   const [touchedFields, setTouchedFields] = useState<Partial<Record<keyof ProfileData, boolean>>>({});
   const [submitAttempted, setSubmitAttempted] = useState(false);
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
 
   useEffect(() => {
-    const load = async () => {
-      // Try to load from backend if token exists, otherwise fallback to localStorage
-      const token = localStorage.getItem("echohire-token");
-      const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://127.0.0.1:5050";
-      if (token) {
-        try {
-          const res = await fetch(`${API_BASE}/api/users/me`, {
-            headers: { Authorization: `Bearer ${token}` },
-          });
-          if (res.ok) {
-            const body = await res.json();
-            const serverProfile = (body?.data?.profile) as Partial<ProfileData> | undefined;
-            // If server returns basic user fields, merge them
-            const merged = {
-              fullName: body?.data?.name ?? defaultProfile.fullName,
-              email: body?.data?.email ?? defaultProfile.email,
-              ...serverProfile,
-            } as Partial<ProfileData>;
-            setProfile((prev) => ({ ...prev, ...merged }));
-            return;
-          }
-        } catch (e) {
-          // ignore and fallback to localStorage
-        }
-      }
-
-      const saved = localStorage.getItem(PROFILE_STORAGE_KEY);
-      if (!saved) return;
-      try {
-        const parsed = JSON.parse(saved) as Partial<ProfileData>;
-        setProfile((prev) => ({ ...prev, ...parsed }));
-      } catch {
-        // Ignore invalid local storage value.
-      }
-    };
-
-    load();
-  }, []);
-
-  const avatarInitial = useMemo(() => {
-    const source = profile.fullName.trim() || "U";
-    return source.charAt(0).toUpperCase();
-  }, [profile.fullName]);
+    if (user) {
+      setProfile({
+        ...INITIAL_PROFILE,
+        fullName: user.name || "",
+        email: user.email || "",
+        ...(user.profile || {}),
+      });
+    }
+  }, [user]);
 
   const fieldErrors = useMemo(() => {
     const parsed = profileSchema.safeParse(profile);
-    if (parsed.success) {
-      return {} as Record<string, string>;
-    }
-
-    return getZodFieldMessages(parsed.error);
+    return parsed.success ? {} : getZodFieldMessages(parsed.error);
   }, [profile]);
 
-  const shouldShowError = (field: keyof ProfileData) => Boolean(touchedFields[field] || submitAttempted);
+  const updateField = (field: keyof ProfileData) => (
+    e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
+  ) => {
+    setProfile(prev => ({ ...prev, [field]: e.target.value }));
+    setTouchedFields(prev => ({ ...prev, [field]: true }));
+  };
 
-  const fieldClassName = (field: keyof ProfileData) =>
-    `w-full rounded-lg border px-3 py-2.5 text-[#eaf0ff] outline-none placeholder:text-[#6f86b2] ${
-      shouldShowError(field) && fieldErrors[field]
-        ? "border-red-400 focus:border-red-300"
-        : "border-[#2e4067] focus:border-[#3f83ff]"
-    }`;
-
-  const renderFieldError = (field: keyof ProfileData) =>
-    shouldShowError(field) && fieldErrors[field] ? (
-      <p className="mt-1 text-sm text-red-300">{fieldErrors[field]}</p>
-    ) : null;
-
-  const updateField =
-    (field: keyof ProfileData) =>
-    (event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
-      setProfile((prev) => ({ ...prev, [field]: event.target.value }));
-      setTouchedFields((prev) => ({ ...prev, [field]: true }));
-      setSavedMessage("");
-    };
-
-  const onAvatarChange = (event: ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
-
-    if (file.size > 2 * 1024 * 1024) {
-      toast.error("Avatar must be 2MB or smaller.");
-      event.target.value = "";
-      return;
+  const onAvatarChange = (e: ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      if (file.size > 2 * 1024 * 1024) return toast.error("File size must be < 2MB");
+      setAvatarFile(file);
+      setPreviewUrl(URL.createObjectURL(file));
     }
-
-    setAvatarFile(file);
-    // Use a separate state for local preview to avoid polluting the profile state with blob URLs
-    const url = URL.createObjectURL(file);
-    setPreviewUrl(url);
-    setSavedMessage("");
-    toast.success("Avatar selected. Click 'Save Changes' to upload.");
   };
 
   const saveProfile = async () => {
     setSubmitAttempted(true);
-    const token = localStorage.getItem("echohire-token");
-    const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://127.0.0.1:5050";
-
-    const { fullName, email, ...restProfile } = profile;
-    const payload = {
-      name: fullName,
-      email: email,
-      profile: restProfile,
-    };
-
     const parsed = profileSchema.safeParse(profile);
-    if (!parsed.success) {
-      const message = parseZodMessage(parsed.error) || "Please fix the profile fields before saving.";
-      setSavedMessage(message);
-      toast.error(message);
-      return;
-    }
+    if (!parsed.success) return toast.error("Please fix validation errors.");
 
-    if (token) {
-      const loadingToast = toast.loading("Saving profile...");
-      try {
-        let finalAvatarUrl = profile.avatarDataUrl;
-        
-        // Sanitize: Never send a polluted local blob URL to the server
-        if (finalAvatarUrl && finalAvatarUrl.startsWith("blob:")) {
-            finalAvatarUrl = "";
+    setIsSaving(true);
+    const loadingId = toast.loading("Saving your profile...");
+
+    try {
+      let avatarUrl = profile.avatarDataUrl;
+
+      // 1. Upload Avatar if changed
+      if (avatarFile) {
+        const formData = new FormData();
+        formData.append("logo", avatarFile);
+        const uploadRes = await fetch("/api/users/me/avatar", {
+          method: "POST",
+          body: formData,
+        });
+        if (uploadRes.ok) {
+          const uploadData = await uploadRes.json();
+          avatarUrl = uploadData.url;
         }
+      }
 
-        // Step 1: Upload Avatar if a new file was selected
-        if (avatarFile) {
-          const formData = new FormData();
-          formData.append("logo", avatarFile);
-          
-          const uploadRes = await fetch(`${API_BASE}/api/users/me/avatar`, {
-            method: "POST",
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-            body: formData,
-          });
-
-          if (uploadRes.ok) {
-            const uploadData = await uploadRes.json();
-            console.log("Cloudinary Upload Success:", uploadData);
-            finalAvatarUrl = uploadData.url;
-          } else {
-            const errBody = await uploadRes.text();
-            console.error("Cloudinary Upload Failed:", errBody);
-            toast.error("Failed to upload avatar image. Saving profile without changes to photo.", { id: loadingToast });
-          }
-        }
-
-        console.log("Final Avatar URL being saved:", finalAvatarUrl);
-
-        // Step 2: Save Profile
-        const { fullName, email, ...restProfile } = profile;
-        const payload = {
+      // 2. Save Profile Data
+      const { fullName, email, ...restProfile } = profile;
+      const res = await fetch("/api/users/me", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
           name: fullName,
           email: email,
-          profile: { ...restProfile, avatarDataUrl: finalAvatarUrl },
-        };
+          profile: { ...restProfile, avatarDataUrl: avatarUrl },
+        }),
+      });
 
-        const res = await fetch(`${API_BASE}/api/users/me`, {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify(payload),
-        });
-
-        if (res.ok) {
-          const body = await res.json();
-          // Update the local profile state with the returned data from server (including new Cloudinary URL)
-          const updatedProfile = body.data.profile || {};
-          setProfile(prev => ({ ...prev, ...updatedProfile, fullName: body.data.name || prev.fullName, email: body.data.email || prev.email }));
-          
-          setSavedMessage("Profile saved to your account.");
-          toast.success("Profile saved successfully!", { id: loadingToast });
-          setAvatarFile(null);
-          setPreviewUrl(null);
-          return;
-        }
-        const err = await res.json().catch(() => ({}));
-        const message = getApiErrorMessage(err, "Failed to save profile to server.");
-        setSavedMessage(message);
-        toast.error(message, { id: loadingToast });
-        return;
-      } catch (e) {
-        const message = "Failed to save profile to server.";
-        setSavedMessage(message);
-        toast.error(message, { id: loadingToast });
-        return;
+      if (res.ok) {
+        toast.success("Profile synchronized successfully!", { id: loadingId });
+        await refreshUser();
+        setAvatarFile(null);
+        setPreviewUrl(null);
+      } else {
+        toast.error("Failed to save changes.", { id: loadingId });
       }
+    } catch (err) {
+      toast.error("Network error.", { id: loadingId });
+    } finally {
+      setIsSaving(false);
     }
-
-    // fallback to localStorage when no auth token
-    localStorage.setItem(PROFILE_STORAGE_KEY, JSON.stringify(profile));
-    setSavedMessage("Profile saved locally.");
-    toast.success("Profile saved locally.");
   };
 
+  if (loading) return <div className="h-96 flex items-center justify-center"><div className="h-8 w-8 border-2 border-primary border-t-transparent rounded-full animate-spin" /></div>;
+
   return (
-    <div className="flex-1">
-        <header className="mb-5 rounded-2xl border border-[#243253] bg-[#0d162a] p-5">
-          <h1 className="text-4xl font-semibold text-[#dbe7ff]">My Profile</h1>
-          <p className="mt-1 text-base text-[#9fb1d8]">Add your details so EchoHire can personalize interviews and suggestions.</p>
-        </header>
-
-        <div className="rounded-2xl border border-[#243253] bg-[#0d162a] p-6">
-          <div className="mb-6 flex flex-col items-start gap-4 rounded-xl border border-[#2a3b61] bg-[#0a1223] p-4 md:flex-row md:items-center">
-            {(previewUrl || profile.avatarDataUrl) ? (
-              <img
-                src={previewUrl || profile.avatarDataUrl}
-                alt="Profile avatar"
-                className="h-16 w-16 rounded-full border border-[#3a5488] object-cover"
-              />
-            ) : (
-              <div className="flex h-16 w-16 items-center justify-center rounded-full border border-[#3a5488] bg-gradient-to-br from-[#2a7df7] to-[#372e8f] text-xl font-semibold text-white">
-                {avatarInitial}
-              </div>
-            )}
-
-            <div>
-              <p className="text-base font-medium text-[#dbe7ff]">Profile Photo</p>
-              <p className="text-sm text-[#9fb1d8]">Upload a photo or keep initial-based avatar.</p>
-            </div>
-            <label className="cursor-pointer rounded-lg border border-[#32466f] px-4 py-2 text-sm text-[#dbe7ff] hover:bg-[#16213a] md:ml-auto">
-              Upload Photo
-              <input type="file" accept="image/*" className="hidden" onChange={onAvatarChange} />
-            </label>
+    <div className="max-w-5xl mx-auto space-y-10">
+      {/* Page Header */}
+      <header className="flex flex-col md:flex-row md:items-end justify-between gap-6 pb-8 border-b border-white/5">
+        <div className="space-y-2">
+          <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.2em] text-primary">
+             <FiUser /> Identity & Background
           </div>
-
-          <h2 className="mb-3 text-lg font-semibold text-[#dbe7ff]">Personal Information</h2>
-          <div className="grid gap-4 md:grid-cols-2">
-            <div>
-              <label className="mb-1 block text-sm text-[#9fb1d8]">Full Name</label>
-              <input value={profile.fullName} onChange={updateField("fullName")} className={fieldClassName("fullName")} />
-              {renderFieldError("fullName")}
-            </div>
-            <div>
-              <label className="mb-1 block text-sm text-[#9fb1d8]">Email</label>
-              <input value={profile.email} onChange={updateField("email")} className={fieldClassName("email")} />
-              {renderFieldError("email")}
-            </div>
-            <div>
-              <label className="mb-1 block text-sm text-[#9fb1d8]">Phone</label>
-              <input value={profile.phone} onChange={updateField("phone")} placeholder="+92 ..." className={fieldClassName("phone")} />
-              {renderFieldError("phone")}
-            </div>
-            <div>
-              <label className="mb-1 block text-sm text-[#9fb1d8]">City, Country</label>
-              <input value={profile.cityCountry} onChange={updateField("cityCountry")} className={fieldClassName("cityCountry")} />
-              {renderFieldError("cityCountry")}
-            </div>
-          </div>
-
-          <h2 className="mb-3 mt-6 text-lg font-semibold text-[#dbe7ff]">Professional Details</h2>
-          <div className="grid gap-4 md:grid-cols-2">
-            <div>
-              <label className="mb-1 block text-sm text-[#9fb1d8]">Target Role</label>
-              <input value={profile.targetRole} onChange={updateField("targetRole")} className={fieldClassName("targetRole")} />
-              {renderFieldError("targetRole")}
-            </div>
-            <div>
-              <label className="mb-1 block text-sm text-[#9fb1d8]">Years of Experience</label>
-              <input value={profile.yearsExperience} onChange={updateField("yearsExperience")} className={fieldClassName("yearsExperience")} />
-              {renderFieldError("yearsExperience")}
-            </div>
-            <div>
-              <label className="mb-1 block text-sm text-[#9fb1d8]">Current Status</label>
-              <select value={profile.currentStatus} onChange={updateField("currentStatus")} className={fieldClassName("currentStatus")}>
-                <option>Student</option>
-                <option>Fresh Graduate</option>
-                <option>Working Professional</option>
-                <option>Job Seeker</option>
-              </select>
-              {renderFieldError("currentStatus")}
-            </div>
-            <div>
-              <label className="mb-1 block text-sm text-[#9fb1d8]">Preferred Industry</label>
-              <input value={profile.preferredIndustry} onChange={updateField("preferredIndustry")} placeholder="FinTech, AI, SaaS..." className={fieldClassName("preferredIndustry")} />
-              {renderFieldError("preferredIndustry")}
-            </div>
-            <div>
-              <label className="mb-1 block text-sm text-[#9fb1d8]">LinkedIn URL</label>
-              <input value={profile.linkedInUrl} onChange={updateField("linkedInUrl")} className={fieldClassName("linkedInUrl")} />
-              {renderFieldError("linkedInUrl")}
-            </div>
-            <div>
-              <label className="mb-1 block text-sm text-[#9fb1d8]">GitHub URL</label>
-              <input value={profile.githubUrl} onChange={updateField("githubUrl")} className={fieldClassName("githubUrl")} />
-              {renderFieldError("githubUrl")}
-            </div>
-            <div className="md:col-span-2">
-              <label className="mb-1 block text-sm text-[#9fb1d8]">Portfolio URL</label>
-              <input value={profile.portfolioUrl} onChange={updateField("portfolioUrl")} className={fieldClassName("portfolioUrl")} />
-              {renderFieldError("portfolioUrl")}
-            </div>
-          </div>
-
-          <h2 className="mb-3 mt-6 text-lg font-semibold text-[#dbe7ff]">Education</h2>
-          <div className="grid gap-4 md:grid-cols-2">
-            <div>
-              <label className="mb-1 block text-sm text-[#9fb1d8]">Degree / Program</label>
-              <input value={profile.degree} onChange={updateField("degree")} placeholder="BS Computer Science" className={fieldClassName("degree")} />
-              {renderFieldError("degree")}
-            </div>
-            <div>
-              <label className="mb-1 block text-sm text-[#9fb1d8]">University / Institute</label>
-              <input value={profile.university} onChange={updateField("university")} className={fieldClassName("university")} />
-              {renderFieldError("university")}
-            </div>
-            <div>
-              <label className="mb-1 block text-sm text-[#9fb1d8]">Graduation Year</label>
-              <input value={profile.graduationYear} onChange={updateField("graduationYear")} placeholder="2026" className={fieldClassName("graduationYear")} />
-              {renderFieldError("graduationYear")}
-            </div>
-            <div>
-              <label className="mb-1 block text-sm text-[#9fb1d8]">CGPA / Grade</label>
-              <input value={profile.cgpa} onChange={updateField("cgpa")} placeholder="3.7 / 4.0" className={fieldClassName("cgpa")} />
-              {renderFieldError("cgpa")}
-            </div>
-          </div>
-
-          <h2 className="mb-3 mt-6 text-lg font-semibold text-[#dbe7ff]">Preparation Preferences</h2>
-          <div className="grid gap-4 md:grid-cols-2">
-            <div>
-              <label className="mb-1 block text-sm text-[#9fb1d8]">Core Skills (comma separated)</label>
-              <input value={profile.coreSkills} onChange={updateField("coreSkills")} placeholder="React, Node.js, SQL..." className={fieldClassName("coreSkills")} />
-              {renderFieldError("coreSkills")}
-            </div>
-            <div>
-              <label className="mb-1 block text-sm text-[#9fb1d8]">Interview Focus</label>
-              <select value={profile.interviewFocus} onChange={updateField("interviewFocus")} className={fieldClassName("interviewFocus")}>
-                <option>Technical + Behavioral</option>
-                <option>Technical Only</option>
-                <option>Behavioral Only</option>
-                <option>System Design Focus</option>
-              </select>
-              {renderFieldError("interviewFocus")}
-            </div>
-            <div className="md:col-span-2">
-              <label className="mb-1 block text-sm text-[#9fb1d8]">Career Goal</label>
-              <textarea value={profile.careerGoal} onChange={updateField("careerGoal")} rows={4} placeholder="Describe your 6-12 month career goal..." className={fieldClassName("careerGoal")} />
-              {renderFieldError("careerGoal")}
-            </div>
-          </div>
-
-          <div className="mt-5 flex flex-wrap gap-3">
-            <button type="button" onClick={saveProfile} className="rounded-lg bg-gradient-to-r from-[#2a7df7] to-[#372e8f] px-4 py-2 text-sm font-medium">
-              Save Changes
-            </button>
-            <Link href="/candidate/dashboard" className="rounded-lg border border-[#32466f] px-4 py-2 text-sm text-[#dbe7ff]">
-              Back to Dashboard
-            </Link>
-            {savedMessage && <p className="self-center text-sm text-[#8fc0ff]">{savedMessage}</p>}
-          </div>
+          <h1 className="text-4xl font-black text-white tracking-tight">Candidate Profile</h1>
+          <p className="text-text-muted">Keep your professional identity updated for AI-matching accuracy.</p>
         </div>
+        <div className="flex gap-3">
+           <Link href="/candidate/dashboard" className="h-12 px-6 rounded-xl border border-white/10 flex items-center gap-2 text-xs font-bold text-white hover:bg-white/5 transition-all">
+             <FiArrowLeft /> Back
+           </Link>
+           <button onClick={saveProfile} disabled={isSaving} className="h-12 px-8 rounded-xl bg-primary text-white font-black uppercase tracking-widest text-[10px] flex items-center gap-2 hover:bg-primary-hover shadow-lg shadow-primary/20 transition-all disabled:opacity-50">
+             {isSaving ? "Saving..." : <><FiSave /> Save Changes</>}
+           </button>
+        </div>
+      </header>
+
+      <div className="grid lg:grid-cols-12 gap-10">
+        {/* Sidebar: Avatar & Summary */}
+        <div className="lg:col-span-4 space-y-6">
+           <div className="p-8 rounded-[3rem] bg-surface-1 border border-white/5 text-center space-y-6">
+              <div className="relative inline-block group">
+                 <div className="h-32 w-32 rounded-[2.5rem] bg-surface-2 border-2 border-white/5 overflow-hidden flex items-center justify-center text-4xl font-black text-primary">
+                    {previewUrl || profile.avatarDataUrl ? (
+                      <img src={previewUrl || profile.avatarDataUrl} className="w-full h-full object-cover" alt="Profile" />
+                    ) : (
+                      profile.fullName?.[0] || "?"
+                    )}
+                 </div>
+                 <label className="absolute -bottom-2 -right-2 h-10 w-10 rounded-xl bg-primary text-white flex items-center justify-center cursor-pointer hover:scale-110 transition-transform shadow-xl">
+                    <FiCamera size={18} />
+                    <input type="file" className="hidden" onChange={onAvatarChange} accept="image/*" />
+                 </label>
+              </div>
+              <div className="space-y-1">
+                 <h3 className="text-xl font-bold text-white">{profile.fullName || "Your Name"}</h3>
+                 <p className="text-sm text-text-muted">{profile.targetRole || "Role not specified"}</p>
+              </div>
+              <div className="pt-6 border-t border-white/5 space-y-4">
+                 <div className="flex items-center gap-3 text-xs text-text-secondary">
+                    <FiMail className="text-primary" /> {profile.email}
+                 </div>
+                 <div className="flex items-center gap-3 text-xs text-text-secondary">
+                    <FiMapPin className="text-primary" /> {profile.cityCountry || "Location unknown"}
+                 </div>
+              </div>
+           </div>
+
+           <div className="p-8 rounded-[3rem] bg-primary/5 border border-primary/10 space-y-4">
+              <h4 className="text-[10px] font-black text-primary uppercase tracking-widest flex items-center gap-2">
+                 <FiAward /> Interview Optimization
+              </h4>
+              <p className="text-xs text-text-secondary leading-relaxed">
+                 Our AI Engine uses these details to generate questions tailored to your experience level and industry focus.
+              </p>
+           </div>
+        </div>
+
+        {/* Main Form */}
+        <div className="lg:col-span-8 space-y-10">
+           {/* Section: Personal */}
+           <section className="space-y-6">
+              <h3 className="text-lg font-bold text-white px-2">Personal Information</h3>
+              <div className="grid md:grid-cols-2 gap-6">
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-black uppercase tracking-widest text-text-muted px-1">Full Name</label>
+                    <input value={profile.fullName} onChange={updateField("fullName")} className={`w-full h-14 bg-surface-1 border rounded-2xl px-4 text-sm text-white outline-none focus:border-primary/40 transition-all ${fieldErrors.fullName ? 'border-rose-500/50' : 'border-white/5'}`} />
+                    {fieldErrors.fullName && <p className="text-[10px] font-bold text-rose-400 px-1">{fieldErrors.fullName}</p>}
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-black uppercase tracking-widest text-text-muted px-1">Phone Number</label>
+                    <input value={profile.phone} onChange={updateField("phone")} placeholder="+92 ..." className={`w-full h-14 bg-surface-1 border rounded-2xl px-4 text-sm text-white outline-none focus:border-primary/40 transition-all ${fieldErrors.phone ? 'border-rose-500/50' : 'border-white/5'}`} />
+                    {fieldErrors.phone && <p className="text-[10px] font-bold text-rose-400 px-1">{fieldErrors.phone}</p>}
+                  </div>
+                  <div className="md:col-span-2 space-y-2">
+                    <label className="text-[10px] font-black uppercase tracking-widest text-text-muted px-1">City & Country</label>
+                    <input value={profile.cityCountry} onChange={updateField("cityCountry")} className={`w-full h-14 bg-surface-1 border rounded-2xl px-4 text-sm text-white outline-none focus:border-primary/40 transition-all ${fieldErrors.cityCountry ? 'border-rose-500/50' : 'border-white/5'}`} />
+                    {fieldErrors.cityCountry && <p className="text-[10px] font-bold text-rose-400 px-1">{fieldErrors.cityCountry}</p>}
+                  </div>
+              </div>
+           </section>
+
+           {/* Section: Professional */}
+           <section className="space-y-6">
+              <h3 className="text-lg font-bold text-white px-2">Professional Experience</h3>
+              <div className="grid md:grid-cols-2 gap-6">
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-black uppercase tracking-widest text-text-muted px-1">Target Role</label>
+                    <input value={profile.targetRole} onChange={updateField("targetRole")} placeholder="e.g. Senior Frontend Engineer" className={`w-full h-14 bg-surface-1 border rounded-2xl px-4 text-sm text-white outline-none focus:border-primary/40 transition-all ${fieldErrors.targetRole ? 'border-rose-500/50' : 'border-white/5'}`} />
+                    {fieldErrors.targetRole && <p className="text-[10px] font-bold text-rose-400 px-1">{fieldErrors.targetRole}</p>}
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-black uppercase tracking-widest text-text-muted px-1">Experience Level</label>
+                    <select value={profile.yearsExperience} onChange={updateField("yearsExperience")} className={`w-full h-14 bg-surface-1 border rounded-2xl px-4 text-sm text-white outline-none focus:border-primary/40 transition-all appearance-none ${fieldErrors.yearsExperience ? 'border-rose-500/50' : 'border-white/5'}`}>
+                       <option value="">Select Level</option>
+                       <option>Fresh / Entry Level</option>
+                       <option>1-3 Years (Junior)</option>
+                       <option>3-5 Years (Mid-Level)</option>
+                       <option>5+ Years (Senior)</option>
+                    </select>
+                    {fieldErrors.yearsExperience && <p className="text-[10px] font-bold text-rose-400 px-1">{fieldErrors.yearsExperience}</p>}
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-black uppercase tracking-widest text-text-muted px-1">LinkedIn Profile</label>
+                    <input value={profile.linkedInUrl} onChange={updateField("linkedInUrl")} className={`w-full h-14 bg-surface-1 border rounded-2xl px-4 text-sm text-white outline-none focus:border-primary/40 transition-all ${fieldErrors.linkedInUrl ? 'border-rose-500/50' : 'border-white/5'}`} />
+                    {fieldErrors.linkedInUrl && <p className="text-[10px] font-bold text-rose-400 px-1">{fieldErrors.linkedInUrl}</p>}
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-black uppercase tracking-widest text-text-muted px-1">GitHub Profile</label>
+                    <input value={profile.githubUrl} onChange={updateField("githubUrl")} className={`w-full h-14 bg-surface-1 border rounded-2xl px-4 text-sm text-white outline-none focus:border-primary/40 transition-all ${fieldErrors.githubUrl ? 'border-rose-500/50' : 'border-white/5'}`} />
+                    {fieldErrors.githubUrl && <p className="text-[10px] font-bold text-rose-400 px-1">{fieldErrors.githubUrl}</p>}
+                  </div>
+              </div>
+           </section>
+
+           {/* Section: Academic */}
+           <section className="space-y-6">
+              <h3 className="text-lg font-bold text-white px-2">Academic Background</h3>
+              <div className="grid md:grid-cols-2 gap-6">
+                 <div className="space-y-2">
+                    <label className="text-[10px] font-black uppercase tracking-widest text-text-muted px-1">Highest Degree</label>
+                    <input value={profile.degree} onChange={updateField("degree")} placeholder="BS Computer Science" className={`w-full h-14 bg-surface-1 border rounded-2xl px-4 text-sm text-white outline-none focus:border-primary/40 transition-all ${fieldErrors.degree ? 'border-rose-500/50' : 'border-white/5'}`} />
+                    {fieldErrors.degree && <p className="text-[10px] font-bold text-rose-400 px-1">{fieldErrors.degree}</p>}
+                 </div>
+                 <div className="space-y-2">
+                    <label className="text-[10px] font-black uppercase tracking-widest text-text-muted px-1">University</label>
+                    <input value={profile.university} onChange={updateField("university")} className={`w-full h-14 bg-surface-1 border rounded-2xl px-4 text-sm text-white outline-none focus:border-primary/40 transition-all ${fieldErrors.university ? 'border-rose-500/50' : 'border-white/5'}`} />
+                    {fieldErrors.university && <p className="text-[10px] font-bold text-rose-400 px-1">{fieldErrors.university}</p>}
+                 </div>
+              </div>
+           </section>
+        </div>
+      </div>
     </div>
   );
 }

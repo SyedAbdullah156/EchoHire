@@ -10,6 +10,7 @@ import { motion, Variants, AnimatePresence } from "framer-motion";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { FiAward, FiBarChart2, FiFileText, FiRefreshCw, FiHome, FiZap, FiTrendingUp } from "react-icons/fi";
+import JobNotifications from "@/components/dashboard/notifications/JobNotifications";
 import { toast } from "sonner";
 
 const skillData = [
@@ -65,14 +66,38 @@ function DashboardContent() {
   const daysLeft = msLeft !== null ? Math.ceil(msLeft / (24 * 60 * 60 * 1000)) : null;
   const trialExpired = daysLeft !== null ? daysLeft <= 0 : false;
 
+  const [priorityInterview, setPriorityInterview] = useState<any>(null);
+  const [performanceData, setPerformanceData] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
   useEffect(() => {
     const loadData = async () => {
       try {
-        // Simulate initial data fetch
-        await new Promise((resolve) => setTimeout(resolve, 600));
+        const res = await fetch("/api/interviews/my");
+        if (res.ok) {
+          const result = await res.json();
+          const interviews = result.data || [];
+          if (interviews.length > 0) {
+            setPriorityInterview(interviews[0]);
+            
+            // Map scores for the chart
+            const chartData = interviews
+              .slice()
+              .reverse() // Oldest first
+              .map((int: any, idx: number) => ({
+                week: `I${idx + 1}`,
+                score: int.score || 0
+              }))
+              .filter((d: any) => d.score > 0);
+            
+            setPerformanceData(chartData);
+          }
+        }
       } catch {
         setDataError(true);
         toast.error("Critical: Failed to sync dashboard data.");
+      } finally {
+        setLoading(false);
       }
     };
     loadData();
@@ -179,11 +204,17 @@ function DashboardContent() {
           {/* StatCards Grid - HCI: Recognition rather than Recall */}
           <motion.div variants={itemVariants} className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
             <StatCard
-              title="Priority Interview"
-              value="Google Senior SE"
-              subtitle="Scheduled: Sept 5th, 2:00 PM"
-              ctaLabel="Resume Simulation"
-              ctaHref="/candidate/ai-interview"
+              title={priorityInterview ? "Active Application" : "No Active Interviews"}
+              value={priorityInterview?.job_id?.role || "Ready for Simulation"}
+              subtitle={priorityInterview ? `Status: ${priorityInterview.status}` : "Practice your skills today"}
+              ctaLabel={priorityInterview ? "Resume Simulation" : "Practice Now"}
+              ctaHref={
+                priorityInterview 
+                  ? `/candidate/ai-interview?id=${priorityInterview._id}&round=${
+                      priorityInterview.rounds?.findIndex((r: any) => r.status !== "completed") ?? 0
+                    }` 
+                  : "/candidate/ai-interview"
+              }
               icon={FiAward}
               className="border-blue-500/20 bg-gradient-to-br from-[#0d162a] to-[#0a1223]"
             />
@@ -222,8 +253,8 @@ function DashboardContent() {
                   <span className="rounded-lg bg-[#050b18] px-3 py-1 text-[10px] font-bold text-blue-400 border border-[#243253]">MONTHLY</span>
                 </div>
               </div>
-              <div className="h-[320px] w-full">
-                <ProgressAreaChart />
+              <div className="mt-8">
+                <ProgressAreaChart data={performanceData} />
               </div>
             </motion.section>
 
@@ -253,6 +284,11 @@ function DashboardContent() {
                   ))}
                 </div>
               </motion.section>
+
+              {/* Job Alerts - New Notification System */}
+              <motion.div variants={itemVariants}>
+                <JobNotifications />
+              </motion.div>
 
               {/* Action Alerts - HCI: Help Users Recognize, Diagnose, and Recover */}
               <motion.div variants={itemVariants}>

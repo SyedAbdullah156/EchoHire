@@ -301,7 +301,7 @@ export default function ResumeAnalyzerPage() {
       const fd = new FormData();
       fd.append("resume", file);
 
-      const res = await fetch(`${API_BASE_URL}/api/resume/scan`, {
+      const res = await fetch("/api/resume/scan", {
         method: "POST",
         body: fd,
       });

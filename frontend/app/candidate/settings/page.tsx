@@ -8,6 +8,7 @@ import {
   AlertTriangle,
   ChevronRight 
 } from "lucide-react";
+import SecuritySettings from "@/components/SecuritySettings";
 
 export default function SettingsPage() {
   return (
@@ -62,25 +63,7 @@ export default function SettingsPage() {
 
             {/* Security Grid - Recognition over Recall */}
             <div className="grid gap-6 md:grid-cols-2">
-                <section className="rounded-3xl border border-[#243253] bg-[#0d162a] p-8">
-                    <div className="flex items-center gap-3 mb-6">
-                        <ShieldCheck className="text-emerald-400" size={24} />
-                        <h3 className="text-xl font-bold">Security Status</h3>
-                    </div>
-                    <div className="space-y-4">
-                        <button className="w-full flex items-center justify-between p-4 rounded-xl bg-[#0a1223] border border-[#32466f] hover:border-blue-500 transition-all group">
-                            <span className="text-sm">Multi-Factor Auth</span>
-                            <div className="flex items-center gap-2">
-                                <span className="text-[10px] font-bold text-emerald-400 bg-emerald-400/10 px-2 py-1 rounded">ACTIVE</span>
-                                <ChevronRight size={16} className="text-[#4a5d89] group-hover:text-white" />
-                            </div>
-                        </button>
-                        <button className="w-full flex items-center justify-between p-4 rounded-xl bg-[#0a1223] border border-[#32466f] hover:border-blue-500 transition-all group">
-                            <span className="text-sm">Update Password</span>
-                            <ChevronRight size={16} className="text-[#4a5d89] group-hover:text-white" />
-                        </button>
-                    </div>
-                </section>
+                <SecuritySettings />
 
                 <section className="rounded-3xl border border-[#243253] bg-[#0d162a] p-8">
                     <div className="flex items-center gap-3 mb-6">
