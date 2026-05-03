@@ -40,6 +40,7 @@ const buildPrompt = (
     maxQuestions: number,
     history: string,
     candidateAnswer?: string,
+    customQuestions?: string[]
 ): string => {
     const isFirst = !candidateAnswer;
 
@@ -48,13 +49,17 @@ const buildPrompt = (
         ? history.split("\n\n").slice(-2).join("\n\n")
         : "";
 
+    const customQuestionsInstruction = customQuestions && customQuestions.length > 0
+        ? `\n\nREQUIRED CUSTOM QUESTIONS TO ASK (if not already asked):\n${customQuestions.map((q, i) => `${i + 1}. ${q}`).join("\n")}\nYou must prioritize asking these custom questions before asking your own generated questions.`
+        : "";
+
     return `Technical Interviewer for ${jobRole} (${roundType} round). Q${questionNumber}/${maxQuestions}.
 
 ${
     isFirst
         ? "Greet briefly and ask the first question."
         : `Recent history:\n${trimmedHistory}\n\nCandidate answered: "${candidateAnswer}"\n\nEvaluate briefly and ask next question.`
-}
+}${customQuestionsInstruction}
 
 Rules: One question only. Professional tone. ${questionNumber >= maxQuestions ? "Set is_complete: true." : ""}
 
@@ -81,7 +86,8 @@ export const startRoundService = async (
     if (round.qa_pairs.length > 0) return { interview, round, roundIndex };
 
     const jobRole = interview.job_id?.role || "Software Engineering";
-    const prompt = buildPrompt(jobRole, round.type, 1, round.max_questions, "");
+    const customQuestions = interview.job_id?.custom_questions || [];
+    const prompt = buildPrompt(jobRole, round.type, 1, round.max_questions, "", undefined, customQuestions);
 
     const model = getGeminiModel(true);
     const result = await model.generateContent(prompt);
@@ -136,6 +142,7 @@ export const answerInRoundService = async (
     const maxQuestions = currentRound.max_questions;
     const history = formatHistory(currentRound.qa_pairs);
     const jobRole = interview.job_id?.role || "Software Engineering";
+    const customQuestions = interview.job_id?.custom_questions || [];
 
     const prompt = buildPrompt(
         jobRole,
@@ -144,6 +151,7 @@ export const answerInRoundService = async (
         maxQuestions,
         history,
         candidateAnswer || "The candidate provided a voice response.",
+        customQuestions
     );
 
     const model = getGeminiModel(true);
@@ -304,11 +312,16 @@ export const answerInRoundStreamingService = async (
     const maxQuestions = currentRound.max_questions;
     const history = formatHistory(currentRound.qa_pairs);
     const jobRole = interview.job_id?.role || "Software Engineering";
+    const customQuestions = interview.job_id?.custom_questions || [];
+
+    const customQuestionsInstruction = customQuestions.length > 0
+        ? `\nREQUIRED CUSTOM QUESTIONS TO ASK (if not already asked in history):\n${customQuestions.map((q: string, i: number) => `${i + 1}. ${q}`).join("\n")}\nYou must prioritize asking these custom questions before asking your own generated questions.`
+        : "";
 
     // 2. Build and send streaming request
     const prompt = `You are a professional Technical Interviewer for a ${jobRole} position.
 Current Round: ${currentRound.type}
-Progress: Question ${currentQuestionIndex + 1} of ${maxQuestions}
+Progress: Question ${currentQuestionIndex + 1} of ${maxQuestions}${customQuestionsInstruction}
 
 INTERVIEW HISTORY:
 ${history}

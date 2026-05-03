@@ -11,8 +11,11 @@ import {
 import { z } from "zod";
 import upload from "../config/multer.config";
 import { interviewRoundParamsSchema } from "../validations/interview.validation";
+import { aiRateLimiter } from "../middlewares/rateLimit.middleware";
 
 const router = Router();
+
+router.use(aiRateLimiter);
 
 const answerSchema = z.object({
     body: z

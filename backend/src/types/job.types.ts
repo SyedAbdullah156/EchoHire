@@ -13,6 +13,14 @@ export interface TJob {
     framework: string[];
     rounds: TJobRound[];
     deadline: Date;
+    location?: string;
+    salary_range?: string;
+    requirements?: string[];
+    type?: string;
+    department?: string;
+    difficulty?: number;
+    soft_skills?: string[];
+    custom_questions?: string[];
     company_id: mongoose.Types.ObjectId;
     is_active: boolean;
 }

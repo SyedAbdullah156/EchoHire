@@ -9,6 +9,7 @@ interface CodingSandboxProps {
   initialCode?: string;
   language?: string;
   problemStatement?: string;
+  testCases?: any[];
   onSuccess?: (analysis: any) => void;
 }
 
@@ -24,6 +25,7 @@ export default function CodingSandbox({
   initialCode,
   language: initialLanguage = "javascript",
   problemStatement = "Write a function to solve the problem.",
+  testCases = [],
   onSuccess
 }: CodingSandboxProps) {
   const [language, setLanguage] = useState(initialLanguage);
@@ -45,7 +47,7 @@ export default function CodingSandbox({
       const res = await fetch("/api/coding/execute", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ code, language, problemStatement }),
+        body: JSON.stringify({ code, language, problemStatement, testCases }),
       });
       const result = await res.json();
       if (res.ok) {
@@ -96,7 +98,7 @@ export default function CodingSandbox({
           className="flex items-center gap-2 px-6 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold transition-all disabled:opacity-50"
         >
           {isRunning ? <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : <FiPlay size={14} />}
-          {isRunning ? "Analyzing..." : "Run & Analyze"}
+          {isRunning ? "Running..." : "Run Tests"}
         </button>
       </div>
 
@@ -122,7 +124,7 @@ export default function CodingSandbox({
         </div>
 
         {/* Results Panel */}
-        <div className="w-full lg:w-96 flex flex-col bg-[#070d1a]/50 overflow-y-auto">
+        <div className="w-full lg:w-[450px] flex flex-col bg-[#070d1a]/50 overflow-y-auto">
           {!results && !isRunning && (
             <div className="flex-1 flex flex-col items-center justify-center p-8 text-center opacity-40">
               <FiBox size={48} className="mb-4 text-slate-600" />
@@ -133,12 +135,39 @@ export default function CodingSandbox({
           {isRunning && (
             <div className="flex-1 flex flex-col items-center justify-center p-8 text-center">
               <div className="w-12 h-12 border-4 border-blue-500/20 border-t-blue-500 rounded-full animate-spin mb-4" />
-              <p className="text-sm text-blue-400 font-medium">Gemini is simulating execution...</p>
+              <p className="text-sm text-blue-400 font-medium">AI is simulating test execution...</p>
             </div>
           )}
 
           {results && (
             <div className="p-6 space-y-6 animate-in fade-in slide-in-from-right-4 duration-500">
+              {/* Test Cases Summary */}
+              {results.testResults && (
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2 text-[10px] font-bold text-slate-500 uppercase tracking-widest">
+                       Test Case Results
+                    </div>
+                    <span className="text-[10px] font-bold text-emerald-500 bg-emerald-500/10 px-2 py-0.5 rounded">
+                      {results.testResults.filter((r: any) => r.passed).length} / {results.testResults.length} PASSED
+                    </span>
+                  </div>
+                  <div className="grid gap-2">
+                    {results.testResults.map((tr: any, i: number) => (
+                      <div key={i} className="p-3 rounded-xl bg-black/40 border border-slate-800 flex items-center justify-between gap-4">
+                        <div className="flex-1 min-w-0">
+                          <p className="text-[10px] text-slate-500 font-bold truncate">IN: {tr.input}</p>
+                          <p className="text-[10px] text-slate-400 truncate">OUT: {tr.actual || "null"}</p>
+                        </div>
+                        <div className={`px-2 py-1 rounded text-[9px] font-black uppercase tracking-widest ${tr.passed ? 'bg-emerald-500/10 text-emerald-500' : 'bg-rose-500/10 text-rose-500'}`}>
+                          {tr.passed ? "PASS" : "FAIL"}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
               {/* Status & Complexity */}
               <div className="grid grid-cols-2 gap-3">
                 <div className="p-3 rounded-2xl bg-slate-900/50 border border-slate-800">
@@ -151,22 +180,12 @@ export default function CodingSandbox({
                 </div>
               </div>
 
-              {/* Output */}
-              <div className="space-y-2">
-                <div className="flex items-center gap-2 text-[10px] font-bold text-slate-500 uppercase tracking-widest">
-                  <FiPlay size={10} /> Output
-                </div>
-                <div className="p-4 rounded-2xl bg-black/40 border border-slate-800 font-mono text-xs text-slate-300 whitespace-pre-wrap">
-                  {results.output || "No output generated."}
-                </div>
-              </div>
-
               {/* Suggestions */}
               <div className="space-y-3">
                 <div className="flex items-center gap-2 text-[10px] font-bold text-slate-500 uppercase tracking-widest">
-                  <FiZap size={10} className="text-amber-400" /> AI Suggestions
+                  <FiZap size={10} className="text-amber-400" /> AI Insights
                 </div>
-                {results.suggestions?.map((s: string, i: number) => (
+                {results.suggestions?.slice(0, 2).map((s: string, i: number) => (
                   <div key={i} className="flex gap-3 p-3 rounded-xl bg-blue-500/5 border border-blue-500/10 text-[11px] text-blue-200 leading-relaxed">
                     <FiCheckCircle size={14} className="shrink-0 text-blue-500 mt-0.5" />
                     {s}

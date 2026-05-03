@@ -19,21 +19,28 @@ export default function BrowseJobsPage() {
   const [isApplying, setIsApplying] = useState(false);
   const [cvFile, setCvFile] = useState<File | null>(null);
 
+  const [myInterviews, setMyInterviews] = useState<any[]>([]);
+
   useEffect(() => {
-    async function fetchJobs() {
+    async function fetchData() {
       try {
-        const res = await fetch("/api/jobs");
-        const data = await res.json();
-        if (res.ok) {
-          setJobs(data.data || []);
-        }
+        const [jobsRes, interviewsRes] = await Promise.all([
+          fetch("/api/jobs"),
+          fetch("/api/interviews/my")
+        ]);
+        
+        const jobsData = await jobsRes.json();
+        const interviewsData = await interviewsRes.json();
+        
+        if (jobsRes.ok) setJobs(jobsData.data || []);
+        if (interviewsRes.ok) setMyInterviews(interviewsData.data || []);
       } catch (error) {
-        toast.error("Failed to load job listings.");
+        toast.error("Failed to load data.");
       } finally {
         setLoading(false);
       }
     }
-    fetchJobs();
+    fetchData();
   }, []);
 
   const handleApply = async (e: React.FormEvent) => {
@@ -121,33 +128,65 @@ export default function BrowseJobsPage() {
                   <p className="text-sm text-text-muted font-medium">{job.company_id?.name || "Global Tech"}</p>
                 </div>
 
-                <div className="flex flex-wrap gap-4 py-4 border-y border-white/5">
-                  <div className="flex items-center gap-2 text-xs text-text-secondary">
-                    <FiMapPin className="text-primary" /> {job.location || "Remote"}
+                {/* Status / IDs if applied */}
+                {myInterviews.find(i => i.job_id?._id === job._id) ? (
+                  <div className="p-4 rounded-2xl bg-emerald-500/5 border border-emerald-500/20 space-y-3">
+                    <div className="flex items-center gap-2 text-[10px] font-black text-emerald-500 uppercase tracking-widest">
+                      <FiCheckCircle /> Application Active
+                    </div>
+                    <div className="space-y-1">
+                      <p className="text-[9px] text-text-muted uppercase font-bold tracking-tighter">Interview ID</p>
+                      <code className="text-[10px] text-white block bg-black/20 p-1.5 rounded-lg select-all">
+                        {myInterviews.find(i => i.job_id?._id === job._id)?._id}
+                      </code>
+                    </div>
+                    <div className="space-y-1">
+                      <p className="text-[9px] text-text-muted uppercase font-bold tracking-tighter">Coding ID</p>
+                      <code className="text-[10px] text-white block bg-black/20 p-1.5 rounded-lg select-all">
+                        {myInterviews.find(i => i.job_id?._id === job._id)?.assessment_token}
+                      </code>
+                    </div>
                   </div>
-                  <div className="flex items-center gap-2 text-xs text-text-secondary">
-                    <FiDollarSign className="text-primary" /> {job.salary_range || "$80k - $120k"}
-                  </div>
-                </div>
+                ) : (
+                  <>
+                    <div className="flex flex-wrap gap-4 py-4 border-y border-white/5">
+                      <div className="flex items-center gap-2 text-xs text-text-secondary">
+                        <FiMapPin className="text-primary" /> {job.location || "Remote"}
+                      </div>
+                      <div className="flex items-center gap-2 text-xs text-text-secondary">
+                        <FiDollarSign className="text-primary" /> {job.salary_range || "$80k - $120k"}
+                      </div>
+                    </div>
 
-                <div className="space-y-3">
-                   <p className="text-xs font-bold text-white uppercase tracking-widest">Key Skills</p>
-                   <div className="flex flex-wrap gap-2">
-                      {job.requirements?.slice(0, 3).map((req: string, idx: number) => (
-                        <span key={idx} className="px-2 py-1 rounded-md bg-surface-2 text-[10px] text-text-muted border border-white/5">
-                          {req}
-                        </span>
-                      ))}
-                   </div>
-                </div>
+                    <div className="space-y-3">
+                       <p className="text-xs font-bold text-white uppercase tracking-widest">Key Skills</p>
+                       <div className="flex flex-wrap gap-2">
+                          {job.requirements?.slice(0, 3).map((req: string, idx: number) => (
+                            <span key={idx} className="px-2 py-1 rounded-md bg-surface-2 text-[10px] text-text-muted border border-white/5">
+                              {req}
+                            </span>
+                          ))}
+                       </div>
+                    </div>
+                  </>
+                )}
               </div>
 
-              <button 
-                onClick={() => setSelectedJob(job)}
-                className="mt-8 w-full h-14 rounded-2xl bg-surface-2 group-hover:bg-primary text-white font-bold uppercase tracking-widest text-[10px] transition-all flex items-center justify-center gap-2"
-              >
-                Apply Now <FiChevronRight />
-              </button>
+              {myInterviews.find(i => i.job_id?._id === job._id) ? (
+                <button 
+                  onClick={() => router.push(`/candidate/ai-interview?id=${myInterviews.find(i => i.job_id?._id === job._id)?._id}&round=0`)}
+                  className="mt-8 w-full h-14 rounded-2xl bg-emerald-600 text-white font-bold uppercase tracking-widest text-[10px] transition-all flex items-center justify-center gap-2 shadow-lg shadow-emerald-500/20"
+                >
+                  Resume Interview <FiChevronRight />
+                </button>
+              ) : (
+                <button 
+                  onClick={() => setSelectedJob(job)}
+                  className="mt-8 w-full h-14 rounded-2xl bg-surface-2 group-hover:bg-primary text-white font-bold uppercase tracking-widest text-[10px] transition-all flex items-center justify-center gap-2"
+                >
+                  Apply Now <FiChevronRight />
+                </button>
+              )}
             </motion.div>
           ))}
         </div>

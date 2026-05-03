@@ -57,10 +57,22 @@ const jobBodySchema = z.object({
             message: "Invalid date format",
         })
         .transform((val) => new Date(val))
-        .refine((date) => date > new Date(), {
-            message: "Deadline must be in the future",
+        .refine((date) => {
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            return date >= today;
+        }, {
+            message: "Deadline must be today or in the future",
         }),
 
+    location: z.string().trim().min(1, "Location is required").optional(),
+    salary_range: z.string().trim().optional(),
+    requirements: z.array(z.string()).optional(),
+    type: z.string().optional(),
+    department: z.string().optional(),
+    difficulty: z.number().min(1).max(10).optional(),
+    soft_skills: z.array(z.string()).optional(),
+    custom_questions: z.array(z.string()).optional(),
     is_active: z.boolean().optional().default(true),
 });
 

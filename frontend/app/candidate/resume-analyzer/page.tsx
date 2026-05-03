@@ -308,6 +308,10 @@ export default function ResumeAnalyzerPage() {
 
       const json = await res.json();
 
+      if (res.status === 429) {
+        throw new Error("Rate limit exceeded: You've made too many requests. Please wait 15 minutes before trying again.");
+      }
+
       if (!res.ok || !json.success) {
         throw new Error(json.message || json.error || "Analysis failed. Please try again.");
       }

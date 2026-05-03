@@ -8,7 +8,7 @@ import { AuthRequest } from "../types/request.types";
 export const executeCode = async (req: Request, res: Response, next: NextFunction) => {
 
   try {
-    const { code, language, problemStatement } = req.body;
+    const { code, language, problemStatement, testCases } = req.body;
 
     if (!code || !language) {
       throw new AppError("Code and language are required", 400);
@@ -24,6 +24,7 @@ export const executeCode = async (req: Request, res: Response, next: NextFunctio
       3. Simulate the execution and provide the expected output.
       4. Perform a Big O time and space complexity analysis.
       5. Suggest 2-3 specific technical improvements.
+      ${testCases ? `6. Specifically validate the code against these test cases and report pass/fail for each: ${JSON.stringify(testCases)}` : ""}
 
       CODE:
       \`\`\`${language}
@@ -37,7 +38,10 @@ export const executeCode = async (req: Request, res: Response, next: NextFunctio
         "timeComplexity": "e.g. O(n log n)",
         "spaceComplexity": "e.g. O(n)",
         "analysis": "detailed explanation of why the code is correct/incorrect",
-        "suggestions": ["suggestion 1", "suggestion 2"]
+        "suggestions": ["suggestion 1", "suggestion 2"],
+        "testResults": [
+          { "input": "input string", "expected": "expected output", "actual": "actual simulated output", "passed": boolean }
+        ]
       }
     `;
 

@@ -28,35 +28,54 @@ export default function CodingTestPage() {
       difficulty: "Easy",
       description: "Write a function to check if a given string is a palindrome, considering alphanumeric characters and ignoring case.",
       problem: "Write a function `isPalindrome(s)` that returns true if `s` is a palindrome.",
-      initialCode: "function isPalindrome(s) {\n  // Your code here\n}"
+      initialCode: "function isPalindrome(s) {\n  // Your code here\n}",
+      testCases: [
+        { input: "racecar", expected: "true" },
+        { input: "hello", expected: "false" },
+        { input: "A man, a plan, a canal: Panama", expected: "true" }
+      ]
     },
     {
       title: "Two Sum",
       difficulty: "Medium",
       description: "Given an array of integers, return indices of the two numbers such that they add up to a specific target.",
       problem: "Write a function `twoSum(nums, target)`.",
-      initialCode: "function twoSum(nums, target) {\n  // Your code here\n}"
+      initialCode: "function twoSum(nums, target) {\n  // Your code here\n}",
+      testCases: [
+        { input: "[2, 7, 11, 15], 9", expected: "[0, 1]" },
+        { input: "[3, 2, 4], 6", expected: "[1, 2]" }
+      ]
     },
     {
       title: "Merge Sorted Lists",
       difficulty: "Medium",
       description: "Merge two sorted linked lists and return it as a new sorted list.",
       problem: "Write a function `mergeTwoLists(l1, l2)`.",
-      initialCode: "function mergeTwoLists(l1, l2) {\n  // Your code here\n}"
+      initialCode: "function mergeTwoLists(l1, l2) {\n  // Your code here\n}",
+      testCases: [
+        { input: "[1,2,4], [1,3,4]", expected: "[1,1,2,3,4,4]" }
+      ]
     },
     {
       title: "Reverse String",
       difficulty: "Easy",
       description: "Write a function that reverses a string. The input string is given as an array of characters.",
       problem: "Write a function `reverseString(s)` that reverses `s` in-place.",
-      initialCode: "function reverseString(s) {\n  // Your code here\n}"
+      initialCode: "function reverseString(s) {\n  // Your code here\n}",
+      testCases: [
+        { input: '["h","e","l","l","o"]', expected: '["o","l","l","e","h"]' }
+      ]
     },
     {
       title: "Longest Substring",
       difficulty: "Hard",
       description: "Find the length of the longest substring without repeating characters.",
       problem: "Write a function `lengthOfLongestSubstring(s)`.",
-      initialCode: "function lengthOfLongestSubstring(s) {\n  // Your code here\n}"
+      initialCode: "function lengthOfLongestSubstring(s) {\n  // Your code here\n}",
+      testCases: [
+        { input: "abcabcbb", expected: "3" },
+        { input: "bbbbb", expected: "1" }
+      ]
     }
   ];
 
@@ -122,6 +141,7 @@ export default function CodingTestPage() {
             language="javascript"
             problemStatement={practiceMode.problem.problem}
             initialCode={practiceMode.problem.initialCode}
+            testCases={practiceMode.problem.testCases}
           />
         </div>
       </div>
@@ -251,6 +271,7 @@ export default function CodingTestPage() {
           <CodingSandbox
             language="javascript"
             problemStatement={currentRound?.problemStatement || "Solve the coding challenge to progress to the next round."}
+            testCases={currentRound?.testCases || []}
             onSuccess={(analysis) => {
               // Here we would call the backend to update round status and unlock next
               toast.success("Round completed! Progress synchronized.");

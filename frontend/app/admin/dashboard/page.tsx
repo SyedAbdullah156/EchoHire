@@ -1,3 +1,4 @@
+"use client"
 import { useState, useEffect } from "react";
 import { FiMessageSquare, FiActivity, FiUsers, FiServer, FiAlertTriangle, FiTrendingUp, FiRefreshCw } from "react-icons/fi";
 import { motion } from "framer-motion";
@@ -82,7 +83,7 @@ export default function AdminDashboardOverview() {
               </h2>
               <span className="text-xs font-bold text-text-muted tracking-widest uppercase">Live Updates</span>
             </div>
-            
+
             <div className="space-y-4">
               {(statsData?.alerts || [
                 { title: "Database Load Spike", time: "2m ago", severity: "high", desc: "Primary cluster memory usage exceeded 85%." },
@@ -90,9 +91,8 @@ export default function AdminDashboardOverview() {
                 { title: "API Deprecation Warning", time: "1h ago", severity: "low", desc: "v1.2 endpoints will be retired on June 1st." },
               ]).map((alert: any, i: number) => (
                 <div key={i} className="p-4 rounded-2xl bg-surface-1 border border-white/5 flex items-start gap-4 hover:bg-white/[0.02] transition-colors">
-                  <div className={`mt-1 h-2 w-2 rounded-full shrink-0 ${
-                    alert.severity === 'high' ? 'bg-rose-500' : alert.severity === 'medium' ? 'bg-amber-500' : 'bg-blue-500'
-                  }`} />
+                  <div className={`mt-1 h-2 w-2 rounded-full shrink-0 ${alert.severity === 'high' ? 'bg-rose-500' : alert.severity === 'medium' ? 'bg-amber-500' : 'bg-blue-500'
+                    }`} />
                   <div className="flex-1">
                     <div className="flex justify-between items-center mb-1">
                       <h4 className="text-sm font-bold text-white">{alert.title}</h4>
@@ -111,7 +111,7 @@ export default function AdminDashboardOverview() {
           <div className="p-8 rounded-[2rem] bg-surface-2 border border-white/5 space-y-6">
             <h2 className="text-xl font-bold text-white">Direct Actions</h2>
             <div className="grid gap-4">
-              <NextLink 
+              <NextLink
                 href="/admin/dashboard/ticketing"
                 className="group flex items-center justify-between p-4 rounded-2xl bg-primary/10 border border-primary/20 hover:bg-primary/20 transition-all"
               >
@@ -121,7 +121,7 @@ export default function AdminDashboardOverview() {
                 </div>
                 <FiTrendingUp className="text-primary opacity-0 group-hover:opacity-100 transition-all" />
               </NextLink>
-              
+
               <button className="flex items-center justify-between p-4 rounded-2xl bg-white/5 border border-white/10 hover:bg-white/10 transition-all">
                 <div className="flex items-center gap-3">
                   <FiServer className="text-slate-400" />

@@ -111,6 +111,11 @@ export default function LinkedinOptimizerPage() {
       }
 
       const result = await response.json().catch(() => ({}));
+      
+      if (response.status === 429) {
+        throw new Error("Rate limit exceeded: You've made too many AI requests. Please wait 15 minutes before trying again.");
+      }
+
       if (!response.ok) throw new Error(result?.message || "Analysis failed.");
 
       const data = result?.data as LinkedinOptimizerResult;

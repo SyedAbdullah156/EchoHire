@@ -1,9 +1,9 @@
 "use client";
 
 import { useState, useEffect, useRef, Suspense } from "react";
-import { 
-  FiMic, FiMicOff, FiPhoneOff, FiSend, 
-  FiVideo, FiVideoOff, FiAlertCircle 
+import {
+  FiMic, FiMicOff, FiPhoneOff, FiSend,
+  FiVideo, FiVideoOff, FiAlertCircle, FiZap
 } from "react-icons/fi";
 import { toast } from "sonner";
 import { useSearchParams, useRouter } from "next/navigation";
@@ -17,13 +17,14 @@ function InterviewContent() {
   const interviewId = searchParams.get("id");
   const roundIndex = parseInt(searchParams.get("round") || "0");
 
-  const [view, setView] = useState<"lobby" | "active" | "results">("lobby");
+  const [view, setView] = useState<"selection" | "lobby" | "active" | "results">("selection");
   const [chatMessage, setChatMessage] = useState("");
+  const [inputInterviewId, setInputInterviewId] = useState("");
   const [showEndConfirm, setShowEndConfirm] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
   const [isVideoOff, setIsVideoOff] = useState(false);
   const [stream, setStream] = useState<MediaStream | null>(null);
-  
+
   const [loading, setLoading] = useState(true);
   const [currentQuestion, setCurrentQuestion] = useState("");
   const [qaHistory, setQaHistory] = useState<any[]>([]);
@@ -31,7 +32,7 @@ function InterviewContent() {
   const [isRecording, setIsRecording] = useState(false);
   const [roundData, setRoundData] = useState<any>(null);
   const [totalRounds, setTotalRounds] = useState(3);
-  
+
   const videoRef = useRef<HTMLVideoElement>(null);
   const recognitionRef = useRef<any>(null);
 
@@ -55,7 +56,8 @@ function InterviewContent() {
   // Initial Sync Logic
   useEffect(() => {
     if (!interviewId) {
-      toast.error("Invalid session ID.");
+      setView("selection");
+      setLoading(false);
       return;
     }
 
@@ -67,20 +69,24 @@ function InterviewContent() {
           const round = result.data.round;
           setRoundData(round);
           setTotalRounds(result.data.interview.rounds.length);
-          
+
           if (round.status === "completed") {
             setView("results");
           } else if (round.qa_pairs.length > 0) {
             setCurrentQuestion(round.qa_pairs[round.qa_pairs.length - 1].question);
             setQaHistory(round.qa_pairs);
             setView("active");
+          } else {
+            setView("lobby");
           }
         } else {
           toast.error("Could not sync interview data.");
+          setView("selection");
         }
       } catch (e) {
         console.error("Sync error", e);
-        toast.error("Connection lost. Retrying sync...");
+        toast.error("Connection lost.");
+        setView("selection");
       } finally {
         setLoading(false);
       }
@@ -101,6 +107,8 @@ function InterviewContent() {
         setCurrentQuestion(result.data.round.qa_pairs[0].question);
         setQaHistory(result.data.round.qa_pairs);
         setView("active");
+      } else if (res.status === 429) {
+        toast.error("Rate limit exceeded: Please wait 15 minutes before starting another AI interview round.");
       } else {
         toast.error(result.message || "Failed to start round.");
       }
@@ -135,6 +143,10 @@ function InterviewContent() {
           setQaHistory(round.qa_pairs);
           setChatMessage("");
         }
+      } else if (res.status === 429) {
+        toast.error("Rate limit exceeded: Please wait 15 minutes before sending another answer.");
+      } else {
+        toast.error(result?.message || "Failed to submit answer.");
       }
     } catch {
       toast.error("Sync failed.");
@@ -183,6 +195,74 @@ function InterviewContent() {
 
   return (
     <AnimatePresence mode="wait">
+      {view === "selection" && (
+        <motion.div
+          key="selection"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -20 }}
+          className="max-w-4xl mx-auto space-y-12 py-12"
+        >
+          <div className="text-center space-y-4">
+            <h1 className="text-4xl font-black text-white tracking-tight">AI Interview Terminal</h1>
+            <p className="text-text-muted">Enter your interview ID or sharpen your skills with a practice session.</p>
+          </div>
+
+          <div className="grid md:grid-cols-2 gap-8">
+            {/* Start Job Interview */}
+            <div className="p-10 rounded-[3rem] bg-surface-1 border border-primary/20 space-y-6 shadow-2xl shadow-primary/5">
+              <div className="h-14 w-14 rounded-2xl bg-primary/10 flex items-center justify-center text-primary text-2xl">
+                <FiZap />
+              </div>
+              <div className="space-y-2">
+                <h2 className="text-2xl font-bold text-white">Job Interview</h2>
+                <p className="text-sm text-text-muted">Have an interview ID? Enter it below to begin your official assessment.</p>
+              </div>
+              <div className="space-y-4 pt-4">
+                <input
+                  type="text"
+                  placeholder="Paste Interview ID here..."
+                  value={inputInterviewId}
+                  onChange={(e) => setInputInterviewId(e.target.value)}
+                  className="w-full h-14 bg-surface-2 border border-border-medium rounded-2xl px-6 text-sm text-white outline-none focus:border-primary/50 transition-all"
+                />
+                <button
+                  onClick={() => inputInterviewId && router.push(`/candidate/ai-interview?id=${inputInterviewId}&round=0`)}
+                  disabled={!inputInterviewId}
+                  className="w-full h-14 bg-primary text-white font-black uppercase tracking-widest rounded-2xl hover:bg-primary-hover transition-all disabled:opacity-50"
+                >
+                  Join Session
+                </button>
+              </div>
+            </div>
+
+            {/* Practice Mode */}
+            <div className="p-10 rounded-[3rem] bg-surface-1 border border-white/5 space-y-6">
+              <div className="h-14 w-14 rounded-2xl bg-white/5 flex items-center justify-center text-white text-2xl">
+                <FiMic />
+              </div>
+              <div className="space-y-2">
+                <h2 className="text-2xl font-bold text-white">Practice Lab</h2>
+                <p className="text-sm text-text-muted">Warm up with AI-generated mock interviews across different categories.</p>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3 pt-4">
+                {["Frontend", "Backend", "Behavioral", "System Design"].map((cat) => (
+                  <button
+                    key={cat}
+                    onClick={() => toast.info(`${cat} practice coming soon!`)}
+                    className="p-4 rounded-2xl bg-surface-2 border border-white/5 text-left hover:border-primary/40 transition-all group"
+                  >
+                    <p className="text-[10px] font-black text-primary uppercase tracking-widest mb-1 group-hover:text-white">{cat}</p>
+                    <p className="text-xs text-text-muted">Start Session</p>
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+        </motion.div>
+      )}
+
       {view === "lobby" && (
         <motion.div key="lobby" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
           <InterviewLobby onStart={handleStartRound} />
@@ -191,7 +271,7 @@ function InterviewContent() {
 
       {view === "results" && (
         <motion.div key="results" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-          <RoundFeedback 
+          <RoundFeedback
             roundIndex={roundIndex}
             result={roundData}
             isLastRound={roundIndex >= totalRounds - 1}
@@ -212,13 +292,13 @@ function InterviewContent() {
               <h1 className="text-xl font-bold text-white tracking-tight">Technical Assessment</h1>
             </div>
             <div className="flex items-center gap-4 text-right">
-               <div className="border-r border-white/10 pr-4">
-                 <p className="text-[10px] font-bold text-text-muted uppercase tracking-widest">Progress</p>
-                 <p className="text-sm font-mono text-white">{qaHistory.length} / {roundData?.max_questions || 5}</p>
-               </div>
-               <button onClick={() => setShowEndConfirm(true)} className="p-3 rounded-xl bg-red-500/10 text-red-500 hover:bg-red-500/20 transition-all">
-                  <FiPhoneOff />
-               </button>
+              <div className="border-r border-white/10 pr-4">
+                <p className="text-[10px] font-bold text-text-muted uppercase tracking-widest">Progress</p>
+                <p className="text-sm font-mono text-white">{qaHistory.length} / {roundData?.max_questions || 5}</p>
+              </div>
+              <button onClick={() => setShowEndConfirm(true)} className="p-3 rounded-xl bg-red-500/10 text-red-500 hover:bg-red-500/20 transition-all">
+                <FiPhoneOff />
+              </button>
             </div>
           </header>
 
@@ -233,12 +313,12 @@ function InterviewContent() {
                 )}
                 {/* HUD Controls */}
                 <div className="absolute bottom-6 left-6 flex gap-2">
-                   <button onClick={() => setIsMuted(!isMuted)} className={`p-3 rounded-xl ${isMuted ? 'bg-red-500 text-white' : 'bg-black/40 text-white backdrop-blur-md'}`}>
-                      {isMuted ? <FiMicOff /> : <FiMic />}
-                   </button>
-                   <button onClick={() => setIsVideoOff(!isVideoOff)} className={`p-3 rounded-xl ${isVideoOff ? 'bg-red-500 text-white' : 'bg-black/40 text-white backdrop-blur-md'}`}>
-                      {isVideoOff ? <FiVideoOff /> : <FiVideo />}
-                   </button>
+                  <button onClick={() => setIsMuted(!isMuted)} className={`p-3 rounded-xl ${isMuted ? 'bg-red-500 text-white' : 'bg-black/40 text-white backdrop-blur-md'}`}>
+                    {isMuted ? <FiMicOff /> : <FiMic />}
+                  </button>
+                  <button onClick={() => setIsVideoOff(!isVideoOff)} className={`p-3 rounded-xl ${isVideoOff ? 'bg-red-500 text-white' : 'bg-black/40 text-white backdrop-blur-md'}`}>
+                    {isVideoOff ? <FiVideoOff /> : <FiVideo />}
+                  </button>
                 </div>
               </div>
 
@@ -246,49 +326,49 @@ function InterviewContent() {
                 <p className="text-[10px] font-black text-primary uppercase tracking-[0.3em] mb-4">Interviewer Question</p>
                 <p className="text-2xl font-bold text-white leading-relaxed tracking-tight">"{currentQuestion}"</p>
                 {isSubmitting && (
-                   <div className="mt-4 flex gap-1">
-                     {[0,1,2].map(i => <motion.div key={i} animate={{ scale: [1, 1.5, 1] }} transition={{ repeat: Infinity, duration: 1, delay: i*0.2 }} className="w-1.5 h-1.5 rounded-full bg-primary" />)}
-                   </div>
+                  <div className="mt-4 flex gap-1">
+                    {[0, 1, 2].map(i => <motion.div key={i} animate={{ scale: [1, 1.5, 1] }} transition={{ repeat: Infinity, duration: 1, delay: i * 0.2 }} className="w-1.5 h-1.5 rounded-full bg-primary" />)}
+                  </div>
                 )}
               </div>
             </div>
 
             <div className="lg:col-span-4 flex flex-col gap-6">
-               <div className="flex-1 p-6 rounded-[2.5rem] bg-surface-1/40 border border-white/5 overflow-y-auto space-y-4">
-                  <h3 className="text-xs font-black text-white uppercase tracking-widest px-2">Conversation</h3>
-                  {qaHistory.map((q, i) => (
-                    <div key={i} className="p-4 rounded-2xl bg-white/[0.02] border border-white/5 space-y-2">
-                       <p className="text-[9px] font-black text-primary uppercase">Question {i+1}</p>
-                       <p className="text-xs text-text-secondary leading-relaxed">{q.question}</p>
-                    </div>
-                  ))}
-               </div>
-
-               <div className="p-6 rounded-[2.5rem] bg-surface-1/40 border border-white/5 space-y-4">
-                  <textarea
-                    value={chatMessage}
-                    onChange={(e) => setChatMessage(e.target.value)}
-                    disabled={isSubmitting}
-                    className="w-full h-32 bg-white/[0.02] border border-white/5 rounded-2xl p-4 text-xs text-white outline-none focus:border-primary/40 transition-all resize-none disabled:opacity-50"
-                    placeholder="Provide your answer..."
-                  />
-                  <div className="flex gap-2">
-                    <button onClick={toggleRecording} className={`flex-1 flex items-center justify-center gap-2 py-4 rounded-2xl ${isRecording ? "bg-red-600 text-white" : "bg-surface-2 text-text-muted"}`}>
-                      {isRecording ? <FiMicOff /> : <FiMic />}
-                    </button>
-                    <button 
-                      onClick={handleSendResponse}
-                      disabled={isSubmitting || !chatMessage.trim()}
-                      className="flex-[3] py-4 rounded-2xl bg-primary text-white font-black uppercase tracking-widest hover:bg-primary-hover disabled:opacity-50 transition-all shadow-lg shadow-primary/20"
-                    >
-                      {isSubmitting ? (
-                        <div className="flex items-center gap-2">
-                          Processing <motion.div animate={{ rotate: 360 }} transition={{ repeat: Infinity, duration: 1 }} className="w-3 h-3 border-2 border-white border-t-transparent rounded-full" />
-                        </div>
-                      ) : <span className="flex items-center justify-center gap-2">Submit <FiSend /></span>}
-                    </button>
+              <div className="flex-1 p-6 rounded-[2.5rem] bg-surface-1/40 border border-white/5 overflow-y-auto space-y-4">
+                <h3 className="text-xs font-black text-white uppercase tracking-widest px-2">Conversation</h3>
+                {qaHistory.map((q, i) => (
+                  <div key={i} className="p-4 rounded-2xl bg-white/[0.02] border border-white/5 space-y-2">
+                    <p className="text-[9px] font-black text-primary uppercase">Question {i + 1}</p>
+                    <p className="text-xs text-text-secondary leading-relaxed">{q.question}</p>
                   </div>
-               </div>
+                ))}
+              </div>
+
+              <div className="p-6 rounded-[2.5rem] bg-surface-1/40 border border-white/5 space-y-4">
+                <textarea
+                  value={chatMessage}
+                  onChange={(e) => setChatMessage(e.target.value)}
+                  disabled={isSubmitting}
+                  className="w-full h-32 bg-white/[0.02] border border-white/5 rounded-2xl p-4 text-xs text-white outline-none focus:border-primary/40 transition-all resize-none disabled:opacity-50"
+                  placeholder="Provide your answer..."
+                />
+                <div className="flex gap-2">
+                  <button onClick={toggleRecording} className={`flex-1 flex items-center justify-center gap-2 py-4 rounded-2xl ${isRecording ? "bg-red-600 text-white" : "bg-surface-2 text-text-muted"}`}>
+                    {isRecording ? <FiMicOff /> : <FiMic />}
+                  </button>
+                  <button
+                    onClick={handleSendResponse}
+                    disabled={isSubmitting || !chatMessage.trim()}
+                    className="flex-[3] py-4 rounded-2xl bg-primary text-white font-black uppercase tracking-widest hover:bg-primary-hover disabled:opacity-50 transition-all shadow-lg shadow-primary/20"
+                  >
+                    {isSubmitting ? (
+                      <div className="flex items-center gap-2">
+                        Processing <motion.div animate={{ rotate: 360 }} transition={{ repeat: Infinity, duration: 1 }} className="w-3 h-3 border-2 border-white border-t-transparent rounded-full" />
+                      </div>
+                    ) : <span className="flex items-center justify-center gap-2">Submit <FiSend /></span>}
+                  </button>
+                </div>
+              </div>
             </div>
           </div>
         </motion.div>
