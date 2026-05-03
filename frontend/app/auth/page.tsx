@@ -8,8 +8,8 @@ import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { authSchema, emailSchema } from "@/lib/validation";
 import Link from "next/link";
-import { loginAction, registerAction } from "./actions";
-import { GoogleOAuthProvider, useGoogleLogin } from "@react-oauth/google";
+import { loginAction, registerAction, verifyMfaAction } from "./actions";
+import { GoogleOAuthProvider, GoogleLogin } from "@react-oauth/google";
 
 // --- Configuration & Constants ---
 const TESTIMONIALS = [
@@ -142,7 +142,7 @@ function FloatingInput({
 
 function AuthContent() {
   const router = useRouter();
-  const [mode, setMode] = useState<"signin" | "signup" | "magic">("signin");
+  const [mode, setMode] = useState<"signin" | "signup" | "magic" | "mfa">("signin");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [activeTestimonial, setActiveTestimonial] = useState(0);
 
@@ -152,6 +152,8 @@ function AuthContent() {
   const [name, setName] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [role, setRole] = useState<"candidate" | "recruiter">("candidate");
+  const [mfaCode, setMfaCode] = useState("");
+  const [mfaUserId, setMfaUserId] = useState("");
 
   // Validation State
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -207,19 +209,31 @@ function AuthContent() {
     return () => clearInterval(interval);
   }, []);
 
-  const handleGoogleLogin = useGoogleLogin({
-    onSuccess: async () => {
-      setIsSubmitting(true);
-      try {
-        // Implementation for Google login would go here
-        toast.info("Google Authentication integration in progress.");
-      } catch {
-        toast.error("Google login failed.");
-      } finally {
-        setIsSubmitting(false);
+  const handleGoogleLoginSuccess = async (credentialResponse: any) => {
+    setIsSubmitting(true);
+    try {
+      const res = await fetch("/api/auth/google", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          credential: credentialResponse.credential,
+          role: role
+        }),
+      });
+
+      const result = await res.json();
+      if (res.ok) {
+        toast.success("Welcome back to EchoHire!");
+        router.push(result.data.role === "recruiter" ? "/recruiter/dashboard" : "/candidate/dashboard");
+      } else {
+        toast.error(result.message || "Google login failed.");
       }
-    },
-  });
+    } catch (err) {
+      toast.error("Google login failed.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
@@ -259,8 +273,10 @@ function AuthContent() {
 
     setIsSubmitting(true);
     try {
-      let result;
-      if (mode === "signin") {
+      let result: any;
+      if (mode === "mfa") {
+        result = await verifyMfaAction(mfaUserId, mfaCode);
+      } else if (mode === "signin") {
         result = await loginAction({ email: email.trim(), password });
       } else {
         result = await registerAction({ name: name.trim(), email: email.trim(), password, role });
@@ -269,6 +285,14 @@ function AuthContent() {
       if (!result.success) {
         throw new Error(result.message);
       }
+
+      if (result.mfaRequired) {
+        setMfaUserId(result.userId);
+        setMode("mfa");
+        toast.info("Multi-Factor Authentication Required");
+        return;
+      }
+
 
       toast.success(mode === "signin" ? "Welcome back to EchoHire!" : "Account created successfully.");
       router.push(result.redirectUrl || "/dashboard");
@@ -376,14 +400,16 @@ function AuthContent() {
                   {/* Header */}
                   <div className="space-y-2 text-center lg:text-left">
                     <h1 className="text-3xl font-black text-white tracking-tight">
-                      {mode === "signin" ? "Access Workspace" : mode === "signup" ? "Build Your Profile" : "Passwordless Login"}
+                      {mode === "signin" ? "Access Workspace" : mode === "signup" ? "Build Your Profile" : mode === "mfa" ? "Verify Identity" : "Passwordless Login"}
                     </h1>
                     <p className="text-sm text-text-secondary leading-relaxed">
                       {mode === "signin"
                         ? "Enter your credentials to continue your career journey."
                         : mode === "signup"
                           ? "Join 15,000+ engineers optimizing their future."
-                          : "Enter your email and we'll send you a secure login link."
+                          : mode === "mfa"
+                            ? "Enter the 6-digit code from your authenticator app."
+                            : "Enter your email and we'll send you a secure login link."
                       }
                     </p>
                   </div>
@@ -478,6 +504,20 @@ function AuthContent() {
                       </>
                     )}
 
+                    {mode === "mfa" && (
+                      <FloatingInput
+                        name="mfaCode"
+                        label="Verification Code"
+                        value={mfaCode}
+                        onChange={(v) => handleChange("mfaCode", v, setMfaCode)}
+                        onBlur={() => handleBlur("mfaCode", mfaCode)}
+                        type="text"
+                        icon={FiShield}
+                        required
+                        error={errors.mfaCode}
+                      />
+                    )}
+
                     <button
                       type="submit"
                       disabled={isSubmitting}
@@ -497,14 +537,16 @@ function AuthContent() {
                       <span className="relative px-4 bg-surface-1 text-[10px] font-bold uppercase tracking-widest text-text-muted">Or Securely Connect With</span>
                     </div>
 
-                    <div className="grid grid-cols-2 gap-4">
-                      <button
-                        onClick={() => handleGoogleLogin()}
-                        className="h-[52px] rounded-xl border border-border-medium bg-surface-2 flex items-center justify-center gap-3 text-xs font-bold text-white hover:bg-surface-1 hover:border-text-muted transition-all"
-                      >
-                        <FcGoogle size={20} />
-                        Google
-                      </button>
+                    <div className="flex flex-col gap-4">
+                      <div className="flex justify-center">
+                        <GoogleLogin
+                          onSuccess={handleGoogleLoginSuccess}
+                          onError={() => toast.error("Google Login Failed")}
+                          theme="filled_blue"
+                          shape="pill"
+                          width="440px"
+                        />
+                      </div>
                       <button className="h-[52px] rounded-xl border border-border-medium bg-surface-2 flex items-center justify-center gap-3 text-xs font-bold text-white hover:bg-surface-1 hover:border-text-muted transition-all">
                         <FiGithub size={20} />
                         GitHub

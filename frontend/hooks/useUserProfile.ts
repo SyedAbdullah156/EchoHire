@@ -1,40 +1,15 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useAuth } from "@/context/AuthContext";
 
-type UserProfile = {
-  name: string;
-  avatarDataUrl: string | null;
-  createdAt: string | null;
-};
-
-export function useUserProfile(): UserProfile {
-  const [profile, setProfile] = useState<UserProfile>({ name: "", avatarDataUrl: null, createdAt: null });
-
-  useEffect(() => {
-    const fetchProfile = async () => {
-      const token = localStorage.getItem("echohire-token");
-      if (!token) return;
-
-      try {
-        const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://127.0.0.1:5050";
-        const res = await fetch(`${API_BASE}/api/users/me`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        if (!res.ok) return;
-        const body = await res.json();
-        setProfile({
-          name: body?.data?.name ?? "",
-          avatarDataUrl: body?.data?.profile?.avatarDataUrl ?? null,
-          createdAt: body?.data?.createdAt ?? null,
-        });
-      } catch {
-        // fail silently — avatar will fall back to initials
-      }
-    };
-
-    fetchProfile();
-  }, []);
-
-  return profile;
+export function useUserProfile() {
+  const { user, loading } = useAuth();
+  
+  return {
+    name: user?.name ?? "",
+    avatarDataUrl: user?.profile?.avatarDataUrl ?? null,
+    isApproved: user?.isApproved ?? true,
+    createdAt: (user as any)?.createdAt ?? null,
+    loading
+  };
 }

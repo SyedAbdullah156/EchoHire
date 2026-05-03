@@ -31,6 +31,14 @@ export async function loginAction(formData: z.infer<typeof loginSchema>) {
       return { success: false, message: result.message || "Invalid credentials" };
     }
 
+    if (result.mfaRequired) {
+      return { 
+        success: true, 
+        mfaRequired: true, 
+        userId: result.userId 
+      };
+    }
+
     const { token, data } = result;
 
     // Set secure HTTP-only cookie
@@ -95,6 +103,42 @@ export async function logoutAction() {
     const cookieStore = await cookies();
     cookieStore.delete("echohire-session");
     return { success: true, redirectUrl: "/auth" };
+}
+
+export async function verifyMfaAction(userId: string, code: string) {
+  try {
+    const response = await fetch(`${API_BASE_URL}/api/auth/login-mfa`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ userId, code }),
+    });
+
+    const result = await response.json();
+
+    if (!response.ok) {
+      return { success: false, message: result.message || "Invalid verification code" };
+    }
+
+    const { token, data } = result;
+
+    const cookieStore = await cookies();
+    cookieStore.set("echohire-session", token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+      maxAge: 60 * 60 * 24 * 7, // 7 days
+      path: "/",
+    });
+
+    return { 
+      success: true, 
+      message: "MFA verified",
+      redirectUrl: getDashboardRoute(data.role) 
+    };
+  } catch (err) {
+    console.error("MFA Action Error:", err);
+    return { success: false, message: "Verification failed. Try again." };
+  }
 }
 
 function getDashboardRoute(role: string) {
