@@ -3,10 +3,12 @@ import bcrypt from "bcryptjs";
 import crypto from "crypto";
 import nodemailer from "nodemailer";
 import { OAuth2Client } from "google-auth-library";
+import speakeasy from "speakeasy";
 import { User } from "../models/user.model";
 import { AppError } from "../utils/AppError.utils";
 import { signToken } from "../utils/jwt.utils";
 import { createUserService } from "./user.services";
+import { AuthRequest } from "../types/request.types";
 
 const googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
@@ -26,7 +28,11 @@ export const register = async (
     next: NextFunction,
 ) => {
     try {
-        const user = await createUserService(req.body);
+        const userData = { ...req.body };
+        if (userData.role === "recruiter") {
+            userData.isApproved = false;
+        }
+        const user = await createUserService(userData);
 
         const token = signToken(user._id.toString(), user.role);
 
@@ -70,8 +76,57 @@ export const login = async (
             throw new AppError("Invalid email or password", 401);
         }
 
+
         const userObject: any = user.toObject();
         delete userObject.password;
+
+        if (user.mfaEnabled) {
+            return res.status(200).json({
+                success: true,
+                message: "MFA required",
+                mfaRequired: true,
+                userId: user._id,
+            });
+        }
+
+        const token = signToken(user._id.toString(), user.role);
+
+        res.status(200).json({
+            success: true,
+            message: "Login successful",
+            data: userObject,
+            token,
+        });
+    } catch (error) {
+        next(error);
+    }
+};
+
+export const loginVerifyMFA = async (
+    req: Request,
+    res: Response,
+    next: NextFunction,
+) => {
+    try {
+        const { userId, code } = req.body;
+        if (!userId || !code) throw new AppError("User ID and code are required", 400);
+
+        const user = await User.findById(userId).select("+mfaSecret");
+        if (!user || !user.mfaSecret) throw new AppError("MFA not set up for this user", 400);
+
+        const verified = speakeasy.totp.verify({
+            secret: user.mfaSecret,
+            encoding: "base32",
+            token: code,
+        });
+
+        if (!verified) {
+            throw new AppError("Invalid verification code", 400);
+        }
+
+        const userObject: any = user.toObject();
+        delete userObject.password;
+        delete userObject.mfaSecret;
 
         const token = signToken(user._id.toString(), user.role);
 
@@ -109,19 +164,37 @@ export const googleLogin = async (
         }
 
         let user = await User.findOne({ email: payload.email.toLowerCase() });
+        const googleName = payload.name || "Google User";
+        const googlePicture = payload.picture;
 
         if (!user) {
-            // Auto-register
-            const newUser = await createUserService({
-                name: payload.name || "Google User",
+            const newUserData: any = {
+                name: googleName,
                 email: payload.email,
-                role: (role as "candidate" | "recruiter" | "admin") || "candidate",
+                role: (role as any) || "candidate",
                 googleId: payload.sub,
-            });
+            };
+
+            if (newUserData.role === "candidate") {
+                newUserData.profile = { avatarDataUrl: googlePicture };
+            }
+            if (newUserData.role === "recruiter") {
+                newUserData.isApproved = false;
+            }
+
+            const newUser = await createUserService(newUserData);
             user = await User.findById(newUser._id);
-        } else if (!user.googleId) {
-            user.googleId = payload.sub;
-            await user.save();
+        } else {
+            let updated = false;
+            if (!user.googleId) {
+                user.googleId = payload.sub;
+                updated = true;
+            }
+            if (user.role === "candidate" && !(user as any).profile?.avatarDataUrl && googlePicture) {
+                (user as any).profile = { ...((user as any).profile || {}), avatarDataUrl: googlePicture };
+                updated = true;
+            }
+            if (updated) await user.save();
         }
 
         if (!user || !user._id) {
@@ -130,6 +203,15 @@ export const googleLogin = async (
 
         const userObject: any = user.toObject();
         delete userObject.password;
+
+        if (user.mfaEnabled) {
+            return res.status(200).json({
+                success: true,
+                message: "MFA required",
+                mfaRequired: true,
+                userId: user._id,
+            });
+        }
 
         const token = signToken(user._id.toString(), user.role);
 
@@ -217,6 +299,108 @@ export const resetPassword = async (
         await user.save();
 
         res.status(200).json({ success: true, message: "Password reset successful" });
+    } catch (error) {
+        next(error);
+    }
+};
+
+export const changePassword = async (
+    req: AuthRequest,
+    res: Response,
+    next: NextFunction,
+) => {
+    try {
+        const { oldPassword, newPassword } = req.body;
+        if (!req.user) throw new AppError("Authentication required", 401);
+
+        const user = await User.findById(req.user._id).select("+password");
+        if (!user || !user.password) throw new AppError("User not found", 404);
+
+        const isMatch = await bcrypt.compare(oldPassword, user.password);
+        if (!isMatch) throw new AppError("Invalid current password", 400);
+
+        const salt = await bcrypt.genSalt(10);
+        user.password = await bcrypt.hash(newPassword, salt);
+        await user.save();
+
+        res.status(200).json({ success: true, message: "Password updated successfully" });
+    } catch (error) {
+        next(error);
+    }
+};
+
+export const setupMFA = async (
+    req: AuthRequest,
+    res: Response,
+    next: NextFunction,
+) => {
+    try {
+        if (!req.user) throw new AppError("Authentication required", 401);
+
+        const secret = speakeasy.generateSecret({
+            name: `EchoHire (${req.user.email})`,
+        });
+
+        await User.findByIdAndUpdate(req.user._id, {
+            mfaSecret: secret.base32,
+            mfaEnabled: false, // Wait for verification
+        });
+
+        res.status(200).json({
+            success: true,
+            data: {
+                otpauth_url: secret.otpauth_url,
+                base32: secret.base32,
+            },
+        });
+    } catch (error) {
+        next(error);
+    }
+};
+
+export const verifyMFA = async (
+    req: AuthRequest,
+    res: Response,
+    next: NextFunction,
+) => {
+    try {
+        const { code } = req.body;
+        if (!req.user) throw new AppError("Authentication required", 401);
+
+        const user = await User.findById(req.user._id).select("+mfaSecret");
+        if (!user || !user.mfaSecret) throw new AppError("MFA not set up", 400);
+
+        const verified = speakeasy.totp.verify({
+            secret: user.mfaSecret,
+            encoding: "base32",
+            token: code,
+        });
+
+        if (verified) {
+            user.mfaEnabled = true;
+            await user.save();
+            res.status(200).json({ success: true, message: "MFA enabled successfully" });
+        } else {
+            throw new AppError("Invalid verification code", 400);
+        }
+    } catch (error) {
+        next(error);
+    }
+};
+export const disableMFA = async (
+    req: AuthRequest,
+    res: Response,
+    next: NextFunction,
+) => {
+    try {
+        if (!req.user) throw new AppError("Authentication required", 401);
+        
+        await User.findByIdAndUpdate(req.user._id, {
+            mfaEnabled: false,
+            mfaSecret: undefined
+        });
+        
+        res.status(200).json({ success: true, message: "MFA disabled successfully" });
     } catch (error) {
         next(error);
     }

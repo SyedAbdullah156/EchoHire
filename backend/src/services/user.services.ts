@@ -52,22 +52,22 @@ export const updateUserService = async (id: string, inputData: Partial<TUser>) =
         }
     }
 
-    // Only Email and Passwords can be updated using User Service
-    const updatePayload: Record<string, any> = {};
-    if (name) updatePayload.name = name;
-    if (email) updatePayload.email = email;
+    const updatePayload: any = { ...inputData };
+    delete updatePayload.password;
+    delete updatePayload.role;
 
-    const user = await User.findByIdAndUpdate(
-        id,
-        { $set: updatePayload },
-        { new: true, runValidators: true },
-    ).select("-password");
-
+    const user = await User.findById(id);
     if (!user) {
         throw new AppError("User not found", 404);
     }
 
-    return user;
+    // Use .set() to update fields. Mongoose handles discriminators and nested objects correctly here.
+    user.set(updatePayload);
+    await user.save();
+
+    const userObj = user.toObject();
+    delete userObj.password;
+    return userObj;
 };
 
 export const deleteUserService = async (id: string) => {
@@ -76,4 +76,24 @@ export const deleteUserService = async (id: string) => {
         throw new AppError("User not found", 404);
     }
     return user;
+};
+
+export const getPendingRecruitersService = async () => {
+    return await User.find({ role: "recruiter", isApproved: false }).select("-password");
+};
+
+export const approveRecruiterService = async (id: string) => {
+    const user = await User.findById(id);
+    if (!user) {
+        throw new AppError("User not found", 404);
+    }
+    if (user.role !== "recruiter") {
+        throw new AppError("User is not a recruiter", 400);
+    }
+    user.isApproved = true;
+    await user.save();
+    
+    const userObj = user.toObject();
+    delete userObj.password;
+    return userObj;
 };

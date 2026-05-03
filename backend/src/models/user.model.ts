@@ -1,3 +1,4 @@
+// Updated User Model
 import mongoose, { Schema } from "mongoose";
 import { TUser } from "../types/user.types";
 
@@ -35,6 +36,19 @@ const userSchema = new Schema<TUser>(
         resetPasswordExpires: {
             type: Date,
             required: false,
+        },
+        mfaSecret: {
+            type: String,
+            required: false,
+            select: false,
+        },
+        mfaEnabled: {
+            type: Boolean,
+            default: false,
+        },
+        isApproved: {
+            type: Boolean,
+            default: true,
         },
     },
     {

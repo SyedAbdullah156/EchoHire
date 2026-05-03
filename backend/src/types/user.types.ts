@@ -1,3 +1,4 @@
+// Updated TUser
 export interface TUser {
     _id?: string;
     name: string;
@@ -7,4 +8,8 @@ export interface TUser {
     googleId?: string;
     resetPasswordToken?: string;
     resetPasswordExpires?: Date;
+    mfaSecret?: string;
+    mfaEnabled?: boolean;
+    profile?: any;
+    isApproved?: boolean;
 }
