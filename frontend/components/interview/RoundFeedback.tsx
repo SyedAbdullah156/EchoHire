@@ -38,10 +38,30 @@ export default function RoundFeedback({ roundIndex, result, isLastRound, onNext,
               <p className="text-[10px] font-black uppercase tracking-widest text-text-muted mb-2">Technical Proficiency</p>
               <p className="text-4xl font-black text-primary">{result?.score || 0}%</p>
            </div>
-           <div className="p-8 rounded-[2rem] bg-surface-2 border border-white/5">
-              <p className="text-[10px] font-black uppercase tracking-widest text-text-muted mb-2">Outcome</p>
-              <p className="text-3xl font-black text-emerald-500 uppercase tracking-tighter">Verified</p>
-           </div>
+           {result?.phase_data?.coding_complexity ? (
+             <div className="p-8 rounded-[2rem] bg-surface-2 border border-white/5 text-left">
+                <p className="text-[10px] font-black uppercase tracking-widest text-text-muted mb-3">System Complexity</p>
+                <div className="space-y-2">
+                  <div className="flex justify-between text-[11px]">
+                    <span className="text-text-muted uppercase tracking-widest">Time:</span>
+                    <span className="text-blue-400 font-mono font-bold">{result.phase_data.coding_complexity.time}</span>
+                  </div>
+                  <div className="flex justify-between text-[11px]">
+                    <span className="text-text-muted uppercase tracking-widest">Space:</span>
+                    <span className="text-emerald-400 font-mono font-bold">{result.phase_data.coding_complexity.space}</span>
+                  </div>
+                  <div className="flex justify-between text-[11px] pt-2 border-t border-white/5">
+                    <span className="text-text-muted uppercase tracking-widest">Tests:</span>
+                    <span className="text-white font-bold">{result.phase_data.test_cases_passed} / {result.phase_data.test_cases_total}</span>
+                  </div>
+                </div>
+             </div>
+           ) : (
+             <div className="p-8 rounded-[2rem] bg-surface-2 border border-white/5">
+                <p className="text-[10px] font-black uppercase tracking-widest text-text-muted mb-2">Outcome</p>
+                <p className="text-3xl font-black text-emerald-500 uppercase tracking-tighter">Verified</p>
+             </div>
+           )}
         </div>
 
         <div className="text-left space-y-4">

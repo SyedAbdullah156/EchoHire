@@ -5,12 +5,34 @@ import Editor from "@monaco-editor/react";
 import { FiPlay, FiCode, FiZap, FiBox, FiCheckCircle, FiInfo } from "react-icons/fi";
 import { toast } from "sonner";
 
+interface TestCase {
+  input: string;
+  expected: string;
+}
+
+interface TestResult {
+  passed: boolean;
+  input: string;
+  actual?: string;
+  error?: string;
+}
+
+interface AnalysisResults {
+  testResults: TestResult[];
+  timeComplexity: string;
+  spaceComplexity: string;
+  suggestions: string[];
+  analysis: string;
+}
+
 interface CodingSandboxProps {
   initialCode?: string;
   language?: string;
   problemStatement?: string;
-  testCases?: any[];
-  onSuccess?: (analysis: any) => void;
+  testCases?: TestCase[];
+  interviewId?: string;
+  roundIndex?: number;
+  onSuccess?: (analysis: AnalysisResults) => void;
 }
 
 const BOILERPLATE: Record<string, string> = {
@@ -26,12 +48,14 @@ export default function CodingSandbox({
   language: initialLanguage = "javascript",
   problemStatement = "Write a function to solve the problem.",
   testCases = [],
+  interviewId,
+  roundIndex,
   onSuccess
 }: CodingSandboxProps) {
   const [language, setLanguage] = useState(initialLanguage);
   const [code, setCode] = useState(initialCode || BOILERPLATE[initialLanguage] || "// Write your code here...");
   const [isRunning, setIsRunning] = useState(false);
-  const [results, setResults] = useState<any>(null);
+  const [results, setResults] = useState<AnalysisResults | null>(null);
 
   const handleLanguageChange = (newLang: string) => {
     setLanguage(newLang);
@@ -47,7 +71,7 @@ export default function CodingSandbox({
       const res = await fetch("/api/coding/execute", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ code, language, problemStatement, testCases }),
+        body: JSON.stringify({ code, language, problemStatement, testCases, interviewId, roundIndex }),
       });
       const result = await res.json();
       if (res.ok) {
@@ -57,7 +81,7 @@ export default function CodingSandbox({
       } else {
         toast.error(result.message || "Failed to analyze code.");
       }
-    } catch (error) {
+    } catch {
       toast.error("Execution error. Please try again.");
     } finally {
       setIsRunning(false);
@@ -149,11 +173,11 @@ export default function CodingSandbox({
                        Test Case Results
                     </div>
                     <span className="text-[10px] font-bold text-emerald-500 bg-emerald-500/10 px-2 py-0.5 rounded">
-                      {results.testResults.filter((r: any) => r.passed).length} / {results.testResults.length} PASSED
+                      {results.testResults.filter((r) => r.passed).length} / {results.testResults.length} PASSED
                     </span>
                   </div>
                   <div className="grid gap-2">
-                    {results.testResults.map((tr: any, i: number) => (
+                    {results.testResults.map((tr, i) => (
                       <div key={i} className="p-3 rounded-xl bg-black/40 border border-slate-800 flex items-center justify-between gap-4">
                         <div className="flex-1 min-w-0">
                           <p className="text-[10px] text-slate-500 font-bold truncate">IN: {tr.input}</p>

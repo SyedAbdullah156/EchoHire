@@ -5,8 +5,16 @@ import { motion } from "framer-motion";
 import NextLink from "next/link";
 import { toast } from "sonner";
 
+type DashboardStats = {
+  totalUsers?: number;
+  systemHealth?: string;
+  openTickets?: number;
+  apiLatency?: string;
+  alerts?: { title: string; time: string; severity: string; desc: string; }[];
+};
+
 export default function AdminDashboardOverview() {
-  const [statsData, setStatsData] = useState<any>(null);
+  const [statsData, setStatsData] = useState<DashboardStats | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -19,7 +27,7 @@ export default function AdminDashboardOverview() {
         } else {
           toast.error("Failed to load system metrics");
         }
-      } catch (err) {
+      } catch {
         toast.error("Error connecting to admin services");
       } finally {
         setLoading(false);
@@ -89,7 +97,7 @@ export default function AdminDashboardOverview() {
                 { title: "Database Load Spike", time: "2m ago", severity: "high", desc: "Primary cluster memory usage exceeded 85%." },
                 { title: "Failed Login Attempts", time: "15m ago", severity: "medium", desc: "Detected unusual activity from 192.168.1.45." },
                 { title: "API Deprecation Warning", time: "1h ago", severity: "low", desc: "v1.2 endpoints will be retired on June 1st." },
-              ]).map((alert: any, i: number) => (
+              ]).map((alert: { title: string; time: string; severity: string; desc: string; }, i: number) => (
                 <div key={i} className="p-4 rounded-2xl bg-surface-1 border border-white/5 flex items-start gap-4 hover:bg-white/[0.02] transition-colors">
                   <div className={`mt-1 h-2 w-2 rounded-full shrink-0 ${alert.severity === 'high' ? 'bg-rose-500' : alert.severity === 'medium' ? 'bg-amber-500' : 'bg-blue-500'
                     }`} />

@@ -21,6 +21,7 @@ const router = express.Router();
 // My profile
 router.get("/me", protect, getMyProfile);
 router.put("/me", protect, updateMe);
+router.delete("/me", protect, deleteUser); // Reusing deleteUser logic or adding deleteMe
 router.post("/me/avatar", protect, upload.single("logo"), uploadLogoToCloudinary, updateMyAvatar);
 
 // Moderation

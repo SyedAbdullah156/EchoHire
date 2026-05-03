@@ -44,9 +44,12 @@ export const loginSchema = z.object({
 
 export const googleAuthSchema = z.object({
     body: z.object({
-        credential: z.string().min(1, "Credential is required"),
+        credential: z.string().min(1, "Credential is required").optional(),
+        accessToken: z.string().min(1, "Access token is required").optional(),
         role: z.enum(["candidate", "recruiter", "admin"]).optional(),
-    }).strict(),
+    }).strict().refine(data => data.credential || data.accessToken, {
+        message: "Either credential or accessToken must be provided",
+    }),
 });
 
 export const forgotPasswordSchema = z.object({

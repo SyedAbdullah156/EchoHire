@@ -17,6 +17,12 @@ export interface TInterviewRound {
     max_questions: number;
     score?: number;
     remarks?: string;
+    phase_data?: {
+        quiz_score?: number;
+        coding_complexity?: { time: string; space: string };
+        test_cases_passed?: number;
+        test_cases_total?: number;
+    };
 }
 
 export interface TInterview {
@@ -24,6 +30,7 @@ export interface TInterview {
     user_id: mongoose.Types.ObjectId;
     status: (typeof INTERVIEW_STATUS)[number];
     rounds: TInterviewRound[];
+    tech_stack?: string;
     cv_url?: string;
     score?: number;
     remarks?: string;

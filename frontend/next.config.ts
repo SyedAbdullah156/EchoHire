@@ -7,6 +7,19 @@ const nextConfig: NextConfig = {
     // components from blocking `next build`.
     ignoreBuildErrors: true,
   },
+  async headers() {
+    return [
+      {
+        source: "/(.*)",
+        headers: [
+          {
+            key: "Cross-Origin-Opener-Policy",
+            value: "unsafe-none",
+          },
+        ],
+      },
+    ];
+  },
 };
 
 export default nextConfig;

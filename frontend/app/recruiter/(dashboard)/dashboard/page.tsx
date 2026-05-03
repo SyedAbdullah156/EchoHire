@@ -37,7 +37,6 @@ export default function RecruiterDashboard() {
   const { name, isApproved } = useUserProfile();
   const [stats, setStats] = useState(STATS);
   const [recentCandidates, setRecentCandidates] = useState(RECENT_CANDIDATES);
-  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchDashboardData = async () => {
@@ -53,7 +52,7 @@ export default function RecruiterDashboard() {
 
           const activeJobs = jobsData.data?.length || 0;
           const totalInterviews = interviewsData.data?.length || 0;
-          const completedInterviews = interviewsData.data?.filter((i: any) => i.status === "completed").length || 0;
+          const completedInterviews = interviewsData.data?.filter((i: { status: string }) => i.status === "completed").length || 0;
 
           setStats([
             { label: "Active Jobs", value: activeJobs.toString(), sub: "Real-time updates", icon: <FiBriefcase /> },
@@ -63,7 +62,13 @@ export default function RecruiterDashboard() {
           ]);
 
           if (interviewsData.data) {
-            const mapped = interviewsData.data.slice(0, 5).map((int: any) => ({
+            const mapped = interviewsData.data.slice(0, 5).map((int: { 
+              user_id?: { name?: string }; 
+              job_id?: { role?: string }; 
+              score?: number; 
+              status?: string; 
+              createdAt: string; 
+            }) => ({
               name: int.user_id?.name || "Unknown",
               role: int.job_id?.role || "General",
               score: int.score || 0,
@@ -75,8 +80,6 @@ export default function RecruiterDashboard() {
         }
       } catch (error) {
         console.error("Failed to fetch recruiter dashboard data:", error);
-      } finally {
-        setLoading(false);
       }
     };
 
@@ -111,7 +114,7 @@ export default function RecruiterDashboard() {
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div className="space-y-1">
           <h1 className="text-3xl font-black text-white tracking-tight">Overview</h1>
-          <p className="text-sm text-text-muted">Welcome back, {name || "Recruiter"}. Here's what's happening today.</p>
+          <p className="text-sm text-text-muted">Welcome back, {name || "Recruiter"}. Here&apos;s what&apos;s happening today.</p>
         </div>
         <Link 
           href={isApproved ? "/recruiter/jobs/new" : "#"}

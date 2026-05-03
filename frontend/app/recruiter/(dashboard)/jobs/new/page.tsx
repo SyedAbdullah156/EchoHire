@@ -71,8 +71,10 @@ export default function NewJobPage() {
           custom_questions: customQuestions,
           deadline: deadline,
           rounds: [
-            { type: "TechnicalScreening", max_questions: 5 },
-            { type: "BehavioralAnalysis", max_questions: 5 }
+            { type: "TechnicalScreening", max_questions: 1 },
+            { type: "FrameworkProficiency", max_questions: 3 },
+            { type: "CodingAssessment", max_questions: 1 },
+            { type: "SystemArchitecture", max_questions: 1 }
           ],
           is_active: true
         }),

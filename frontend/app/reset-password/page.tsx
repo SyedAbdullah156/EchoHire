@@ -7,7 +7,7 @@ import { toast } from "sonner";
 import { useRouter, useSearchParams } from "next/navigation";
 import { z } from "zod";
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://127.0.0.1:5050";
+const API_BASE_URL = "/api/auth";
 
 function ResetPasswordForm() {
   const router = useRouter();
@@ -71,7 +71,7 @@ function ResetPasswordForm() {
     setIsSubmitting(true);
 
     try {
-      const response = await fetch(`${API_BASE_URL}/api/auth/reset-password`, {
+      const response = await fetch(`${API_BASE_URL}/reset-password`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ token, password }),
@@ -100,8 +100,9 @@ function ResetPasswordForm() {
       initial={{ opacity: 0, y: 30 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5, ease: "easeOut" }}
-      className="w-full max-w-lg bg-[linear-gradient(145deg,rgba(7,20,43,0.7)_0%,rgba(11,23,48,0.5)_100%)] backdrop-blur-2xl border border-white/10 rounded-[2rem] p-8 md:p-12 flex flex-col"
+      className="w-full max-w-[440px] bg-surface-1 border border-border-medium rounded-[3rem] p-8 md:p-12 shadow-2xl relative overflow-hidden"
     >
+      <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-purple-500/5 pointer-events-none" />
       <div className="text-center space-y-2 mb-8">
         <h1 className="text-3xl font-bold tracking-tight text-white">
           Create New Password
@@ -121,7 +122,7 @@ function ResetPasswordForm() {
             value={password}
             onChange={(event) => setPassword(event.target.value)}
             required
-            className={inputClassName}
+            className="w-full h-[56px] rounded-xl border border-border-medium bg-surface-2 px-4 py-3 text-sm text-white outline-none placeholder:text-text-muted transition-all focus:border-primary focus:ring-4 focus:ring-primary/10"
             placeholder="Enter your new password"
           />
           <AnimatePresence>
@@ -163,7 +164,7 @@ function ResetPasswordForm() {
             value={confirmPassword}
             onChange={(event) => setConfirmPassword(event.target.value)}
             required
-            className={inputClassName}
+            className="w-full h-[56px] rounded-xl border border-border-medium bg-surface-2 px-4 py-3 text-sm text-white outline-none placeholder:text-text-muted transition-all focus:border-primary focus:ring-4 focus:ring-primary/10"
             placeholder="Confirm your new password"
           />
           {confirmPassword.length > 0 && !passwordsMatch && (
@@ -174,9 +175,9 @@ function ResetPasswordForm() {
         <button
           type="submit"
           disabled={isSubmitting || !passwordIsValid || !passwordsMatch || !token}
-          className="mt-4 block w-full min-h-[48px] rounded-xl bg-gradient-to-r from-[#227dff] to-[#332989] py-3 text-center text-base font-medium text-white transition-all hover:brightness-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#227dff] disabled:opacity-50 disabled:cursor-not-allowed"
+          className="w-full h-[56px] rounded-xl bg-primary text-sm font-bold text-white uppercase tracking-widest transition-all hover:bg-primary-hover active:scale-[0.98] disabled:opacity-50 flex items-center justify-center gap-3 mt-8 shadow-lg shadow-primary/20"
         >
-          {isSubmitting ? "Resetting..." : "Reset Password"}
+          {isSubmitting ? "Updating Password..." : "Update Password"}
         </button>
       </form>
     </motion.div>

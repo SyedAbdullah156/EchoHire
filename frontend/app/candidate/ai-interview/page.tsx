@@ -10,11 +10,14 @@ import { useSearchParams, useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import InterviewLobby from "@/components/interview/InterviewLobby";
 import RoundFeedback from "@/components/interview/RoundFeedback";
+import CodingSandbox from "@/components/CodingSandbox";
+import QuizInterface from "@/components/interview/QuizInterface";
 
 function InterviewContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const interviewId = searchParams.get("id");
+  const token = searchParams.get("token");
   const roundIndex = parseInt(searchParams.get("round") || "0");
 
   const [view, setView] = useState<"selection" | "lobby" | "active" | "results">("selection");
@@ -55,7 +58,7 @@ function InterviewContent() {
 
   // Initial Sync Logic
   useEffect(() => {
-    if (!interviewId) {
+    if (!interviewId && !token) {
       setView("selection");
       setLoading(false);
       return;
@@ -63,12 +66,23 @@ function InterviewContent() {
 
     async function checkState() {
       try {
-        const res = await fetch(`/api/ai-interview/${interviewId}/rounds/${roundIndex}`);
+        const url = interviewId 
+          ? `/api/ai-interview/${interviewId}/rounds/${roundIndex}`
+          : `/api/ai-interview/validate-token?token=${token}`;
+          
+        const res = await fetch(url);
         const result = await res.json();
         if (res.ok) {
-          const round = result.data.round;
+          // If we used a token, we might need to set the internal interviewId for subsequent calls
+          const actualInterviewId = result.data.interview?._id || result.data._id;
+          if (token && actualInterviewId) {
+            router.replace(`/candidate/ai-interview?id=${actualInterviewId}&round=${roundIndex}`, { scroll: false });
+            return; // Effect will re-run with interviewId
+          }
+
+          const round = result.data.round || result.data.rounds[roundIndex];
           setRoundData(round);
-          setTotalRounds(result.data.interview.rounds.length);
+          setTotalRounds(result.data.interview?.rounds.length || result.data.rounds.length);
 
           if (round.status === "completed") {
             setView("results");
@@ -92,7 +106,7 @@ function InterviewContent() {
       }
     }
     checkState();
-  }, [interviewId, roundIndex]);
+  }, [interviewId, token, roundIndex]);
 
   // Handle Start Round
   const handleStartRound = async () => {
@@ -304,33 +318,58 @@ function InterviewContent() {
 
           <div className="grid lg:grid-cols-12 gap-6">
             <div className="lg:col-span-8 space-y-6">
-              <div className="relative aspect-video rounded-[2.5rem] overflow-hidden border border-white/10 bg-black shadow-2xl">
-                <video ref={videoRef} autoPlay muted playsInline className="w-full h-full object-cover" />
-                {isVideoOff && (
-                  <div className="absolute inset-0 bg-surface-1 flex items-center justify-center">
-                    <FiVideoOff className="text-4xl text-text-muted" />
+              {/* --- Phase Specific Content --- */}
+              {roundData?.type === "FrameworkProficiency" ? (
+                <QuizInterface 
+                  question={currentQuestion} 
+                  onAnswer={(ans) => {
+                    setChatMessage(ans);
+                    handleSendResponse();
+                  }}
+                  isSubmitting={isSubmitting}
+                />
+              ) : roundData?.type === "CodingAssessment" ? (
+                <CodingSandbox 
+                  problemStatement={currentQuestion}
+                  interviewId={interviewId || ""}
+                  roundIndex={roundIndex}
+                  onSuccess={(analysis) => {
+                    // Automatically move to next question if coding is done
+                    toast.success("Solution captured. Moving to evaluation...");
+                    setTimeout(handleSendResponse, 2000);
+                  }}
+                />
+              ) : (
+                <>
+                  <div className="relative aspect-video rounded-[2.5rem] overflow-hidden border border-white/10 bg-black shadow-2xl">
+                    <video ref={videoRef} autoPlay muted playsInline className="w-full h-full object-cover" />
+                    {isVideoOff && (
+                      <div className="absolute inset-0 bg-surface-1 flex items-center justify-center">
+                        <FiVideoOff className="text-4xl text-text-muted" />
+                      </div>
+                    )}
+                    {/* HUD Controls */}
+                    <div className="absolute bottom-6 left-6 flex gap-2">
+                      <button onClick={() => setIsMuted(!isMuted)} className={`p-3 rounded-xl ${isMuted ? 'bg-red-500 text-white' : 'bg-black/40 text-white backdrop-blur-md'}`}>
+                        {isMuted ? <FiMicOff /> : <FiMic />}
+                      </button>
+                      <button onClick={() => setIsVideoOff(!isVideoOff)} className={`p-3 rounded-xl ${isVideoOff ? 'bg-red-500 text-white' : 'bg-black/40 text-white backdrop-blur-md'}`}>
+                        {isVideoOff ? <FiVideoOff /> : <FiVideo />}
+                      </button>
+                    </div>
                   </div>
-                )}
-                {/* HUD Controls */}
-                <div className="absolute bottom-6 left-6 flex gap-2">
-                  <button onClick={() => setIsMuted(!isMuted)} className={`p-3 rounded-xl ${isMuted ? 'bg-red-500 text-white' : 'bg-black/40 text-white backdrop-blur-md'}`}>
-                    {isMuted ? <FiMicOff /> : <FiMic />}
-                  </button>
-                  <button onClick={() => setIsVideoOff(!isVideoOff)} className={`p-3 rounded-xl ${isVideoOff ? 'bg-red-500 text-white' : 'bg-black/40 text-white backdrop-blur-md'}`}>
-                    {isVideoOff ? <FiVideoOff /> : <FiVideo />}
-                  </button>
-                </div>
-              </div>
 
-              <div className="p-10 rounded-[2.5rem] bg-surface-1/40 border border-primary/10 relative overflow-hidden">
-                <p className="text-[10px] font-black text-primary uppercase tracking-[0.3em] mb-4">Interviewer Question</p>
-                <p className="text-2xl font-bold text-white leading-relaxed tracking-tight">"{currentQuestion}"</p>
-                {isSubmitting && (
-                  <div className="mt-4 flex gap-1">
-                    {[0, 1, 2].map(i => <motion.div key={i} animate={{ scale: [1, 1.5, 1] }} transition={{ repeat: Infinity, duration: 1, delay: i * 0.2 }} className="w-1.5 h-1.5 rounded-full bg-primary" />)}
+                  <div className="p-10 rounded-[2.5rem] bg-surface-1/40 border border-primary/10 relative overflow-hidden">
+                    <p className="text-[10px] font-black text-primary uppercase tracking-[0.3em] mb-4">Interviewer Question</p>
+                    <p className="text-2xl font-bold text-white leading-relaxed tracking-tight">"{currentQuestion}"</p>
+                    {isSubmitting && (
+                      <div className="mt-4 flex gap-1">
+                        {[0, 1, 2].map(i => <motion.div key={i} animate={{ scale: [1, 1.5, 1] }} transition={{ repeat: Infinity, duration: 1, delay: i * 0.2 }} className="w-1.5 h-1.5 rounded-full bg-primary" />)}
+                      </div>
+                    )}
                   </div>
-                )}
-              </div>
+                </>
+              )}
             </div>
 
             <div className="lg:col-span-4 flex flex-col gap-6">
@@ -344,31 +383,34 @@ function InterviewContent() {
                 ))}
               </div>
 
-              <div className="p-6 rounded-[2.5rem] bg-surface-1/40 border border-white/5 space-y-4">
-                <textarea
-                  value={chatMessage}
-                  onChange={(e) => setChatMessage(e.target.value)}
-                  disabled={isSubmitting}
-                  className="w-full h-32 bg-white/[0.02] border border-white/5 rounded-2xl p-4 text-xs text-white outline-none focus:border-primary/40 transition-all resize-none disabled:opacity-50"
-                  placeholder="Provide your answer..."
-                />
-                <div className="flex gap-2">
-                  <button onClick={toggleRecording} className={`flex-1 flex items-center justify-center gap-2 py-4 rounded-2xl ${isRecording ? "bg-red-600 text-white" : "bg-surface-2 text-text-muted"}`}>
-                    {isRecording ? <FiMicOff /> : <FiMic />}
-                  </button>
-                  <button
-                    onClick={handleSendResponse}
-                    disabled={isSubmitting || !chatMessage.trim()}
-                    className="flex-[3] py-4 rounded-2xl bg-primary text-white font-black uppercase tracking-widest hover:bg-primary-hover disabled:opacity-50 transition-all shadow-lg shadow-primary/20"
-                  >
-                    {isSubmitting ? (
-                      <div className="flex items-center gap-2">
-                        Processing <motion.div animate={{ rotate: 360 }} transition={{ repeat: Infinity, duration: 1 }} className="w-3 h-3 border-2 border-white border-t-transparent rounded-full" />
-                      </div>
-                    ) : <span className="flex items-center justify-center gap-2">Submit <FiSend /></span>}
-                  </button>
+              {/* Hide chat input for Quiz/Coding rounds as they have their own */}
+              {roundData?.type !== "FrameworkProficiency" && roundData?.type !== "CodingAssessment" && (
+                <div className="p-6 rounded-[2.5rem] bg-surface-1/40 border border-white/5 space-y-4">
+                  <textarea
+                    value={chatMessage}
+                    onChange={(e) => setChatMessage(e.target.value)}
+                    disabled={isSubmitting}
+                    className="w-full h-32 bg-white/[0.02] border border-white/5 rounded-2xl p-4 text-xs text-white outline-none focus:border-primary/40 transition-all resize-none disabled:opacity-50"
+                    placeholder="Provide your answer..."
+                  />
+                  <div className="flex gap-2">
+                    <button onClick={toggleRecording} className={`flex-1 flex items-center justify-center gap-2 py-4 rounded-2xl ${isRecording ? "bg-red-600 text-white" : "bg-surface-2 text-text-muted"}`}>
+                      {isRecording ? <FiMicOff /> : <FiMic />}
+                    </button>
+                    <button
+                      onClick={handleSendResponse}
+                      disabled={isSubmitting || !chatMessage.trim()}
+                      className="flex-[3] py-4 rounded-2xl bg-primary text-white font-black uppercase tracking-widest hover:bg-primary-hover disabled:opacity-50 transition-all shadow-lg shadow-primary/20"
+                    >
+                      {isSubmitting ? (
+                        <div className="flex items-center gap-2">
+                          Processing <motion.div animate={{ rotate: 360 }} transition={{ repeat: Infinity, duration: 1 }} className="w-3 h-3 border-2 border-white border-t-transparent rounded-full" />
+                        </div>
+                      ) : <span className="flex items-center justify-center gap-2">Submit <FiSend /></span>}
+                    </button>
+                  </div>
                 </div>
-              </div>
+              )}
             </div>
           </div>
         </motion.div>

@@ -5,10 +5,10 @@ import { Interview } from "../models/interview.model";
 import { sendAccessCode } from "../services/email.service";
 import { AuthRequest } from "../types/request.types";
 
-export const executeCode = async (req: Request, res: Response, next: NextFunction) => {
-
+export const executeCode = async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
-    const { code, language, problemStatement, testCases } = req.body;
+    const { code, language, problemStatement, testCases, interviewId, roundIndex } = req.body;
+    const userId = req.user?._id;
 
     if (!code || !language) {
       throw new AppError("Code and language are required", 400);
@@ -51,6 +51,35 @@ export const executeCode = async (req: Request, res: Response, next: NextFunctio
     // Clean JSON from markdown blocks
     const cleanedJson = text.replace(/^```json\s*/i, "").replace(/\s*```$/i, "");
     const analysisResult = JSON.parse(cleanedJson);
+
+    // If part of an interview, persist results
+    if (interviewId && roundIndex !== undefined && userId) {
+        const interview = await Interview.findOne({ _id: interviewId, user_id: userId });
+        if (interview && interview.rounds[roundIndex]) {
+            const passed = analysisResult.testResults?.filter((r: any) => r.passed).length || 0;
+            const total = analysisResult.testResults?.length || 0;
+            
+            interview.rounds[roundIndex].phase_data = {
+                coding_complexity: {
+                    time: analysisResult.timeComplexity,
+                    space: analysisResult.spaceComplexity
+                },
+                test_cases_passed: passed,
+                test_cases_total: total
+            };
+            
+            // Also add as a QA pair for history
+            interview.rounds[roundIndex].qa_pairs.push({
+                question: `[CODING CHALLENGE] ${problemStatement || "Solution"}`,
+                candidate_answer: `\`\`\`${language}\n${code}\n\`\`\``,
+                ai_evaluation: analysisResult.analysis,
+                timestamp: new Date()
+            });
+
+            interview.markModified("rounds");
+            await interview.save();
+        }
+    }
 
     res.status(200).json({
       success: true,

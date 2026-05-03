@@ -40,30 +40,54 @@ const buildPrompt = (
     maxQuestions: number,
     history: string,
     candidateAnswer?: string,
-    customQuestions?: string[]
+    customQuestions?: string[],
+    techStack?: string
 ): string => {
     const isFirst = !candidateAnswer;
+    const trimmedHistory = history ? history.split("\n\n").slice(-3).join("\n\n") : "";
 
-    // Only send last 2 Q&A pairs instead of full history
-    const trimmedHistory = history
-        ? history.split("\n\n").slice(-2).join("\n\n")
-        : "";
+    let phaseInstructions = "";
 
-    const customQuestionsInstruction = customQuestions && customQuestions.length > 0
-        ? `\n\nREQUIRED CUSTOM QUESTIONS TO ASK (if not already asked):\n${customQuestions.map((q, i) => `${i + 1}. ${q}`).join("\n")}\nYou must prioritize asking these custom questions before asking your own generated questions.`
-        : "";
+    switch (roundType) {
+        case "TechnicalScreening":
+            phaseInstructions = isFirst 
+                ? "Greet the candidate as a Turing-Style Evaluator. Ask them to specify their primary programming language and core framework (e.g., Python/Django)."
+                : "Acknowledge their stack choice. Explain that answers are final and no external IDEs are allowed. Briefly mention that we will move to the technical quiz next.";
+            break;
+        case "FrameworkProficiency":
+            phaseInstructions = `You are in the Advanced Quiz Phase for ${techStack || "the chosen stack"}. 
+            Present Question ${questionNumber} of 3. It must be a highly technical Multiple Choice Question testing deep internals or memory management. 
+            Provide 4 options (A, B, C, D). Wait for the answer before moving to the next.`;
+            break;
+        case "CodingAssessment":
+            phaseInstructions = `Present a Medium to Hard LeetCode problem related to ${techStack || "Software Engineering"}. 
+            Provide Problem Statement, Constraints, and 2 Examples. 
+            Instruct the candidate to write code directly. You will evaluate correctness and Big O complexity later.`;
+            break;
+        case "SystemArchitecture":
+            phaseInstructions = `Present a System Design challenge: "How would you design [System] using ${techStack || "your stack"} for [Scale]?" 
+            Evaluate based on scalability, database choice, and caching.`;
+            break;
+        default:
+            phaseInstructions = `Technical interview for ${jobRole}. One question at a time.`;
+    }
 
-    return `Technical Interviewer for ${jobRole} (${roundType} round). Q${questionNumber}/${maxQuestions}.
+    return `Role: Turing-Style Technical Evaluator.
+Objective: Rigorous vetting. Tone: Professional, concise, objective.
 
-${
-    isFirst
-        ? "Greet briefly and ask the first question."
-        : `Recent history:\n${trimmedHistory}\n\nCandidate answered: "${candidateAnswer}"\n\nEvaluate briefly and ask next question.`
-}${customQuestionsInstruction}
+Round: ${roundType} (${questionNumber}/${maxQuestions})
+${techStack ? `Candidate Stack: ${techStack}` : ""}
 
-Rules: One question only. Professional tone. ${questionNumber >= maxQuestions ? "Set is_complete: true." : ""}
+${phaseInstructions}
 
-JSON only:
+${!isFirst ? `Recent history:\n${trimmedHistory}\n\nCandidate answered: "${candidateAnswer}"\n\nEvaluate briefly (don't reveal correct MCQ answers yet) and proceed.` : ""}
+
+Rules: 
+1. JSON ONLY. 
+2. One question/interaction only. 
+3. ${questionNumber >= maxQuestions ? "Set is_complete: true." : "Set is_complete: false."}
+
+JSON Structure:
 {"evaluation_of_previous_answer":"...","next_question":"...","is_complete":false}`;
 };
 
@@ -87,7 +111,7 @@ export const startRoundService = async (
 
     const jobRole = interview.job_id?.role || "Software Engineering";
     const customQuestions = interview.job_id?.custom_questions || [];
-    const prompt = buildPrompt(jobRole, round.type, 1, round.max_questions, "", undefined, customQuestions);
+    const prompt = buildPrompt(jobRole, round.type, 1, round.max_questions, "", undefined, customQuestions, interview.tech_stack);
 
     const model = getGeminiModel(true);
     const result = await model.generateContent(prompt);
@@ -144,6 +168,11 @@ export const answerInRoundService = async (
     const jobRole = interview.job_id?.role || "Software Engineering";
     const customQuestions = interview.job_id?.custom_questions || [];
 
+    // Capture Tech Stack in Phase 1
+    if (currentRound.type === "TechnicalScreening" && !interview.tech_stack && candidateAnswer) {
+        interview.tech_stack = candidateAnswer.trim();
+    }
+
     const prompt = buildPrompt(
         jobRole,
         currentRound.type,
@@ -151,7 +180,8 @@ export const answerInRoundService = async (
         maxQuestions,
         history,
         candidateAnswer || "The candidate provided a voice response.",
-        customQuestions
+        customQuestions,
+        interview.tech_stack
     );
 
     const model = getGeminiModel(true);
@@ -314,21 +344,29 @@ export const answerInRoundStreamingService = async (
     const jobRole = interview.job_id?.role || "Software Engineering";
     const customQuestions = interview.job_id?.custom_questions || [];
 
-    const customQuestionsInstruction = customQuestions.length > 0
-        ? `\nREQUIRED CUSTOM QUESTIONS TO ASK (if not already asked in history):\n${customQuestions.map((q: string, i: number) => `${i + 1}. ${q}`).join("\n")}\nYou must prioritize asking these custom questions before asking your own generated questions.`
-        : "";
+    // Capture Tech Stack in Phase 1
+    if (currentRound.type === "TechnicalScreening" && !interview.tech_stack && candidateAnswer) {
+        interview.tech_stack = candidateAnswer.trim();
+    }
 
     // 2. Build and send streaming request
-    const prompt = `You are a professional Technical Interviewer for a ${jobRole} position.
-Current Round: ${currentRound.type}
-Progress: Question ${currentQuestionIndex + 1} of ${maxQuestions}${customQuestionsInstruction}
+    const prompt = `Role: Turing-Style Technical Evaluator.
+Objective: Rigorous vetting. Tone: Professional, concise, objective.
+
+Round: ${currentRound.type} (${currentQuestionIndex + 1}/${maxQuestions})
+${interview.tech_stack ? `Candidate Stack: ${interview.tech_stack}` : ""}
 
 INTERVIEW HISTORY:
 ${history}
 
 LATEST ANSWER FROM CANDIDATE: "${candidateAnswer || "The candidate provided a voice response."}"
 
-Evaluate the answer and decide whether to ask the next question or complete the round.
+Rules:
+1. One question/interaction only.
+2. If this is a Technical Quiz (FrameworkProficiency), provide an advanced MCQ with 4 options.
+3. If this is Coding Assessment, present a Medium/Hard LeetCode problem.
+4. ${currentQuestionIndex + 1 >= maxQuestions ? "Complete the round." : "Ask the next question."}
+
 STRICT FORMAT: 
 [EVALUATION] your feedback here
 [QUESTION] your next question here

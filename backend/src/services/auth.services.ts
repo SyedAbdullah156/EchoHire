@@ -78,8 +78,9 @@ export const login = async (
         }
 
 
-        const userObject: any = user.toObject();
-        delete userObject.password;
+        const userObject = user.toObject();
+        delete (userObject as any).password;
+        delete (userObject as any).mfaSecret;
 
         if (user.mfaEnabled) {
             return res.status(200).json({
@@ -125,9 +126,9 @@ export const loginVerifyMFA = async (
             throw new AppError("Invalid verification code", 400);
         }
 
-        const userObject: any = user.toObject();
-        delete userObject.password;
-        delete userObject.mfaSecret;
+        const userObject = user.toObject();
+        delete (userObject as any).password;
+        delete (userObject as any).mfaSecret;
 
         const token = signToken(user._id.toString(), user.role);
 
@@ -178,12 +179,12 @@ export const googleLogin = async (
         const googlePicture = payload.picture;
 
         if (!user) {
-            const newUserData: any = {
+            const newUserData = {
                 name: googleName,
                 email: payload.email,
-                role: (role as any) || "candidate",
+                role: (role as string) || "candidate",
                 googleId: payload.sub,
-            };
+            } as any;
 
             if (newUserData.role === "candidate") {
                 newUserData.profile = { avatarDataUrl: googlePicture };
@@ -211,8 +212,9 @@ export const googleLogin = async (
             throw new AppError("User creation failed", 500);
         }
 
-        const userObject: any = user.toObject();
-        delete userObject.password;
+        const userObject = user.toObject();
+        delete (userObject as any).password;
+        delete (userObject as any).mfaSecret;
 
         if (user.mfaEnabled) {
             return res.status(200).json({
@@ -262,15 +264,117 @@ export const forgotPassword = async (
 
         try {
             await transporter.sendMail({
-                from: process.env.SMTP_FROM || "noreply@echohire.com",
+                from: `"EchoHire Security" <${process.env.SMTP_FROM || "noreply@echohire.com"}>`,
                 to: user.email,
-                subject: "EchoHire - Password Reset",
-                text: `You requested a password reset. Click the link to reset your password: ${resetUrl}`,
-                html: `<p>You requested a password reset.</p><p>Click the link to reset your password: <a href="${resetUrl}">Reset Password</a></p><p>This link expires in 10 minutes.</p>`,
+                subject: "Reset your EchoHire password",
+                html: `
+                <!DOCTYPE html>
+                <html>
+                <head>
+                    <meta charset="utf-8">
+                    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                    <title>Reset Your Password</title>
+                    <style>
+                        body {
+                            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+                            background-color: #030712;
+                            margin: 0;
+                            padding: 0;
+                            color: #dbe7ff;
+                        }
+                        .container {
+                            max-width: 600px;
+                            margin: 40px auto;
+                            background: linear-gradient(145deg, #07142b 0%, #0b1730 100%);
+                            border-radius: 24px;
+                            border: 1px solid rgba(255, 255, 255, 0.1);
+                            overflow: hidden;
+                            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+                        }
+                        .header {
+                            padding: 40px;
+                            text-align: center;
+                            background: rgba(34, 125, 255, 0.05);
+                            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+                        }
+                        .logo {
+                            font-size: 28px;
+                            font-weight: 800;
+                            color: #ffffff;
+                            text-decoration: none;
+                            letter-spacing: -0.5px;
+                        }
+                        .logo span {
+                            color: #227dff;
+                        }
+                        .content {
+                            padding: 40px;
+                            text-align: center;
+                        }
+                        h1 {
+                            font-size: 24px;
+                            font-weight: 700;
+                            color: #ffffff;
+                            margin-bottom: 16px;
+                            letter-spacing: -0.02em;
+                        }
+                        p {
+                            font-size: 16px;
+                            line-height: 1.6;
+                            color: #98a7cb;
+                            margin-bottom: 32px;
+                        }
+                        .button {
+                            display: inline-block;
+                            padding: 16px 36px;
+                            background: linear-gradient(to right, #227dff, #332989);
+                            color: #ffffff !important;
+                            text-decoration: none;
+                            border-radius: 14px;
+                            font-weight: 700;
+                            font-size: 16px;
+                            transition: transform 0.2s ease;
+                        }
+                        .footer {
+                            padding: 30px;
+                            text-align: center;
+                            font-size: 13px;
+                            color: #5c667f;
+                            background: rgba(0, 0, 0, 0.2);
+                        }
+                        .expiry {
+                            margin-top: 24px;
+                            font-size: 14px;
+                            color: #ff4b5c;
+                            font-weight: 500;
+                        }
+                    </style>
+                </head>
+                <body>
+                    <div class="container">
+                        <div class="header">
+                            <div class="logo">Echo<span>Hire</span></div>
+                        </div>
+                        <div class="content">
+                            <h1>Reset your password?</h1>
+                            <p>We received a request to reset the password for your EchoHire account. Click the button below to choose a new one.</p>
+                            <a href="${resetUrl}" class="button">Reset Password</a>
+                            <p class="expiry">This link will expire in 10 minutes.</p>
+                            <p style="font-size: 14px; margin-top: 20px;">If you didn't request this, you can safely ignore this email.</p>
+                        </div>
+                        <div class="footer">
+                            &copy; 2024 EchoHire Inc. &bull; Enterprise Grade Career Intelligence<br>
+                            Privacy First Architecture
+                        </div>
+                    </div>
+                </body>
+                </html>
+                `,
             });
 
             res.status(200).json({ success: true, message: "Reset link sent to email." });
         } catch (error) {
+            console.error("SMTP Error:", error);
             user.resetPasswordToken = undefined;
             user.resetPasswordExpires = undefined;
             await user.save();

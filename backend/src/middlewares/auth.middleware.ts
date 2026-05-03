@@ -50,10 +50,12 @@ export const protect = async (
 export const restrictTo = (...roles: string[]) => {
     return (req: AuthRequest, res: Response, next: NextFunction) => {
         if (!req.user) {
+            console.log("[AUTH] No user in request");
             return next(new AppError("Unauthorized access", 401));
         }
 
         if (!roles.includes(req.user.role)) {
+            console.log(`[AUTH] Permission Denied: User role "${req.user.role}" not in allowed roles [${roles.join(", ")}]`);
             return next(new AppError("Permission denied", 403));
         }
 

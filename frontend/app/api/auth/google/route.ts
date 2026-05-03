@@ -28,6 +28,7 @@ export async function POST(req: NextRequest) {
     }
 
     const { token, data } = result;
+    console.log("Setting cookie with token:", token ? "Token present" : "Token MISSING");
 
     // Set secure HTTP-only cookie
     const cookieStore = await cookies();
@@ -38,6 +39,7 @@ export async function POST(req: NextRequest) {
       maxAge: 60 * 60 * 24 * 7, // 7 days
       path: "/",
     });
+    console.log("Cookie set successfully");
 
     return NextResponse.json({ 
       success: true, 

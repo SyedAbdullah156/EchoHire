@@ -30,6 +30,14 @@ export const authSchema = z
             message: "Passwords do not match",
             path: ["confirmPassword"],
         }),
+        z.object({
+            mode: z.literal("mfa"),
+            mfaCode: z.string().length(6, "Verification code must be 6 digits"),
+        }),
+        z.object({
+            mode: z.literal("magic"),
+            email: emailSchema,
+        }),
     ]);
 
 export const profileSchema = z.object({

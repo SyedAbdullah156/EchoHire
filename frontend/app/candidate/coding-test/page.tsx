@@ -3,81 +3,96 @@
 import React, { Suspense, useEffect, useState } from "react";
 import CodingSandbox from "@/components/CodingSandbox";
 import AccessCodeGate from "@/components/coding/AccessCodeGate";
-import { FiArrowLeft, FiCheckCircle, FiChevronRight, FiClock, FiCpu, FiShield, FiArrowRight } from "react-icons/fi";
+import { FiArrowLeft, FiCheckCircle, FiClock, FiCpu, FiShield, FiArrowRight } from "react-icons/fi";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { toast } from "sonner";
-import { motion, AnimatePresence } from "framer-motion";
 import PracticeCard from "@/components/coding/PracticeCard";
+
+const PRACTICE_QUESTIONS = [
+  {
+    title: "Palindrome Checker",
+    difficulty: "Easy",
+    description: "Write a function to check if a given string is a palindrome, considering alphanumeric characters and ignoring case.",
+    problem: "Write a function `isPalindrome(s)` that returns true if `s` is a palindrome.",
+    initialCode: "function isPalindrome(s) {\n  // Your code here\n}",
+    testCases: [
+      { input: "racecar", expected: "true" },
+      { input: "hello", expected: "false" },
+      { input: "A man, a plan, a canal: Panama", expected: "true" }
+    ]
+  },
+  {
+    title: "Two Sum",
+    difficulty: "Medium",
+    description: "Given an array of integers, return indices of the two numbers such that they add up to a specific target.",
+    problem: "Write a function `twoSum(nums, target)`.",
+    initialCode: "function twoSum(nums, target) {\n  // Your code here\n}",
+    testCases: [
+      { input: "[2, 7, 11, 15], 9", expected: "[0, 1]" },
+      { input: "[3, 2, 4], 6", expected: "[1, 2]" }
+    ]
+  },
+  {
+    title: "Merge Sorted Lists",
+    difficulty: "Medium",
+    description: "Merge two sorted linked lists and return it as a new sorted list.",
+    problem: "Write a function `mergeTwoLists(l1, l2)`.",
+    initialCode: "function mergeTwoLists(l1, l2) {\n  // Your code here\n}",
+    testCases: [
+      { input: "[1,2,4], [1,3,4]", expected: "[1,1,2,3,4,4]" }
+    ]
+  },
+  {
+    title: "Reverse String",
+    difficulty: "Easy",
+    description: "Write a function that reverses a string. The input string is given as an array of characters.",
+    problem: "Write a function `reverseString(s)` that reverses `s` in-place.",
+    initialCode: "function reverseString(s) {\n  // Your code here\n}",
+    testCases: [
+      { input: '["h","e","l","l","o"]', expected: '["o","l","l","e","h"]' }
+    ]
+  },
+  {
+    title: "Longest Substring",
+    difficulty: "Hard",
+    description: "Find the length of the longest substring without repeating characters.",
+    problem: "Write a function `lengthOfLongestSubstring(s)`.",
+    initialCode: "function lengthOfLongestSubstring(s) {\n  // Your code here\n}",
+    testCases: [
+      { input: "abcabcbb", expected: "3" },
+      { input: "bbbbb", expected: "1" }
+    ]
+  }
+];
+
+interface Interview {
+  _id: string;
+  rounds: Array<{
+    status: string;
+    type: string;
+    problemStatement?: string;
+    testCases?: Array<{ input: string; expected: string }>;
+  }>;
+  job_id?: { name: string };
+}
+
+type PracticeQuestion = typeof PRACTICE_QUESTIONS[0];
+
 export default function CodingTestPage() {
   const searchParams = useSearchParams();
   const token = searchParams.get("token");
 
   const [loading, setLoading] = useState(true);
-  const [interview, setInterview] = useState<any>(null);
+  const [interview, setInterview] = useState<Interview | null>(null);
   const [accessGranted, setAccessGranted] = useState(false);
   const [currentRoundIndex, setCurrentRoundIndex] = useState(0);
   const [practiceMode, setPracticeMode] = useState<{
     active: boolean;
-    problem: any;
+    problem: PracticeQuestion | null;
   }>({ active: false, problem: null });
 
-  const practiceQuestions = [
-    {
-      title: "Palindrome Checker",
-      difficulty: "Easy",
-      description: "Write a function to check if a given string is a palindrome, considering alphanumeric characters and ignoring case.",
-      problem: "Write a function `isPalindrome(s)` that returns true if `s` is a palindrome.",
-      initialCode: "function isPalindrome(s) {\n  // Your code here\n}",
-      testCases: [
-        { input: "racecar", expected: "true" },
-        { input: "hello", expected: "false" },
-        { input: "A man, a plan, a canal: Panama", expected: "true" }
-      ]
-    },
-    {
-      title: "Two Sum",
-      difficulty: "Medium",
-      description: "Given an array of integers, return indices of the two numbers such that they add up to a specific target.",
-      problem: "Write a function `twoSum(nums, target)`.",
-      initialCode: "function twoSum(nums, target) {\n  // Your code here\n}",
-      testCases: [
-        { input: "[2, 7, 11, 15], 9", expected: "[0, 1]" },
-        { input: "[3, 2, 4], 6", expected: "[1, 2]" }
-      ]
-    },
-    {
-      title: "Merge Sorted Lists",
-      difficulty: "Medium",
-      description: "Merge two sorted linked lists and return it as a new sorted list.",
-      problem: "Write a function `mergeTwoLists(l1, l2)`.",
-      initialCode: "function mergeTwoLists(l1, l2) {\n  // Your code here\n}",
-      testCases: [
-        { input: "[1,2,4], [1,3,4]", expected: "[1,1,2,3,4,4]" }
-      ]
-    },
-    {
-      title: "Reverse String",
-      difficulty: "Easy",
-      description: "Write a function that reverses a string. The input string is given as an array of characters.",
-      problem: "Write a function `reverseString(s)` that reverses `s` in-place.",
-      initialCode: "function reverseString(s) {\n  // Your code here\n}",
-      testCases: [
-        { input: '["h","e","l","l","o"]', expected: '["o","l","l","e","h"]' }
-      ]
-    },
-    {
-      title: "Longest Substring",
-      difficulty: "Hard",
-      description: "Find the length of the longest substring without repeating characters.",
-      problem: "Write a function `lengthOfLongestSubstring(s)`.",
-      initialCode: "function lengthOfLongestSubstring(s) {\n  // Your code here\n}",
-      testCases: [
-        { input: "abcabcbb", expected: "3" },
-        { input: "bbbbb", expected: "1" }
-      ]
-    }
-  ];
+
 
   useEffect(() => {
     async function validate() {
@@ -91,12 +106,12 @@ export default function CodingTestPage() {
         if (res.ok) {
           setInterview(result.data);
           // Find first pending coding round
-          const firstPending = result.data.rounds.findIndex((r: any) => r.status === "pending" && r.type === "CodingAssessment");
+          const firstPending = result.data.rounds.findIndex((r: { status: string; type: string }) => r.status === "pending" && r.type === "CodingAssessment");
           if (firstPending !== -1) setCurrentRoundIndex(firstPending);
         } else {
           toast.error("Invalid or expired assessment link.");
         }
-      } catch (error) {
+      } catch {
         toast.error("Failed to validate assessment link.");
       } finally {
         setLoading(false);
@@ -122,7 +137,7 @@ export default function CodingTestPage() {
             <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-emerald-600 font-black text-white italic">PR</div>
             <div>
               <h1 className="text-2xl font-black text-white tracking-tight flex items-center gap-3">
-                Practice Mode <span className="text-slate-600">/</span> <span className="text-emerald-500">{practiceMode.problem.title}</span>
+                Practice Mode <span className="text-slate-600">/</span> <span className="text-emerald-500">{practiceMode.problem?.title}</span>
               </h1>
               <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest flex items-center gap-1.5 mt-1">
                 <FiCpu className="text-emerald-500" /> Sandbox: Experimental
@@ -139,9 +154,9 @@ export default function CodingTestPage() {
         <div className="flex-1 min-h-0">
           <CodingSandbox
             language="javascript"
-            problemStatement={practiceMode.problem.problem}
-            initialCode={practiceMode.problem.initialCode}
-            testCases={practiceMode.problem.testCases}
+            problemStatement={practiceMode.problem?.problem}
+            initialCode={practiceMode.problem?.initialCode}
+            testCases={practiceMode.problem?.testCases}
           />
         </div>
       </div>
@@ -184,7 +199,7 @@ export default function CodingTestPage() {
                   type="text"
                   placeholder="Enter Interview ID"
                   className="w-full h-16 bg-[#050b18] border border-slate-800 rounded-2xl px-6 text-sm font-bold text-white outline-none focus:border-blue-500"
-                  onChange={(e) => setInterview({ _id: e.target.value })}
+                  onChange={(e) => setInterview({ _id: e.target.value, rounds: [] })}
                 />
                 <button
                   onClick={() => setAccessGranted(false)} // This would trigger the gate
@@ -201,16 +216,16 @@ export default function CodingTestPage() {
             <div className="flex items-center justify-between">
               <h3 className="text-2xl font-black text-white">Practice Hub</h3>
               <div className="flex items-center gap-4">
-                <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">{practiceQuestions.length} MODULES AVAILABLE</span>
+                <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">{PRACTICE_QUESTIONS.length} MODULES AVAILABLE</span>
               </div>
             </div>
 
             <div className="grid md:grid-cols-2 gap-6">
-              {practiceQuestions.map((q, i) => (
+              {PRACTICE_QUESTIONS.map((q, i) => (
                 <PracticeCard
                   key={i}
                   title={q.title}
-                  difficulty={q.difficulty as any}
+                  difficulty={q.difficulty as "Easy" | "Medium" | "Hard"}
                   description={q.description}
                   onPractice={() => setPracticeMode({ active: true, problem: q })}
                 />
@@ -224,10 +239,10 @@ export default function CodingTestPage() {
 
   // Active Assessment logic
   if (!accessGranted) {
-    return <AccessCodeGate interviewId={interview._id} onSuccess={() => setAccessGranted(true)} />;
+    return <AccessCodeGate interviewId={interview?._id || ""} onSuccess={() => setAccessGranted(true)} />;
   }
 
-  const currentRound = interview.rounds[currentRoundIndex];
+  const currentRound = interview?.rounds[currentRoundIndex];
 
   return (
     <div className="flex flex-col h-screen bg-[#050b18] p-6 lg:p-10">
@@ -236,7 +251,7 @@ export default function CodingTestPage() {
           <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-blue-600 font-black text-white italic">EH</div>
           <div>
             <h1 className="text-2xl font-black text-white tracking-tight flex items-center gap-3">
-              {interview.job_id?.name} <span className="text-slate-600">/</span> <span className="text-blue-500">Round {currentRoundIndex + 1}</span>
+              {interview?.job_id?.name} <span className="text-slate-600">/</span> <span className="text-blue-500">Round {currentRoundIndex + 1}</span>
             </h1>
             <div className="flex items-center gap-4 mt-1">
               <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest flex items-center gap-1.5">
@@ -252,7 +267,7 @@ export default function CodingTestPage() {
 
         <div className="flex items-center gap-4">
           <div className="flex -space-x-2">
-            {interview.rounds.map((r: any, i: number) => (
+            {interview?.rounds.map((r, i) => (
               <div
                 key={i}
                 className={`h-2 w-8 rounded-full transition-all ${i === currentRoundIndex ? "bg-blue-500" : i < currentRoundIndex ? "bg-emerald-500" : "bg-slate-800"
@@ -272,7 +287,7 @@ export default function CodingTestPage() {
             language="javascript"
             problemStatement={currentRound?.problemStatement || "Solve the coding challenge to progress to the next round."}
             testCases={currentRound?.testCases || []}
-            onSuccess={(analysis) => {
+            onSuccess={() => {
               // Here we would call the backend to update round status and unlock next
               toast.success("Round completed! Progress synchronized.");
             }}
@@ -287,7 +302,7 @@ export default function CodingTestPage() {
             <span className="text-[10px] font-bold text-emerald-400 uppercase tracking-widest">Candidate Verified</span>
           </div>
         </div>
-        <p className="text-[10px] text-slate-600 font-medium">Assessment ID: {interview._id.slice(-8).toUpperCase()}</p>
+        <p className="text-[10px] text-slate-600 font-medium">Assessment ID: {interview?._id.slice(-8).toUpperCase()}</p>
       </footer>
     </div>
   );

@@ -1,16 +1,14 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { 
-  FiSearch, 
-  FiFilter, 
-  FiMoreVertical, 
+  FiSearch,
+  FiFilter,
   FiUserPlus, 
   FiMail, 
   FiShield, 
   FiTrash2, 
   FiCheckCircle, 
-  FiClock,
   FiUser
 } from "react-icons/fi";
 import { toast } from "sonner";
@@ -30,8 +28,7 @@ export default function UserManagementPage() {
   const [activeTab, setActiveTab] = useState<"all" | "pending">("all");
   const [search, setSearch] = useState("");
 
-  const fetchUsers = async () => {
-    setLoading(true);
+  const fetchUsers = useCallback(async () => {
     try {
       const endpoint = activeTab === "all" ? "/api/admin/users" : "/api/admin/users/pending";
       const res = await fetch(endpoint);
@@ -41,16 +38,16 @@ export default function UserManagementPage() {
       } else {
         toast.error("Failed to fetch users");
       }
-    } catch (error) {
+    } catch {
       toast.error("Error connecting to server");
     } finally {
       setLoading(false);
     }
-  };
+  }, [activeTab]);
 
   useEffect(() => {
-    fetchUsers();
-  }, [activeTab]);
+    Promise.resolve().then(() => fetchUsers());
+  }, [fetchUsers]);
 
   const handleApprove = async (userId: string) => {
     try {
@@ -64,7 +61,7 @@ export default function UserManagementPage() {
         const error = await res.json();
         toast.error(error.message || "Approval failed");
       }
-    } catch (error) {
+    } catch {
       toast.error("Failed to approve recruiter");
     }
   };
@@ -90,7 +87,7 @@ export default function UserManagementPage() {
       {/* Tabs */}
       <div className="flex items-center gap-2 p-1 bg-surface-2 rounded-2xl w-fit border border-white/5">
         <button 
-          onClick={() => setActiveTab("all")}
+          onClick={() => { setLoading(true); setActiveTab("all"); }}
           className={`px-6 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${
             activeTab === 'all' ? 'bg-primary text-white shadow-lg shadow-primary/20' : 'text-slate-500 hover:text-white'
           }`}
@@ -98,7 +95,7 @@ export default function UserManagementPage() {
           All Users
         </button>
         <button 
-          onClick={() => setActiveTab("pending")}
+          onClick={() => { setLoading(true); setActiveTab("pending"); }}
           className={`px-6 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all flex items-center gap-2 ${
             activeTab === 'pending' ? 'bg-amber-500 text-white shadow-lg shadow-amber-500/20' : 'text-slate-500 hover:text-white'
           }`}

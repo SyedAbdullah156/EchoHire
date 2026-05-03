@@ -129,12 +129,18 @@ export const updateUser = async (
 };
 
 export const deleteUser = async (
-    req: Request,
+    req: AuthRequest,
     res: Response,
     next: NextFunction,
 ) => {
     try {
-        const result = await deleteUserService(req.params.id.toString());
+        const userId = req.params.id ? req.params.id.toString() : req.user?._id?.toString();
+        
+        if (!userId) {
+            throw new AppError("User ID is required", 400);
+        }
+
+        const result = await deleteUserService(userId);
 
         res.status(200).json({
             success: true,

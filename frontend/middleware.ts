@@ -13,9 +13,9 @@ export async function middleware(request: NextRequest) {
   // 1. PUBLIC ROUTES: Always accessible
   const publicRoutes = ['/', '/403', '/recruiter'];
   const publicPrefixes = ['/auth', '/api', '/features', '/pricing', '/about', '/contact', '/students', '/privacy', '/terms', '/forgot-password', '/reset-password'];
-  
+
   const isPublicRoute = publicRoutes.includes(pathname) || publicPrefixes.some(p => pathname.startsWith(p));
-  
+
   // 2. AUTHENTICATED USER HITTING /AUTH: Redirect to their dashboard
   if (pathname.startsWith('/auth') && token) {
     try {

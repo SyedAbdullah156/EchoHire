@@ -80,6 +80,9 @@ const roundSchema = new Schema<TInterviewRound>(
             type: String,
             trim: true,
         },
+        phase_data: {
+            type: Schema.Types.Mixed,
+        },
     },
     { _id: false },
 );
@@ -107,6 +110,10 @@ const interviewSchema = new Schema<TInterview>(
         rounds: {
             type: [roundSchema],
             default: [],
+        },
+        tech_stack: {
+            type: String,
+            trim: true,
         },
         cv_url: {
             type: String,

@@ -31,19 +31,27 @@ const seedData = async () => {
         // 2. Create Dummy Companies
         const companies = [
             {
-                name: "TechNova Solutions",
-                description: "Leading AI and Cloud computing firm.",
-                website: "https://technova.io",
-                location: "San Francisco, CA",
-                logo_url: "https://logo.clearbit.com/google.com",
+                name: "MetaGravity Labs",
+                description: "Deep research into agentic AI systems.",
+                website: "https://metagravity.ai",
+                location: "London, UK",
+                logo_url: "https://logo.clearbit.com/openai.com",
                 owner_id: recruiter._id
             },
             {
-                name: "GreenStep Eco",
-                description: "Sustainable energy and green technology.",
-                website: "https://greenstep.eco",
-                location: "Austin, TX",
-                logo_url: "https://logo.clearbit.com/tesla.com",
+                name: "CyberCore Systems",
+                description: "Next-gen cybersecurity and defensive AI.",
+                website: "https://cybercore.io",
+                location: "Berlin, DE",
+                logo_url: "https://logo.clearbit.com/cloudflare.com",
+                owner_id: recruiter._id
+            },
+            {
+                name: "Quantum Flow",
+                description: "Quantum computing for financial modeling.",
+                website: "https://quantumflow.com",
+                location: "New York, NY",
+                logo_url: "https://logo.clearbit.com/ibm.com",
                 owner_id: recruiter._id
             }
         ];
@@ -51,31 +59,40 @@ const seedData = async () => {
         const createdCompanies = await Company.insertMany(companies);
         console.log(`Created ${createdCompanies.length} companies.`);
 
-        // 3. Create Dummy Jobs
+        // 3. Create Dummy Jobs with Turing Rounds
         const jobs = [
             {
-                name: "Senior React Developer Role",
-                role: "Senior Frontend Engineer",
-                description: "Looking for a React expert to lead our dashboard team.",
+                name: "Engineering - Senior AI Engineer",
+                role: "Senior AI Engineer",
+                description: "Build the future of autonomous agents.",
                 company_id: createdCompanies[0]._id,
                 created_by: recruiter._id,
                 is_active: true,
+                difficulty: 9,
+                framework: ["Python", "PyTorch", "LangChain"],
                 deadline: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
                 rounds: [
-                    { type: RoundType.TechnicalScreening, max_questions: 5 },
-                    { type: RoundType.BehavioralAnalysis, max_questions: 3 }
+                    { type: RoundType.TechnicalScreening, max_questions: 1 },
+                    { type: RoundType.FrameworkProficiency, max_questions: 3 },
+                    { type: RoundType.CodingAssessment, max_questions: 1 },
+                    { type: RoundType.SystemArchitecture, max_questions: 1 }
                 ]
             },
             {
-                name: "Fullstack Node.js Developer Position",
-                role: "Fullstack Developer (Node.js)",
-                description: "Build scalable APIs and beautiful UIs.",
+                name: "Engineering - Lead Backend Architect",
+                role: "Lead Backend Architect",
+                description: "Scaling distributed systems to millions of users.",
                 company_id: createdCompanies[1]._id,
                 created_by: recruiter._id,
                 is_active: true,
-                deadline: new Date(Date.now() + 15 * 24 * 60 * 60 * 1000),
+                difficulty: 8,
+                framework: ["Go", "Kubernetes", "gRPC"],
+                deadline: new Date(Date.now() + 20 * 24 * 60 * 60 * 1000),
                 rounds: [
-                    { type: RoundType.TechnicalScreening, max_questions: 6 }
+                    { type: RoundType.TechnicalScreening, max_questions: 1 },
+                    { type: RoundType.FrameworkProficiency, max_questions: 3 },
+                    { type: RoundType.CodingAssessment, max_questions: 1 },
+                    { type: RoundType.SystemArchitecture, max_questions: 1 }
                 ]
             }
         ];
@@ -88,32 +105,9 @@ const seedData = async () => {
             {
                 job_id: createdJobs[0]._id,
                 user_id: candidate._id,
-                status: "in-progress",
-                rounds: [
-                    {
-                        type: RoundType.TechnicalScreening,
-                        max_questions: 5,
-                        status: "completed",
-                        score: 85,
-                        remarks: "Great understanding of React and Framer Motion.",
-                        qa_pairs: [
-                            {
-                                question: "How do you handle state in React?",
-                                candidate_answer: "Using hooks and context API.",
-                                ai_evaluation: "Correct but could be more detailed.",
-                                timestamp: new Date()
-                            }
-                        ]
-                    },
-                    {
-                        type: RoundType.BehavioralAnalysis,
-                        max_questions: 3,
-                        status: "pending",
-                        qa_pairs: []
-                    }
-                ],
-                score: 85,
-                remarks: "Strong technical start."
+                status: "applied",
+                assessment_token: "test-token-123",
+                rounds: createdJobs[0].rounds.map(r => ({ ...r, status: "pending", qa_pairs: [] }))
             }
         ];
 

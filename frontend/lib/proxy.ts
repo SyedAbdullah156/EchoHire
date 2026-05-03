@@ -26,8 +26,11 @@ export async function proxyRequest(
                 body = await req.formData();
                 // Fetch will handle Content-Type for FormData
             } else {
-                body = JSON.stringify(await req.json());
-                contentType = "application/json";
+                const textBody = await req.text();
+                if (textBody) {
+                    body = textBody; // Pass stringified JSON forward
+                    contentType = "application/json";
+                }
             }
         }
 

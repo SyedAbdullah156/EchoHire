@@ -143,7 +143,7 @@ function FloatingInput({
 
 function AuthContent() {
   const router = useRouter();
-  const { refreshUser } = useAuth();
+  const { refreshUser, login } = useAuth();
   const [mode, setMode] = useState<"signin" | "signup" | "magic" | "mfa">("signin");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [activeTestimonial, setActiveTestimonial] = useState(0);
@@ -179,6 +179,7 @@ function AuthContent() {
       else if (fieldName === "password" && mode === "signin" && !value) fieldError = "Password is required";
       else if (fieldName === "name" && mode === "signup" && value.length < 2) fieldError = "Name is too short";
       else if (fieldName === "confirmPassword" && mode === "signup" && value !== password) fieldError = "Passwords do not match";
+      else if (fieldName === "mfaCode" && mode === "mfa" && value.length !== 6) fieldError = "Code must be exactly 6 digits";
     } catch (err: unknown) {
       if (err && typeof err === 'object' && 'issues' in err) {
         const zodErr = err as { issues: { message: string }[] };
@@ -226,8 +227,15 @@ function AuthContent() {
 
         const result = await res.json();
         if (res.ok) {
+          if (result.mfaRequired) {
+            setMfaUserId(result.userId);
+            setMode("mfa");
+            toast.info("Multi-Factor Authentication Required");
+            return;
+          }
+          
           toast.success("Welcome back to EchoHire!");
-          await refreshUser();
+          login(result.data);
           router.push(result.data.role === "recruiter" ? "/recruiter/dashboard" : "/candidate/dashboard");
         } else {
           toast.error(result.message || "Google login failed.");
@@ -245,23 +253,49 @@ function AuthContent() {
     e.preventDefault();
     setErrors({});
 
-    // Simple mock for Magic Link
+    // Actual Forgot Password / Magic Link call
     if (mode === "magic") {
+      // Validation
+      const parsedEmail = emailSchema.safeParse(email);
+      if (!parsedEmail.success) {
+        setErrors({ email: parsedEmail.error.issues[0].message });
+        setTouched({ email: true });
+        return;
+      }
+
       setIsSubmitting(true);
-      setTimeout(() => {
-        toast.success(`Magic link sent to ${email}. Check your inbox!`);
+      try {
+        const res = await fetch("/api/auth/forgot-password", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email: email.trim() }),
+        });
+        const result = await res.json();
+        if (res.ok) {
+          toast.success(`Reset link sent to ${email}. Check your inbox!`);
+          setMode("signin");
+        } else {
+          toast.error(result.message || "Failed to send reset link.");
+        }
+      } catch (err) {
+        toast.error("Failed to connect to authentication server.");
+      } finally {
         setIsSubmitting(false);
-      }, 1500);
+      }
       return;
     }
 
-    const parsed = authSchema.safeParse(
-      mode === "signin"
+    const validationData = mode === "signin"
         ? { mode, email, password }
-        : { mode, name, email, password, confirmPassword, role }
-    );
+        : mode === "mfa"
+          ? { mode, mfaCode }
+          : { mode, name, email, password, confirmPassword, role };
+    
+    console.log("Validating data:", validationData);
+    const parsed = authSchema.safeParse(validationData);
 
     if (!parsed.success) {
+      console.error("Validation failed:", parsed.error.format());
       const fieldErrors: Record<string, string> = {};
       const newTouched: Record<string, boolean> = {};
       parsed.error.issues.forEach(issue => {
@@ -300,8 +334,12 @@ function AuthContent() {
       }
 
 
-      toast.success(mode === "signin" ? "Welcome back to EchoHire!" : "Account created successfully.");
-      await refreshUser();
+      const successMessage = (mode === "signin" || mode === "mfa") 
+        ? "Welcome back to EchoHire!" 
+        : "Account created successfully.";
+      
+      toast.success(successMessage);
+      login(result.data);
       router.push(result.redirectUrl || "/dashboard");
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "System error. Try again.");
@@ -436,43 +474,47 @@ function AuthContent() {
                       />
                     )}
 
-                    <FloatingInput
-                      name="email"
-                      label="Email Address"
-                      value={email}
-                      onChange={(v) => handleChange("email", v, setEmail)}
-                      onBlur={() => handleBlur("email", email)}
-                      type="email"
-                      icon={FiMail}
-                      required
-                      error={errors.email}
-                    />
-
-                    {mode !== "magic" && (
-                      <div className="space-y-1">
+                    {mode !== "mfa" && (
+                      <>
                         <FloatingInput
-                          name="password"
-                          label="Password"
-                          value={password}
-                          onChange={(v) => handleChange("password", v, setPassword)}
-                          onBlur={() => handleBlur("password", password)}
-                          type="password"
-                          icon={FiLock}
+                          name="email"
+                          label="Email Address"
+                          value={email}
+                          onChange={(v) => handleChange("email", v, setEmail)}
+                          onBlur={() => handleBlur("email", email)}
+                          type="email"
+                          icon={FiMail}
                           required
-                          error={errors.password}
+                          error={errors.email}
                         />
-                        {mode === "signin" && (
-                          <div className="flex justify-end pt-1">
-                            <button
-                              type="button"
-                              onClick={() => setMode("magic")}
-                              className="text-[11px] font-bold uppercase tracking-widest text-text-muted hover:text-primary transition-colors"
-                            >
-                              Forgot Password?
-                            </button>
+
+                        {mode !== "magic" && (
+                          <div className="space-y-1">
+                            <FloatingInput
+                              name="password"
+                              label="Password"
+                              value={password}
+                              onChange={(v) => handleChange("password", v, setPassword)}
+                              onBlur={() => handleBlur("password", password)}
+                              type="password"
+                              icon={FiLock}
+                              required
+                              error={errors.password}
+                            />
+                            {mode === "signin" && (
+                              <div className="flex justify-end pt-1">
+                                <button
+                                  type="button"
+                                  onClick={() => setMode("magic")}
+                                  className="text-[11px] font-bold uppercase tracking-widest text-text-muted hover:text-primary transition-colors"
+                                >
+                                  Forgot Password?
+                                </button>
+                              </div>
+                            )}
                           </div>
                         )}
-                      </div>
+                      </>
                     )}
 
                     {mode === "signup" && (
@@ -512,17 +554,20 @@ function AuthContent() {
                     )}
 
                     {mode === "mfa" && (
-                      <FloatingInput
-                        name="mfaCode"
-                        label="Verification Code"
-                        value={mfaCode}
-                        onChange={(v) => handleChange("mfaCode", v, setMfaCode)}
-                        onBlur={() => handleBlur("mfaCode", mfaCode)}
-                        type="text"
-                        icon={FiShield}
-                        required
-                        error={errors.mfaCode}
-                      />
+                      <div className="space-y-2">
+                        <label className="text-[10px] font-bold uppercase tracking-widest text-text-muted mb-3 ml-1 block text-center">Enter 6-Digit Verification Code</label>
+                        <input
+                          name="mfaCode"
+                          type="text"
+                          maxLength={6}
+                          placeholder="000000"
+                          value={mfaCode}
+                          onChange={(e) => setMfaCode(e.target.value.replace(/\D/g, ""))}
+                          className="w-full bg-surface-2 border border-border-medium rounded-xl px-4 py-4 text-center text-2xl font-black tracking-[0.5em] text-white outline-none focus:border-primary transition-all"
+                          autoFocus
+                        />
+                        {errors.mfaCode && <p className="text-[10px] text-red-500 mt-1 ml-1">{errors.mfaCode}</p>}
+                      </div>
                     )}
 
                     <button
@@ -530,7 +575,15 @@ function AuthContent() {
                       disabled={isSubmitting}
                       className="w-full h-[56px] rounded-xl bg-primary text-sm font-bold text-white uppercase tracking-widest transition-all hover:bg-primary-hover active:scale-[0.98] disabled:opacity-50 flex items-center justify-center gap-3"
                     >
-                      {isSubmitting ? "Authenticating..." : mode === "signin" ? "Login to Dashboard" : mode === "signup" ? "Create Account" : "Send Magic Link"}
+                      {isSubmitting 
+                        ? "Authenticating..." 
+                        : mode === "mfa" 
+                          ? "Verify & Login" 
+                          : mode === "signin" 
+                            ? "Login to Dashboard" 
+                            : mode === "signup" 
+                              ? "Create Account" 
+                              : "Send Magic Link"}
                       {!isSubmitting && <FiArrowRight />}
                     </button>
                   </form>
@@ -572,7 +625,7 @@ function AuthContent() {
                         {mode === "signin" ? "Create Account" : "Sign In Instead"}
                       </button>
                     </p>
-                    {mode === "magic" && (
+                    {(mode === "magic" || mode === "mfa") && (
                       <button
                         onClick={() => setMode("signin")}
                         className="mt-4 text-xs font-bold text-text-muted hover:text-white uppercase tracking-widest transition-colors flex items-center justify-center gap-2 mx-auto"
