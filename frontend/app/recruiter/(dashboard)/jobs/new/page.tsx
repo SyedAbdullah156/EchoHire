@@ -20,16 +20,53 @@ const SOFT_SKILLS = ["Leadership", "Communication", "Problem Solving", "Collabor
 
 export default function NewJobPage() {
   const router = useRouter();
-  const [step, setStep] = useState(1);
+  const [title, setTitle] = useState("");
+  const [department, setDepartment] = useState("Engineering");
+  const [location, setLocation] = useState("");
+  const [selectedTech, setSelectedTech] = useState<string[]>([]);
+  const [selectedSoftSkills, setSelectedSoftSkills] = useState<string[]>([]);
   const [difficulty, setDifficulty] = useState(5);
   const [isPublishing, setIsPublishing] = useState(false);
 
-  const handlePublish = () => {
+  const handlePublish = async () => {
+    if (!title || !location) return toast.error("Please fill in all basic details.");
+    
     setIsPublishing(true);
-    setTimeout(() => {
-      toast.success("Job Posting Published Successfully!");
-      router.push("/recruiter/jobs");
-    }, 2000);
+    try {
+      const res = await fetch("/api/jobs", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          title,
+          department,
+          location,
+          difficulty,
+          tech_stack: selectedTech,
+          soft_skills: selectedSoftSkills,
+          status: "active"
+        }),
+      });
+
+      const result = await res.json();
+      if (res.ok) {
+        toast.success("Job Posting Published Successfully!");
+        router.push("/recruiter/jobs");
+      } else {
+        toast.error(result.message || "Failed to publish job.");
+      }
+    } catch (error) {
+      toast.error("Failed to connect to the server.");
+    } finally {
+      setIsPublishing(false);
+    }
+  };
+
+  const toggleTech = (tech: string) => {
+    setSelectedTech(prev => prev.includes(tech) ? prev.filter(t => t !== tech) : [...prev, tech]);
+  };
+
+  const toggleSoftSkill = (skill: string) => {
+    setSelectedSoftSkills(prev => prev.includes(skill) ? prev.filter(s => s !== skill) : [...prev, skill]);
   };
 
   return (
@@ -69,6 +106,8 @@ export default function NewJobPage() {
               <input 
                 id="job-title"
                 type="text" 
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
                 placeholder="e.g. Senior Frontend Engineer" 
                 className="w-full h-[52px] bg-surface-2 border border-border-medium rounded-2xl px-6 text-sm text-white outline-none focus:border-primary/50 transition-all placeholder:text-text-muted/50"
               />
@@ -77,6 +116,8 @@ export default function NewJobPage() {
               <label htmlFor="dept" className="text-[10px] font-black uppercase tracking-widest text-text-muted ml-1">Department</label>
               <select 
                 id="dept"
+                value={department}
+                onChange={(e) => setDepartment(e.target.value)}
                 className="w-full h-[52px] bg-surface-2 border border-border-medium rounded-2xl px-6 text-sm text-white outline-none focus:border-primary/50 transition-all appearance-none cursor-pointer"
               >
                 <option>Engineering</option>
@@ -96,6 +137,8 @@ export default function NewJobPage() {
               <input 
                 id="location"
                 type="text" 
+                value={location}
+                onChange={(e) => setLocation(e.target.value)}
                 placeholder="e.g. San Francisco, CA (Hybrid)" 
                 className="w-full h-[52px] bg-surface-2 border border-border-medium rounded-2xl pl-14 pr-6 text-sm text-white outline-none focus:border-primary/50 transition-all placeholder:text-text-muted/50"
               />
@@ -147,7 +190,10 @@ export default function NewJobPage() {
               {TECH_STACK_OPTIONS.map(tech => (
                 <button 
                   key={tech}
-                  className="h-10 px-4 rounded-xl border border-border-medium text-xs font-bold text-text-muted hover:border-primary/50 hover:text-white transition-all active:scale-95"
+                  onClick={() => toggleTech(tech)}
+                  className={`h-10 px-4 rounded-xl border text-xs font-bold transition-all active:scale-95 ${
+                    selectedTech.includes(tech) ? "border-primary bg-primary/10 text-white shadow-lg shadow-primary/20" : "border-border-medium text-text-muted hover:border-primary/50 hover:text-white"
+                  }`}
                 >
                   {tech}
                 </button>
@@ -161,7 +207,10 @@ export default function NewJobPage() {
               {SOFT_SKILLS.map(skill => (
                 <button 
                   key={skill}
-                  className="h-10 px-4 rounded-xl border border-border-medium text-xs font-bold text-text-muted hover:border-primary/50 hover:text-white transition-all active:scale-95"
+                  onClick={() => toggleSoftSkill(skill)}
+                  className={`h-10 px-4 rounded-xl border text-xs font-bold transition-all active:scale-95 ${
+                    selectedSoftSkills.includes(skill) ? "border-primary bg-primary/10 text-white shadow-lg shadow-primary/20" : "border-border-medium text-text-muted hover:border-primary/50 hover:text-white"
+                  }`}
                 >
                   {skill}
                 </button>

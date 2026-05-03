@@ -8,7 +8,10 @@ import {
   FiCheckCircle, 
   FiArrowUpRight,
   FiMoreHorizontal,
-  FiBriefcase
+  FiBriefcase,
+  FiInfo,
+  FiShield,
+  FiLock
 } from "react-icons/fi";
 import Link from "next/link";
 
@@ -27,27 +30,104 @@ const RECENT_CANDIDATES = [
   { name: "Julian Pierce", role: "QA Engineer", score: 64, status: "Screened", date: "2d ago" },
 ];
 
+import { useState, useEffect } from "react";
+import { useUserProfile } from "@/hooks/useUserProfile";
+
 export default function RecruiterDashboard() {
+  const { name, isApproved } = useUserProfile();
+  const [stats, setStats] = useState(STATS);
+  const [recentCandidates, setRecentCandidates] = useState(RECENT_CANDIDATES);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchDashboardData = async () => {
+      try {
+        const [jobsRes, interviewsRes] = await Promise.all([
+          fetch("/api/jobs"),
+          fetch("/api/interviews/all")
+        ]);
+
+        if (jobsRes.ok && interviewsRes.ok) {
+          const jobsData = await jobsRes.json();
+          const interviewsData = await interviewsRes.json();
+
+          const activeJobs = jobsData.data?.length || 0;
+          const totalInterviews = interviewsData.data?.length || 0;
+          const completedInterviews = interviewsData.data?.filter((i: any) => i.status === "completed").length || 0;
+
+          setStats([
+            { label: "Active Jobs", value: activeJobs.toString(), sub: "Real-time updates", icon: <FiBriefcase /> },
+            { label: "Total Candidates", value: totalInterviews.toString(), sub: "Across all postings", icon: <FiTrendingUp /> },
+            { label: "AI Interviews", value: totalInterviews.toString(), sub: `${completedInterviews} completed`, icon: <FiClock /> },
+            { label: "Success Hires", value: "38", sub: "Goal: 50", icon: <FiCheckCircle /> },
+          ]);
+
+          if (interviewsData.data) {
+            const mapped = interviewsData.data.slice(0, 5).map((int: any) => ({
+              name: int.user_id?.name || "Unknown",
+              role: int.job_id?.role || "General",
+              score: int.score || 0,
+              status: int.status === "completed" ? "Screened" : "In Progress",
+              date: new Date(int.createdAt).toLocaleDateString()
+            }));
+            setRecentCandidates(mapped);
+          }
+        }
+      } catch (error) {
+        console.error("Failed to fetch recruiter dashboard data:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchDashboardData();
+  }, []);
   return (
     <div className="p-8 lg:p-10 space-y-10">
+      
+      {!isApproved && (
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="p-6 rounded-[2rem] bg-amber-500/10 border border-amber-500/20 flex flex-col md:flex-row items-center gap-6"
+        >
+          <div className="h-14 w-14 rounded-2xl bg-amber-500/20 flex items-center justify-center text-amber-500 shrink-0">
+            <FiShield size={28} />
+          </div>
+          <div className="flex-1 space-y-1 text-center md:text-left">
+            <h3 className="text-lg font-bold text-amber-500">Account Pending Verification</h3>
+            <p className="text-sm text-amber-500/70 leading-relaxed">
+              Welcome to EchoHire! To maintain the integrity of our recruiting network, your account is currently under review by our administration team. You can explore the dashboard and update your profile, but job posting and candidate management are temporarily locked.
+            </p>
+          </div>
+          <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-amber-500/50 bg-amber-500/5 px-4 py-2 rounded-full border border-amber-500/10">
+            <FiInfo size={12} />
+            ETA: 12-24 Hours
+          </div>
+        </motion.div>
+      )}
       
       {/* --- Page Header --- */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div className="space-y-1">
           <h1 className="text-3xl font-black text-white tracking-tight">Overview</h1>
-          <p className="text-sm text-text-muted">{"Welcome back, Jane. Here's what's happening today."}</p>
+          <p className="text-sm text-text-muted">Welcome back, {name || "Recruiter"}. Here's what's happening today.</p>
         </div>
         <Link 
-          href="/recruiter/jobs/new"
-          className="h-12 px-6 rounded-2xl bg-primary text-white text-xs font-black uppercase tracking-widest flex items-center justify-center gap-3 hover:bg-primary-hover active:scale-[0.98] transition-all"
+          href={isApproved ? "/recruiter/jobs/new" : "#"}
+          className={`h-12 px-6 rounded-2xl text-xs font-black uppercase tracking-widest flex items-center justify-center gap-3 transition-all ${
+            isApproved 
+              ? "bg-primary text-white hover:bg-primary-hover active:scale-[0.98]" 
+              : "bg-slate-800 text-slate-500 cursor-not-allowed opacity-50"
+          }`}
         >
-          <FiPlus /> Create New Job
+          {isApproved ? <FiPlus /> : <FiLock />} {isApproved ? "Create New Job" : "Posting Locked"}
         </Link>
       </div>
 
       {/* --- Bento Grid Stats --- */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-        {STATS.map((stat, i) => (
+        {stats.map((stat, i) => (
           <motion.div
             key={stat.label}
             initial={{ opacity: 0, y: 20 }}
@@ -93,7 +173,7 @@ export default function RecruiterDashboard() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-border-subtle">
-                  {RECENT_CANDIDATES.map((candidate, i) => (
+                  {recentCandidates.map((candidate, i) => (
                     <tr key={i} className="group hover:bg-surface-2/30 transition-colors">
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-3">
