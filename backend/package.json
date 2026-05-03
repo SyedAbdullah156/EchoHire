@@ -6,12 +6,15 @@
   "scripts": {
     "dev": "nodemon --watch src --ext ts --exec ts-node src/index.ts",
     "build": "tsc",
-    "start": "node dist/index.js"
+    "start": "node dist/index.js",
+    "seed": "ts-node src/scripts/seedData.ts"
   },
   "type": "commonjs",
   "dependencies": {
     "@google/generative-ai": "^0.24.1",
     "@types/pdf-parse": "^1.1.5",
+    "@types/qrcode": "^1.5.6",
+    "@types/speakeasy": "^2.0.10",
     "axios": "^1.15.0",
     "bcrypt": "^6.0.0",
     "bcryptjs": "^3.0.3",
@@ -34,6 +37,9 @@
     "on-finished": "^2.4.1",
     "openai": "^6.34.0",
     "pdf-parse": "^1.1.1",
+    "qrcode": "^1.5.4",
+    "socket.io": "^4.8.3",
+    "speakeasy": "^2.0.0",
     "streamifier": "^0.1.1",
     "uuid": "^13.0.0",
     "ws": "^8.20.0",

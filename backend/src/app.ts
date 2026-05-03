@@ -10,12 +10,19 @@ import authRoutes from "./routes/auth.routes";
 import candidateRoutes from "./routes/candidate.routes";
 import employeeRoutes from "./routes/employee.routes";
 import linkedinOptimizerRoutes from "./routes/linkedinOptimizer.routes";
+import codingRoutes from "./routes/coding.routes";
+import notificationRoutes from "./routes/notification.routes";
 import "./models/candidate.model";
 import "./models/employee.model";
 import "./models/admin.model";
 import cors from "cors";
 import { globalErrorHandler } from "./middlewares/errors.middleware";
 const app = express();
+
+app.use((req, res, next) => {
+    console.log(`[BACKEND] ${req.method} ${req.originalUrl}`);
+    next();
+});
 
 // Middlewares
 app.use(express.json({ limit: "2mb" }));
@@ -49,9 +56,11 @@ app.use("/api/candidates", candidateRoutes);
 app.use("/api/employees", employeeRoutes);
 app.use("/api/companies", companyRoutes);
 app.use("/api/jobs", jobRoutes);
-app.use("/api/interview", interviewRoutes);
-app.use("/api/aiInterview", aiInterviewRoutes);
+app.use("/api/interviews", interviewRoutes);
+app.use("/api/ai-interview", aiInterviewRoutes);
 app.use("/api/linkedin", linkedinOptimizerRoutes);
+app.use("/api/coding", codingRoutes);
+app.use("/api/notifications", notificationRoutes);
 app.use("/api/resume", resumeRoutes);
 app.get("/health", (_req: Request, res: Response) => {
     res.status(200).json({ success: true, message: "EchoHire backend is healthy" });

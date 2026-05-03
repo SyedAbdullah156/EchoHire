@@ -14,6 +14,7 @@ export const initWebSocket = (server: Server) => {
   const wss = new WebSocketServer({ server });
   const rooms = new Map<string, Set<WebSocket>>();
   const admins = new Set<WebSocket>();
+  const allClients = new Set<WebSocket>();
 
   const broadcastToAdmins = (type: string, payload: any) => {
     const message = JSON.stringify({ type, payload });
@@ -24,8 +25,18 @@ export const initWebSocket = (server: Server) => {
     });
   };
 
+  (global as any).sendWSNotification = (payload: any) => {
+    const message = JSON.stringify({ type: "notification", payload });
+    allClients.forEach(client => {
+      if (client.readyState === WebSocket.OPEN) {
+        client.send(message);
+      }
+    });
+  };
+
   wss.on("connection", (ws) => {
     console.log("New WebSocket Connection");
+    allClients.add(ws);
     let currentTicketId: string | null = null;
     let is_admin = false;
 
@@ -106,6 +117,7 @@ export const initWebSocket = (server: Server) => {
       if (is_admin) {
         admins.delete(ws);
       }
+      allClients.delete(ws);
     });
   });
 
