@@ -123,3 +123,40 @@ Open `http://localhost:3000`.
 ```bash
 npm run lint
 ```
+## Project Roadmap
+
+```mermaid
+gantt
+    title EchoHire Detailed Feature Roadmap
+    dateFormat  YYYY-MM-DD
+    
+    section Candidate Platform
+    Profile & Identity Setup       :done,    c1, 2026-04-01, 2026-04-10
+    Resume Upload & Parsing        :active,  c2, 2026-04-15, 2026-05-01
+    AI Mock Interview (Coding)     :active,  c3, 2026-04-20, 2026-05-15
+    AI Mock Interview (Behavioral) :         c4, 2026-05-10, 2026-05-30
+    LinkedIn Profile Audit         :         c5, 2026-05-20, 2026-06-10
+    Job Application Tracking       :         c6, 2026-06-05, 2026-06-25
+
+    section Recruiter Portal
+    Job Creation Wizard            :done,    r1, 2026-04-10, 2026-04-25
+    Candidate Pipeline (ATS)       :active,  r2, 2026-05-01, 2026-05-20
+    AI Assessment Review           :         r3, 2026-05-15, 2026-06-05
+    Interview Scheduling System    :         r4, 2026-06-01, 2026-06-15
+    Analytics & Hiring Metrics     :         r5, 2026-06-10, 2026-06-30
+
+    section Admin Operations
+    User Access Control (RBAC)     :active,  a1, 2026-05-03, 2026-05-12
+    Recruiter Verification Flow    :active,  a2, 2026-05-04, 2026-05-10
+    System Performance Monitor     :         a3, 2026-05-20, 2026-06-10
+    Content & Blog Management      :         a4, 2026-06-15, 2026-07-05
+
+    section Infrastructure & AI
+    Express/MongoDB API Core       :done,    i1, 2026-04-05, 2026-04-20
+    JWT Secure Auth (Candidate)    :done,    i2, 2026-04-15, 2026-04-25
+    JWT Secure Auth (Recruiter)    :active,  i3, 2026-05-01, 2026-05-10
+    OpenAI/Gemini Integration      :active,  i4, 2026-04-25, 2026-05-20
+    Real-time Notification Socket  :         i5, 2026-06-01, 2026-06-15
+    Cloud Binary Storage (Avatars) :         i6, 2026-05-10, 2026-05-25
+```
+

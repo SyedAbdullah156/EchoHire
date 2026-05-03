@@ -13,13 +13,6 @@ import { FiAward, FiBarChart2, FiFileText, FiRefreshCw, FiHome, FiZap, FiTrendin
 import JobNotifications from "@/components/dashboard/notifications/JobNotifications";
 import { toast } from "sonner";
 
-const skillData = [
-  { label: "Coding", value: 90, color: "from-blue-400 to-blue-600" },
-  { label: "Design", value: 72, color: "from-purple-400 to-purple-600" },
-  { label: "Behavioral", value: 58, color: "from-emerald-400 to-emerald-600" },
-  { label: "Technical", value: 66, color: "from-amber-400 to-amber-600" },
-];
-
 /** 
  * HCI ANIMATION STRATEGY:
  * We use a staggered entrance to guide the user's eye from the 
@@ -50,25 +43,55 @@ const itemVariants: Variants = {
   },
 };
 
+interface Interview {
+  _id: string;
+  status: string;
+  score?: number;
+  job_id?: { name: string; role: string };
+  rounds: Array<{
+    status: string;
+    type: string;
+    problemStatement?: string;
+    testCases?: Array<{ input: string; expected: string }>;
+  }>;
+}
+
 function DashboardContent() {
   const searchParams = useSearchParams();
   const shouldCompleteProfile = searchParams.get("completeProfile") === "1";
   const [dataError, setDataError] = useState(false);
   const [planName, setPlanName] = useState("Free");
-  const { name, createdAt } = useUserProfile();
+  const { name, createdAt, user } = useUserProfile();
   const displayName = name || "Candidate";
-  const trialDurationDays = 14;
-  const trialStart = createdAt ? new Date(createdAt) : null;
-  const trialEnd = trialStart
-    ? new Date(trialStart.getTime() + trialDurationDays * 24 * 60 * 60 * 1000)
-    : null;
-  const msLeft = trialEnd ? trialEnd.getTime() - Date.now() : null;
-  const daysLeft = msLeft !== null ? Math.ceil(msLeft / (24 * 60 * 60 * 1000)) : null;
-  const trialExpired = daysLeft !== null ? daysLeft <= 0 : false;
+  
+  const [priorityInterview, setPriorityInterview] = useState<Interview | null>(null);
+  const [performanceData, setPerformanceData] = useState<{ week: string; score: number }[]>([]);
 
-  const [priorityInterview, setPriorityInterview] = useState<any>(null);
-  const [performanceData, setPerformanceData] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
+  // Calculate trial info safely
+  const [trialInfo, setTrialInfo] = useState({ daysLeft: 14, expired: false });
+
+  // Dynamic Skill Data
+  const dynamicSkillData = user?.profile?.skills || [
+    { label: "Coding", value: 90, color: "from-blue-400 to-blue-600" },
+    { label: "Design", value: 72, color: "from-purple-400 to-purple-600" },
+    { label: "Behavioral", value: 58, color: "from-emerald-400 to-emerald-600" },
+    { label: "Technical", value: 66, color: "from-amber-400 to-amber-600" },
+  ];
+
+  // Dynamic Metrics
+  const linkedinScore = user?.profile?.linkedinScore || 82;
+  const resumeScore = user?.profile?.resumeScore || 92;
+
+  useEffect(() => {
+    if (createdAt) {
+      const trialDurationDays = 14;
+      const trialStart = new Date(createdAt);
+      const trialEnd = new Date(trialStart.getTime() + trialDurationDays * 24 * 60 * 60 * 1000);
+      const msLeft = trialEnd.getTime() - Date.now();
+      const days = Math.ceil(msLeft / (24 * 60 * 60 * 1000));
+      Promise.resolve().then(() => setTrialInfo({ daysLeft: days, expired: days <= 0 }));
+    }
+  }, [createdAt]);
 
   useEffect(() => {
     const loadData = async () => {
@@ -84,11 +107,11 @@ function DashboardContent() {
             const chartData = interviews
               .slice()
               .reverse() // Oldest first
-              .map((int: any, idx: number) => ({
+              .map((int: Interview, idx: number) => ({
                 week: `I${idx + 1}`,
                 score: int.score || 0
               }))
-              .filter((d: any) => d.score > 0);
+              .filter((d: { score: number }) => d.score > 0);
             
             setPerformanceData(chartData);
           }
@@ -96,16 +119,17 @@ function DashboardContent() {
       } catch {
         setDataError(true);
         toast.error("Critical: Failed to sync dashboard data.");
-      } finally {
-        setLoading(false);
       }
     };
-    loadData();
+    
+    Promise.resolve().then(() => loadData());
   }, []);
 
   useEffect(() => {
     const savedPlan = localStorage.getItem("echohire-plan");
-    if (savedPlan) setPlanName(savedPlan);
+    if (savedPlan) {
+      Promise.resolve().then(() => setPlanName(savedPlan));
+    }
   }, []);
 
   if (dataError) {
@@ -190,10 +214,10 @@ function DashboardContent() {
                 Plan: {planName}
               </span>
               {planName.toLowerCase() === "free" ? (
-                <span className={`font-semibold ${trialExpired ? "text-red-300" : "text-emerald-300"}`}>
-                  {trialExpired
+                <span className={`font-semibold ${trialInfo.expired ? "text-red-300" : "text-emerald-300"}`}>
+                  {trialInfo.expired
                     ? "Free trial ended"
-                    : `${daysLeft ?? trialDurationDays} day${(daysLeft ?? trialDurationDays) === 1 ? "" : "s"} left in free trial`}
+                    : `${trialInfo.daysLeft} day${trialInfo.daysLeft === 1 ? "" : "s"} left in free trial`}
                 </span>
               ) : (
                 <span className="font-semibold text-emerald-300">Your premium plan is active</span>
@@ -211,7 +235,7 @@ function DashboardContent() {
               ctaHref={
                 priorityInterview 
                   ? `/candidate/ai-interview?id=${priorityInterview._id}&round=${
-                      priorityInterview.rounds?.findIndex((r: any) => r.status !== "completed") ?? 0
+                      priorityInterview.rounds?.findIndex((r: { status: string }) => r.status !== "completed") ?? 0
                     }` 
                   : "/candidate/ai-interview"
               }
@@ -220,16 +244,16 @@ function DashboardContent() {
             />
             <StatCard
               title="LinkedIn Visibility"
-              value="82 / 100"
-              subtitle="Global Ranking: Top 15%"
+              value={`${linkedinScore} / 100`}
+              subtitle={linkedinScore > 80 ? "Global Ranking: Top 15%" : "Optimization Recommended"}
               ctaLabel="Enhance Profile"
               ctaHref="/candidate/linkedin-optimizer"
               icon={FiBarChart2}
             />
             <StatCard
               title="Resume Integrity"
-              value="92 / 100"
-              subtitle="Status: ATS Optimized"
+              value={`${resumeScore} / 100`}
+              subtitle={resumeScore > 85 ? "Status: ATS Optimized" : "Needs Review"}
               ctaLabel="Analyze PDF"
               ctaHref="/candidate/resume-analyzer"
               icon={FiFileText}
@@ -266,7 +290,7 @@ function DashboardContent() {
               >
                 <h2 className="text-xl font-bold text-white mb-6">Skill Mastery</h2>
                 <div className="space-y-6">
-                  {skillData.map((skill) => (
+                  {dynamicSkillData.map((skill: { label: string; value: number; color: string }) => (
                     <div key={skill.label} className="group">
                       <div className="mb-2 flex items-center justify-between">
                         <p className="text-sm font-medium text-[#cfd9f3] group-hover:text-white transition-colors">{skill.label}</p>

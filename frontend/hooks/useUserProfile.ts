@@ -1,6 +1,6 @@
 "use client";
 
-import { useAuth } from "@/context/AuthContext";
+import { useAuth, User } from "@/context/AuthContext";
 
 export function useUserProfile() {
   const { user, loading } = useAuth();
@@ -9,7 +9,8 @@ export function useUserProfile() {
     name: user?.name ?? "",
     avatarDataUrl: user?.profile?.avatarDataUrl ?? null,
     isApproved: user?.isApproved ?? true,
-    createdAt: (user as any)?.createdAt ?? null,
+    createdAt: user?.createdAt ?? null,
+    user: user as User | null,
     loading
   };
 }

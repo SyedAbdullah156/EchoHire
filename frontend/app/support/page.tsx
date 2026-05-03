@@ -12,13 +12,13 @@ import {
 
 export default function SupportPage() {
   return (
-    <main className="min-h-screen bg-[#050b18] text-[#e2e8f0] selection:bg-blue-500/30 antialiased">
-      <section className="mx-auto flex max-w-[1500px] flex-col gap-8 px-4 pb-12 pt-8 lg:flex-row md:px-8">
-        <DashboardSidebar active="support" />
+    <main className="min-h-screen bg-[#050b18] text-[#e2e8f0] flex flex-col lg:flex-row p-4 lg:p-8 gap-8 antialiased">
+      <DashboardSidebar active="support" />
 
-        <div className="flex-1 space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
+      <div className="flex-1 flex flex-col min-w-0 space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
+        <div className="bg-[#050b18]/80 backdrop-blur-md border-b border-slate-800/60 pb-6 mb-2 rounded-3xl">
           {/* Breadcrumb Navigation */}
-          <nav className="flex items-center text-sm text-[#9fb1d8]">
+          <nav className="flex items-center text-sm text-[#9fb1d8] mb-6 px-2">
             <Link 
               href="/dashboard" 
               className="group flex items-center gap-2 hover:text-white transition-colors"
@@ -28,24 +28,26 @@ export default function SupportPage() {
             </Link>
           </nav>
 
-          <header>
+          <header className="px-2">
             <div className="flex items-center gap-3 mb-2">
               <LifeBuoy className="text-[#2a7df7]" size={28} />
               <span className="text-xs font-bold uppercase tracking-widest text-[#4a5d89]">Help Center</span>
             </div>
-            <h1 className="text-5xl font-extrabold tracking-tight text-white">How can we help?</h1>
-            <p className="mt-4 text-lg text-[#9fb1d8] max-w-2xl">
+            <h1 className="text-4xl lg:text-5xl font-extrabold tracking-tight text-white leading-tight">How can we help?</h1>
+            <p className="mt-4 text-lg text-[#9fb1d8] max-w-2xl leading-relaxed">
               Search our documentation or contact our engineering team for technical assistance.
             </p>
           </header>
+        </div>
 
-          {/* Search Bar - HCI: Reduces search time */}
+        <div className="px-2 space-y-8">
+          {/* Search Bar */}
           <div className="relative max-w-2xl">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-[#4a5d89]" size={20} />
             <input 
               type="text" 
               placeholder="Search for articles, guides, or keywords..."
-              className="w-full rounded-2xl border border-[#243253] bg-[#0d162a] py-4 pl-12 pr-4 text-white placeholder-[#4a5d89] transition-all focus:border-blue-500 focus:outline-none focus:ring-4 focus:ring-blue-500/10"
+              className="w-full rounded-2xl border border-[#243253] bg-[#0d162a] py-4 pl-12 pr-4 text-white placeholder-[#4a5d89] transition-all focus:border-blue-500 focus:outline-none focus:ring-4 focus:ring-blue-500/10 shadow-lg"
             />
           </div>
 
@@ -66,21 +68,21 @@ export default function SupportPage() {
                   ))}
                 </ul>
               </div>
-              <button className="mt-6 text-sm font-semibold text-blue-400 hover:text-blue-300">
+              <button className="mt-6 text-sm font-semibold text-blue-400 hover:text-blue-300 self-start">
                 View Knowledge Base
               </button>
             </article>
 
             {/* Support Ticket Card */}
-            <article className="rounded-3xl border border-[#243253] bg-[#0d162a]/80 p-6 backdrop-blur-md transition-all hover:border-[#32466f]">
+            <article className="rounded-3xl border border-[#243253] bg-[#0d162a]/80 p-6 backdrop-blur-md transition-all hover:border-[#32466f] flex flex-col">
               <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-purple-500/10 text-purple-400">
                 <MessageCircle size={24} />
               </div>
               <h2 className="text-xl font-bold text-white">Direct Assistance</h2>
-              <p className="mt-3 text-sm leading-relaxed text-[#c3d0ed]">
+              <p className="mt-3 text-sm leading-relaxed text-[#c3d0ed] flex-1">
                 Have a specific technical issue or account question? Open a priority ticket with our team.
               </p>
-              <button className="mt-6 w-full rounded-xl bg-gradient-to-r from-[#2a7df7] to-[#372e8f] py-3 text-sm font-bold shadow-lg shadow-blue-500/20 transition-transform active:scale-95">
+              <button className="mt-6 w-full rounded-xl bg-gradient-to-r from-[#2a7df7] to-[#372e8f] py-3 text-sm font-bold text-white shadow-lg shadow-blue-500/20 transition-transform active:scale-95">
                 Create Support Ticket
               </button>
             </article>
@@ -102,16 +104,16 @@ export default function SupportPage() {
             </article>
           </div>
 
-          {/* User Feedback Loop - HCI: Continuous improvement */}
-          <footer className="rounded-2xl bg-[#0d162a]/40 p-6 text-center border border-[#243253]">
-            <p className="text-sm text-[#9fb1d8]">Did you find what you were looking for?</p>
-            <div className="mt-3 flex justify-center gap-4">
-               <button className="text-xs bg-[#0a1223] px-4 py-2 rounded-lg border border-[#243253] hover:border-blue-500">Yes, thanks!</button>
-               <button className="text-xs bg-[#0a1223] px-4 py-2 rounded-lg border border-[#243253] hover:border-red-500">Not really</button>
+          {/* User Feedback Loop */}
+          <footer className="rounded-[2rem] bg-[#0d162a]/40 p-8 text-center border border-[#243253] backdrop-blur-sm max-w-4xl mx-auto">
+            <p className="text-sm text-[#9fb1d8] mb-4">Did you find what you were looking for?</p>
+            <div className="flex justify-center gap-4">
+               <button className="text-xs font-bold bg-[#0a1223] px-6 py-2.5 rounded-xl border border-[#243253] hover:border-blue-500 transition-colors">Yes, thanks!</button>
+               <button className="text-xs font-bold bg-[#0a1223] px-6 py-2.5 rounded-xl border border-[#243253] hover:border-red-500 transition-colors">Not really</button>
             </div>
           </footer>
         </div>
-      </section>
+      </div>
     </main>
   );
 }

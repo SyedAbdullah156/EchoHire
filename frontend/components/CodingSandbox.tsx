@@ -128,6 +128,38 @@ export default function CodingSandbox({
 
       {/* Editor & Output Split */}
       <div className="flex-1 flex flex-col lg:flex-row overflow-hidden">
+        {/* Problem Description Area */}
+        <div className="w-full lg:w-[350px] border-r border-slate-800 bg-[#070d1a]/30 overflow-y-auto p-6">
+          <div className="flex items-center gap-2 text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-4">
+            <FiInfo size={12} className="text-blue-500" /> Problem Statement
+          </div>
+          <div className="prose prose-invert prose-sm">
+            <p className="text-slate-300 leading-relaxed font-medium">
+              {problemStatement}
+            </p>
+          </div>
+
+          {testCases && testCases.length > 0 && (
+            <div className="mt-8 space-y-4">
+              <div className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">
+                Example Test Cases
+              </div>
+              {testCases.slice(0, 2).map((tc, i) => (
+                <div key={i} className="p-3 rounded-xl bg-slate-900/50 border border-slate-800/50 space-y-2">
+                  <div className="flex items-center justify-between text-[9px] font-mono">
+                    <span className="text-slate-500">Input:</span>
+                    <span className="text-blue-400">{tc.input}</span>
+                  </div>
+                  <div className="flex items-center justify-between text-[9px] font-mono border-t border-slate-800/50 pt-2">
+                    <span className="text-slate-500">Expected:</span>
+                    <span className="text-emerald-400">{tc.expected}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
         {/* Editor Area */}
         <div className="flex-1 min-h-[400px] border-r border-slate-800">
           <Editor

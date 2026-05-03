@@ -138,9 +138,12 @@ export default function SettingsPage() {
                         <p className="text-sm text-[#9fb1d8]">{user?.email || "user@example.com"}</p>
                       </div>
                     </div>
-                    <button className="text-sm font-bold bg-white/5 border border-white/10 px-4 py-2 rounded-lg text-white hover:bg-white/10 transition-colors">
+                    <Link 
+                      href="/candidate/profile"
+                      className="text-sm font-bold bg-white/5 border border-white/10 px-4 py-2 rounded-lg text-white hover:bg-white/10 transition-colors"
+                    >
                       Edit Profile
-                    </button>
+                    </Link>
                   </div>
                 </section>
               )}

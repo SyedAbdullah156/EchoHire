@@ -4,14 +4,23 @@ import React, { createContext, useContext, useState, useEffect, ReactNode } from
 import { useRouter } from "next/navigation";
 import { logoutAction } from "@/app/auth/actions";
 
-type User = {
+interface UserProfile {
+  avatarDataUrl?: string;
+  skills?: { label: string; value: number; color: string }[];
+  linkedinScore?: number;
+  resumeScore?: number;
+  [key: string]: unknown;
+}
+
+export type User = {
   id: string;
   name: string;
   email: string;
   role: "candidate" | "recruiter" | "admin";
-  profile?: any;
+  profile?: UserProfile;
   isApproved?: boolean;
   mfaEnabled?: boolean;
+  createdAt?: string;
 };
 
 type AuthContextType = {
@@ -29,7 +38,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
   const router = useRouter();
 
-  const fetchUser = async () => {
+  const fetchUser = React.useCallback(async () => {
     try {
       const res = await fetch("/api/me");
 
@@ -45,25 +54,25 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     } finally {
       setLoading(false);
     }
-  };
-
-  useEffect(() => {
-    fetchUser();
   }, []);
 
-  const login = (userData: User) => {
-    setUser(userData);
-  };
+  useEffect(() => {
+    Promise.resolve().then(() => fetchUser());
+  }, [fetchUser]);
 
-  const logout = async () => {
+  const login = React.useCallback((userData: User) => {
+    setUser(userData);
+  }, []);
+
+  const logout = React.useCallback(async () => {
     await logoutAction();
     setUser(null);
     router.push("/auth");
-  };
+  }, [router]);
 
-  const refreshUser = async () => {
+  const refreshUser = React.useCallback(async () => {
     await fetchUser();
-  };
+  }, [fetchUser]);
 
   const value = React.useMemo(() => ({
     user,
@@ -71,7 +80,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     login,
     logout,
     refreshUser
-  }), [user, loading]);
+  }), [user, loading, login, logout, refreshUser]);
 
   return (
     <AuthContext.Provider value={value}>
