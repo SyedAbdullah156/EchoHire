@@ -10,6 +10,8 @@ type WSMessage = {
 // Store active tickets in memory (for production, move to DB/Redis)
 const activeTickets = new Map<string, any>();
 
+export const getActiveTicketsCount = () => activeTickets.size;
+
 export const initWebSocket = (server: Server) => {
   const wss = new WebSocketServer({ server });
   const rooms = new Map<string, Set<WebSocket>>();

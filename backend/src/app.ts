@@ -12,6 +12,7 @@ import employeeRoutes from "./routes/employee.routes";
 import linkedinOptimizerRoutes from "./routes/linkedinOptimizer.routes";
 import codingRoutes from "./routes/coding.routes";
 import notificationRoutes from "./routes/notification.routes";
+import adminRoutes from "./routes/admin.routes";
 import "./models/candidate.model";
 import "./models/employee.model";
 import "./models/admin.model";
@@ -62,6 +63,7 @@ app.use("/api/linkedin", linkedinOptimizerRoutes);
 app.use("/api/coding", codingRoutes);
 app.use("/api/notifications", notificationRoutes);
 app.use("/api/resume", resumeRoutes);
+app.use("/api/admin", adminRoutes);
 app.get("/health", (_req: Request, res: Response) => {
     res.status(200).json({ success: true, message: "EchoHire backend is healthy" });
 });

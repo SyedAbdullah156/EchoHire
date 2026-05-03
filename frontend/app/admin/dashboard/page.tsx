@@ -1,17 +1,46 @@
-"use client";
-
-import Link from "react-icons/fi";
-import { FiMessageSquare, FiActivity, FiUsers, FiServer, FiAlertTriangle, FiTrendingUp } from "react-icons/fi";
+import { useState, useEffect } from "react";
+import { FiMessageSquare, FiActivity, FiUsers, FiServer, FiAlertTriangle, FiTrendingUp, FiRefreshCw } from "react-icons/fi";
 import { motion } from "framer-motion";
 import NextLink from "next/link";
+import { toast } from "sonner";
 
 export default function AdminDashboardOverview() {
+  const [statsData, setStatsData] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchStats = async () => {
+      try {
+        const res = await fetch("/api/admin/stats");
+        if (res.ok) {
+          const result = await res.json();
+          setStatsData(result.data);
+        } else {
+          toast.error("Failed to load system metrics");
+        }
+      } catch (err) {
+        toast.error("Error connecting to admin services");
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchStats();
+  }, []);
+
   const stats = [
-    { label: "Active Users", value: "1,284", icon: FiUsers, color: "text-blue-500", bg: "bg-blue-500/10" },
-    { label: "System Health", value: "99.9%", icon: FiActivity, color: "text-emerald-500", bg: "bg-emerald-500/10" },
-    { label: "Open Tickets", value: "12", icon: FiMessageSquare, color: "text-amber-500", bg: "bg-amber-500/10" },
-    { label: "API Latency", value: "42ms", icon: FiServer, color: "text-purple-500", bg: "bg-purple-500/10" },
+    { label: "Active Users", value: statsData?.totalUsers?.toLocaleString() || "...", icon: FiUsers, color: "text-blue-500", bg: "bg-blue-500/10" },
+    { label: "System Health", value: statsData?.systemHealth || "...", icon: FiActivity, color: "text-emerald-500", bg: "bg-emerald-500/10" },
+    { label: "Open Tickets", value: statsData?.openTickets?.toString() || "...", icon: FiMessageSquare, color: "text-amber-500", bg: "bg-amber-500/10" },
+    { label: "API Latency", value: statsData?.apiLatency || "...", icon: FiServer, color: "text-purple-500", bg: "bg-purple-500/10" },
   ];
+
+  if (loading) {
+    return (
+      <div className="flex h-[60vh] items-center justify-center">
+        <FiRefreshCw className="animate-spin text-primary" size={48} />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-8 pb-12">
@@ -55,11 +84,11 @@ export default function AdminDashboardOverview() {
             </div>
             
             <div className="space-y-4">
-              {[
+              {(statsData?.alerts || [
                 { title: "Database Load Spike", time: "2m ago", severity: "high", desc: "Primary cluster memory usage exceeded 85%." },
                 { title: "Failed Login Attempts", time: "15m ago", severity: "medium", desc: "Detected unusual activity from 192.168.1.45." },
                 { title: "API Deprecation Warning", time: "1h ago", severity: "low", desc: "v1.2 endpoints will be retired on June 1st." },
-              ].map((alert, i) => (
+              ]).map((alert: any, i: number) => (
                 <div key={i} className="p-4 rounded-2xl bg-surface-1 border border-white/5 flex items-start gap-4 hover:bg-white/[0.02] transition-colors">
                   <div className={`mt-1 h-2 w-2 rounded-full shrink-0 ${
                     alert.severity === 'high' ? 'bg-rose-500' : alert.severity === 'medium' ? 'bg-amber-500' : 'bg-blue-500'
@@ -106,3 +135,4 @@ export default function AdminDashboardOverview() {
     </div>
   );
 }
+

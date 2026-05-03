@@ -54,6 +54,7 @@ export async function loginAction(formData: z.infer<typeof loginSchema>) {
     return { 
       success: true, 
       message: "Logged in successfully",
+      data: data,
       redirectUrl: getDashboardRoute(data.role) 
     };
   } catch (err) {
@@ -91,6 +92,7 @@ export async function registerAction(formData: z.infer<typeof registerSchema>) {
     return { 
       success: true, 
       message: "Registered successfully",
+      data: data,
       redirectUrl: getDashboardRoute(data.role) 
     };
   } catch (err) {
@@ -133,6 +135,7 @@ export async function verifyMfaAction(userId: string, code: string) {
     return { 
       success: true, 
       message: "MFA verified",
+      data: data,
       redirectUrl: getDashboardRoute(data.role) 
     };
   } catch (err) {

@@ -8,6 +8,7 @@ import { User } from "../models/user.model";
 import { AppError } from "../utils/AppError.utils";
 import { signToken } from "../utils/jwt.utils";
 import { createUserService } from "./user.services";
+import axios from "axios";
 import { AuthRequest } from "../types/request.types";
 
 const googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
@@ -147,20 +148,29 @@ export const googleLogin = async (
     next: NextFunction,
 ) => {
     try {
-        const { credential, role } = req.body;
+        const { credential, accessToken, role } = req.body;
 
-        if (!credential) {
-            throw new AppError("Google credential is required", 400);
+        if (!credential && !accessToken) {
+            throw new AppError("Google credential or access token is required", 400);
         }
 
-        const ticket = await googleClient.verifyIdToken({
-            idToken: credential,
-            audience: process.env.GOOGLE_CLIENT_ID,
-        });
+        let payload;
 
-        const payload = ticket.getPayload();
+        if (credential) {
+            const ticket = await googleClient.verifyIdToken({
+                idToken: credential,
+                audience: process.env.GOOGLE_CLIENT_ID,
+            });
+            payload = ticket.getPayload();
+        } else if (accessToken) {
+            const response = await axios.get("https://www.googleapis.com/oauth2/v3/userinfo", {
+                headers: { Authorization: `Bearer ${accessToken}` },
+            });
+            payload = response.data;
+        }
+
         if (!payload || !payload.email) {
-            throw new AppError("Invalid Google token", 400);
+            throw new AppError("Invalid Google token or unable to fetch user info", 400);
         }
 
         let user = await User.findOne({ email: payload.email.toLowerCase() });

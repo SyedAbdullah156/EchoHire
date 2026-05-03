@@ -1,7 +1,7 @@
 "use client";
 
 import { motion, AnimatePresence, Variants } from "framer-motion";
-import { FiArrowLeft, FiMail, FiLock, FiUser, FiArrowRight, FiShield, FiGithub, FiCheck, FiCpu, FiBarChart2, FiAward, FiEye, FiEyeOff } from "react-icons/fi";
+import { FiArrowLeft, FiMail, FiLock, FiUser, FiArrowRight, FiShield, FiCheck, FiCpu, FiBarChart2, FiAward, FiEye, FiEyeOff } from "react-icons/fi";
 import { FcGoogle } from "react-icons/fc";
 import { FormEvent, useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
@@ -9,7 +9,8 @@ import { toast } from "sonner";
 import { authSchema, emailSchema } from "@/lib/validation";
 import Link from "next/link";
 import { loginAction, registerAction, verifyMfaAction } from "./actions";
-import { GoogleOAuthProvider, GoogleLogin } from "@react-oauth/google";
+import { useAuth } from "@/context/AuthContext";
+import { GoogleOAuthProvider, useGoogleLogin } from "@react-oauth/google";
 
 // --- Configuration & Constants ---
 const TESTIMONIALS = [
@@ -142,6 +143,7 @@ function FloatingInput({
 
 function AuthContent() {
   const router = useRouter();
+  const { refreshUser } = useAuth();
   const [mode, setMode] = useState<"signin" | "signup" | "magic" | "mfa">("signin");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [activeTestimonial, setActiveTestimonial] = useState(0);
@@ -209,31 +211,35 @@ function AuthContent() {
     return () => clearInterval(interval);
   }, []);
 
-  const handleGoogleLoginSuccess = async (credentialResponse: any) => {
-    setIsSubmitting(true);
-    try {
-      const res = await fetch("/api/auth/google", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          credential: credentialResponse.credential,
-          role: role
-        }),
-      });
+  const handleGoogleLogin = useGoogleLogin({
+    onSuccess: async (tokenResponse) => {
+      setIsSubmitting(true);
+      try {
+        const res = await fetch("/api/auth/google", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            accessToken: tokenResponse.access_token,
+            role: role
+          }),
+        });
 
-      const result = await res.json();
-      if (res.ok) {
-        toast.success("Welcome back to EchoHire!");
-        router.push(result.data.role === "recruiter" ? "/recruiter/dashboard" : "/candidate/dashboard");
-      } else {
-        toast.error(result.message || "Google login failed.");
+        const result = await res.json();
+        if (res.ok) {
+          toast.success("Welcome back to EchoHire!");
+          await refreshUser();
+          router.push(result.data.role === "recruiter" ? "/recruiter/dashboard" : "/candidate/dashboard");
+        } else {
+          toast.error(result.message || "Google login failed.");
+        }
+      } catch (err) {
+        toast.error("Google login failed.");
+      } finally {
+        setIsSubmitting(false);
       }
-    } catch (err) {
-      toast.error("Google login failed.");
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
+    },
+    onError: () => toast.error("Google Login Failed"),
+  });
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
@@ -295,6 +301,7 @@ function AuthContent() {
 
 
       toast.success(mode === "signin" ? "Welcome back to EchoHire!" : "Account created successfully.");
+      await refreshUser();
       router.push(result.redirectUrl || "/dashboard");
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "System error. Try again.");
@@ -538,19 +545,18 @@ function AuthContent() {
                     </div>
 
                     <div className="flex flex-col gap-4">
-                      <div className="flex justify-center">
-                        <GoogleLogin
-                          onSuccess={handleGoogleLoginSuccess}
-                          onError={() => toast.error("Google Login Failed")}
-                          theme="filled_blue"
-                          shape="pill"
-                          width="440px"
-                        />
-                      </div>
-                      <button className="h-[52px] rounded-xl border border-border-medium bg-surface-2 flex items-center justify-center gap-3 text-xs font-bold text-white hover:bg-surface-1 hover:border-text-muted transition-all">
-                        <FiGithub size={20} />
-                        GitHub
-                      </button>
+                      <motion.button
+                        type="button"
+                        onClick={() => handleGoogleLogin()}
+                        whileHover={{ scale: 1.01, backgroundColor: "rgba(255, 255, 255, 0.08)" }}
+                        whileTap={{ scale: 0.99 }}
+                        className="group relative w-full h-[56px] rounded-xl border border-border-medium bg-surface-2 flex items-center justify-center gap-4 transition-all duration-300 overflow-hidden"
+                      >
+                        <div className="absolute inset-0 bg-gradient-to-r from-blue-500/5 via-transparent to-rose-500/5 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
+                        <FcGoogle size={24} className="relative z-10" />
+                        <span className="relative z-10 text-sm font-bold text-white tracking-wide">Continue with Google</span>
+                        <div className="absolute inset-0 border border-white/0 group-hover:border-white/10 rounded-xl transition-colors" />
+                      </motion.button>
                     </div>
                   </div>
 
