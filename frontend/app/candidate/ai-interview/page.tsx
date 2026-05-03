@@ -1,238 +1,320 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, Suspense } from "react";
 import { 
-  FiMic, FiMicOff, FiMonitor, FiPhoneOff, FiSend, 
-  FiVideo, FiVideoOff, FiLayers, FiMessageSquare, FiAlertCircle 
+  FiMic, FiMicOff, FiPhoneOff, FiSend, 
+  FiVideo, FiVideoOff, FiAlertCircle 
 } from "react-icons/fi";
 import { toast } from "sonner";
+import { useSearchParams, useRouter } from "next/navigation";
+import { motion, AnimatePresence } from "framer-motion";
+import InterviewLobby from "@/components/interview/InterviewLobby";
+import RoundFeedback from "@/components/interview/RoundFeedback";
 
-const questions = [
-  "Tell me about yourself and your recent work.",
-  "Describe a time you optimized a slow API.",
-  "How would you design a scalable chat service?",
-  "What trade-offs exist between SQL and NoSQL?",
-];
+function InterviewContent() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const interviewId = searchParams.get("id");
+  const roundIndex = parseInt(searchParams.get("round") || "0");
 
-export default function AIInterviewPage() {
+  const [view, setView] = useState<"lobby" | "active" | "results">("lobby");
   const [chatMessage, setChatMessage] = useState("");
   const [showEndConfirm, setShowEndConfirm] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
   const [isVideoOff, setIsVideoOff] = useState(false);
-  const [isSharing, setIsSharing] = useState(false);
   const [stream, setStream] = useState<MediaStream | null>(null);
   
+  const [loading, setLoading] = useState(true);
+  const [currentQuestion, setCurrentQuestion] = useState("");
+  const [qaHistory, setQaHistory] = useState<any[]>([]);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isRecording, setIsRecording] = useState(false);
+  const [roundData, setRoundData] = useState<any>(null);
+  const [totalRounds, setTotalRounds] = useState(3);
+  
   const videoRef = useRef<HTMLVideoElement>(null);
+  const recognitionRef = useRef<any>(null);
 
-  // HCI Principle: Visibility of System Status & Error Prevention
-  // Explicitly managing the stream life-cycle prevents "ghost" camera usage
-  useEffect(() => {
-    async function setupCamera() {
-      try {
-        if (!isVideoOff) {
-          const newStream = await navigator.mediaDevices.getUserMedia({ 
-            video: { width: 1280, height: 720 }, 
-            audio: true 
-          });
-          setStream(newStream);
-          if (videoRef.current) videoRef.current.srcObject = newStream;
-        } else {
-          setStream((prev) => {
-            prev?.getTracks().forEach(track => track.stop());
-            return null;
-          });
-        }
-      } catch {
-        setIsVideoOff(true);
-        toast.error("Camera access denied. Please check system permissions.");
-      }
+  // AI Voice Synthesis
+  const speak = (text: string) => {
+    if (typeof window !== "undefined" && window.speechSynthesis) {
+      window.speechSynthesis.cancel();
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.rate = 1.0;
+      utterance.pitch = 1.0;
+      window.speechSynthesis.speak(utterance);
     }
-    setupCamera();
-
-    return () => {
-      setStream((prev) => {
-        prev?.getTracks().forEach(track => track.stop());
-        return null;
-      });
-    };
-  }, [isVideoOff]);
-
-  const handleSendResponse = () => {
-    if (!chatMessage.trim()) return toast.error("Please enter a response.");
-    toast.success("Response sent to AI Interviewer.");
-    setChatMessage("");
   };
 
+  useEffect(() => {
+    if (view === "active" && currentQuestion && !isSubmitting) {
+      speak(currentQuestion);
+    }
+  }, [currentQuestion, view, isSubmitting]);
+
+  // Initial Sync Logic
+  useEffect(() => {
+    if (!interviewId) {
+      toast.error("Invalid session ID.");
+      return;
+    }
+
+    async function checkState() {
+      try {
+        const res = await fetch(`/api/ai-interview/${interviewId}/rounds/${roundIndex}`);
+        const result = await res.json();
+        if (res.ok) {
+          const round = result.data.round;
+          setRoundData(round);
+          setTotalRounds(result.data.interview.rounds.length);
+          
+          if (round.status === "completed") {
+            setView("results");
+          } else if (round.qa_pairs.length > 0) {
+            setCurrentQuestion(round.qa_pairs[round.qa_pairs.length - 1].question);
+            setQaHistory(round.qa_pairs);
+            setView("active");
+          }
+        } else {
+          toast.error("Could not sync interview data.");
+        }
+      } catch (e) {
+        console.error("Sync error", e);
+        toast.error("Connection lost. Retrying sync...");
+      } finally {
+        setLoading(false);
+      }
+    }
+    checkState();
+  }, [interviewId, roundIndex]);
+
+  // Handle Start Round
+  const handleStartRound = async () => {
+    setLoading(true);
+    try {
+      const res = await fetch(`/api/ai-interview/${interviewId}/rounds/${roundIndex}/start`, {
+        method: "POST"
+      });
+      const result = await res.json();
+      if (res.ok) {
+        setRoundData(result.data.round);
+        setCurrentQuestion(result.data.round.qa_pairs[0].question);
+        setQaHistory(result.data.round.qa_pairs);
+        setView("active");
+      } else {
+        toast.error(result.message || "Failed to start round.");
+      }
+    } catch {
+      toast.error("Network error.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Handle Answer
+  const handleSendResponse = async () => {
+    if (!chatMessage.trim()) return;
+    setIsSubmitting(true);
+    if (isRecording) recognitionRef.current?.stop();
+
+    try {
+      const res = await fetch(`/api/ai-interview/${interviewId}/rounds/${roundIndex}/answer`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ content: chatMessage.trim() }),
+      });
+
+      const result = await res.json();
+      if (res.ok) {
+        const round = result.data.round;
+        setRoundData(round);
+        if (round.status === "completed") {
+          setView("results");
+        } else {
+          setCurrentQuestion(round.qa_pairs[round.qa_pairs.length - 1].question);
+          setQaHistory(round.qa_pairs);
+          setChatMessage("");
+        }
+      }
+    } catch {
+      toast.error("Sync failed.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  // Camera Management (Active View)
+  useEffect(() => {
+    if (view === "active" && !isVideoOff) {
+      navigator.mediaDevices.getUserMedia({ video: true, audio: true }).then(s => {
+        setStream(s);
+        if (videoRef.current) videoRef.current.srcObject = s;
+      });
+    } else {
+      stream?.getTracks().forEach(t => t.stop());
+    }
+    return () => stream?.getTracks().forEach(t => t.stop());
+  }, [view, isVideoOff]);
+
+  const toggleRecording = () => {
+    if (isRecording) {
+      recognitionRef.current?.stop();
+      setIsRecording(false);
+    } else {
+      const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+      if (!SpeechRecognition) return;
+      const rec = new SpeechRecognition();
+      rec.onresult = (e: any) => setChatMessage(e.results[0][0].transcript);
+      rec.onend = () => setIsRecording(false);
+      rec.start();
+      recognitionRef.current = rec;
+      setIsRecording(true);
+    }
+  };
+
+  if (loading) return (
+    <div className="flex h-screen items-center justify-center">
+      <div className="flex flex-col items-center gap-4">
+        <div className="h-12 w-12 border-4 border-primary border-t-transparent rounded-full animate-spin" />
+        <p className="text-xs font-black uppercase tracking-widest text-text-muted">Synchronizing Session...</p>
+      </div>
+    </div>
+  );
+
   return (
-    <div className="space-y-6">
-          {/* Header: Context & Status */}
-          <header className="flex flex-col md:flex-row md:items-center justify-between gap-4 rounded-3xl border border-slate-800/60 bg-[#0f172a]/40 p-6 backdrop-blur-md">
-            <div className="space-y-1">
-              <div className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.2em] text-blue-500">
-                <span className="relative flex h-2 w-2">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
-                  <span className="relative inline-flex rounded-full h-2 w-2 bg-blue-500"></span>
-                </span>
-                Active Interview
+    <AnimatePresence mode="wait">
+      {view === "lobby" && (
+        <motion.div key="lobby" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+          <InterviewLobby onStart={handleStartRound} />
+        </motion.div>
+      )}
+
+      {view === "results" && (
+        <motion.div key="results" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+          <RoundFeedback 
+            roundIndex={roundIndex}
+            result={roundData}
+            isLastRound={roundIndex >= totalRounds - 1}
+            onNext={() => router.push(`/candidate/ai-interview?id=${interviewId}&round=${roundIndex + 1}`)}
+            onFinish={() => router.push("/candidate/dashboard")}
+          />
+        </motion.div>
+      )}
+
+      {view === "active" && (
+        <motion.div key="active" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-6">
+          {/* Header */}
+          <header className="flex items-center justify-between p-6 rounded-3xl bg-surface-1/40 border border-white/5 backdrop-blur-md">
+            <div>
+              <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.2em] text-primary">
+                <span className="w-2 h-2 rounded-full bg-primary animate-pulse" /> Live Round {roundIndex + 1}
               </div>
-              <h1 className="text-2xl font-bold text-white tracking-tight">Senior Software Engineer Role</h1>
+              <h1 className="text-xl font-bold text-white tracking-tight">Technical Assessment</h1>
             </div>
-            
-            <div className="flex items-center gap-4">
-               <div className="text-right hidden sm:block border-r border-slate-800 pr-4">
-                  <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Time Elapsed</p>
-                  <p className="text-sm font-mono text-blue-400">14:02 / 45:00</p>
+            <div className="flex items-center gap-4 text-right">
+               <div className="border-r border-white/10 pr-4">
+                 <p className="text-[10px] font-bold text-text-muted uppercase tracking-widest">Progress</p>
+                 <p className="text-sm font-mono text-white">{qaHistory.length} / {roundData?.max_questions || 5}</p>
                </div>
-               <div className="bg-blue-500/10 border border-blue-500/20 px-3 py-1.5 rounded-lg text-[10px] font-black text-blue-400 uppercase tracking-widest">
-                  Adaptive AI
-               </div>
+               <button onClick={() => setShowEndConfirm(true)} className="p-3 rounded-xl bg-red-500/10 text-red-500 hover:bg-red-500/20 transition-all">
+                  <FiPhoneOff />
+               </button>
             </div>
           </header>
 
-          <div className="grid gap-6 lg:grid-cols-12">
-            {/* Left: The "Stage" */}
+          <div className="grid lg:grid-cols-12 gap-6">
             <div className="lg:col-span-8 space-y-6">
-              {/* Camera Stage */}
-              <div className="relative group aspect-video overflow-hidden rounded-[2.5rem] border border-slate-800 bg-[#020617] shadow-2xl">
-                <video 
-                  ref={videoRef} 
-                  autoPlay 
-                  muted 
-                  playsInline 
-                  className={`h-full w-full object-cover transition-opacity duration-1000 ${isVideoOff ? 'opacity-0' : 'opacity-100'}`}
-                />
-                
-                {/* HCI: Feedback for Disabled State */}
+              <div className="relative aspect-video rounded-[2.5rem] overflow-hidden border border-white/10 bg-black shadow-2xl">
+                <video ref={videoRef} autoPlay muted playsInline className="w-full h-full object-cover" />
                 {isVideoOff && (
-                  <div className="absolute inset-0 flex flex-col items-center justify-center bg-slate-900/50 backdrop-blur-sm">
-                    <div className="w-20 h-20 rounded-3xl bg-slate-800 flex items-center justify-center mb-4 border border-slate-700">
-                        <FiVideoOff className="text-3xl text-slate-500" />
-                    </div>
-                    <p className="text-sm font-bold text-slate-400 uppercase tracking-widest">Camera Disabled</p>
+                  <div className="absolute inset-0 bg-surface-1 flex items-center justify-center">
+                    <FiVideoOff className="text-4xl text-text-muted" />
                   </div>
                 )}
-
-                {/* AI Persona (Picture-in-Picture feel) */}
-                <div className="absolute top-6 right-6 w-40 aspect-video rounded-2xl border border-white/5 bg-slate-950/80 backdrop-blur-md overflow-hidden shadow-2xl">
-                   <div className="h-full w-full flex flex-col items-center justify-center bg-gradient-to-br from-blue-600/10 to-indigo-600/10">
-                      <div className="flex gap-1 mb-2">
-                        <span className="w-1 h-1 rounded-full bg-blue-500 animate-bounce" />
-                        <span className="w-1 h-1 rounded-full bg-blue-500 animate-bounce [animation-delay:0.2s]" />
-                        <span className="w-1 h-1 rounded-full bg-blue-500 animate-bounce [animation-delay:0.4s]" />
-                      </div>
-                      <p className="text-[8px] font-black text-blue-400 uppercase tracking-[0.2em]">AI Listening</p>
-                   </div>
-                </div>
-
-                {/* Floating HUD Controls */}
-                <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex items-center gap-3 px-6 py-3 rounded-2xl border border-white/5 bg-slate-950/60 backdrop-blur-xl shadow-2xl opacity-90 hover:opacity-100 transition-opacity">
-                  <button 
-                    onClick={() => { setIsMuted(!isMuted); toast.info(isMuted ? "Mic On" : "Mic Muted"); }}
-                    className={`p-3 rounded-xl transition-all ${isMuted ? 'bg-rose-500/20 text-rose-500' : 'bg-slate-800/50 text-slate-300 hover:bg-slate-700'}`}
-                  >
-                    {isMuted ? <FiMicOff size={18} /> : <FiMic size={18} />}
-                  </button>
-                  <button 
-                    onClick={() => setIsVideoOff(!isVideoOff)}
-                    className={`p-3 rounded-xl transition-all ${isVideoOff ? 'bg-rose-500/20 text-rose-500' : 'bg-slate-800/50 text-slate-300 hover:bg-slate-700'}`}
-                  >
-                    {isVideoOff ? <FiVideoOff size={18} /> : <FiVideo size={18} />}
-                  </button>
-                  <button 
-                    onClick={() => setIsSharing(!isSharing)}
-                    className={`p-3 rounded-xl transition-all ${isSharing ? 'bg-blue-500/20 text-blue-500' : 'bg-slate-800/50 text-slate-300 hover:bg-slate-700'}`}
-                  >
-                    <FiMonitor size={18} />
-                  </button>
-                  <div className="w-px h-6 bg-slate-800 mx-1" />
-                  <button 
-                    onClick={() => setShowEndConfirm(true)}
-                    className="flex items-center gap-2 px-5 py-3 rounded-xl bg-rose-600 hover:bg-rose-500 text-white font-bold text-[10px] uppercase tracking-widest transition-all"
-                  >
-                    <FiPhoneOff /> Leave
-                  </button>
+                {/* HUD Controls */}
+                <div className="absolute bottom-6 left-6 flex gap-2">
+                   <button onClick={() => setIsMuted(!isMuted)} className={`p-3 rounded-xl ${isMuted ? 'bg-red-500 text-white' : 'bg-black/40 text-white backdrop-blur-md'}`}>
+                      {isMuted ? <FiMicOff /> : <FiMic />}
+                   </button>
+                   <button onClick={() => setIsVideoOff(!isVideoOff)} className={`p-3 rounded-xl ${isVideoOff ? 'bg-red-500 text-white' : 'bg-black/40 text-white backdrop-blur-md'}`}>
+                      {isVideoOff ? <FiVideoOff /> : <FiVideo />}
+                   </button>
                 </div>
               </div>
 
-              {/* Prompt Card: HCI Focus on Clarity */}
-              <div className="rounded-[2.5rem] border border-blue-500/10 bg-[#0f172a]/40 p-8 relative overflow-hidden">
-                <div className="absolute top-0 right-0 p-8 opacity-[0.03] rotate-12">
-                  <FiMessageSquare size={120} />
-                </div>
-                <h4 className="text-[10px] font-black text-blue-500 uppercase tracking-[0.3em] mb-4">Prompt</h4>
-                <p className="text-xl md:text-2xl font-bold text-white leading-relaxed tracking-tight">
-                  {"\"How do you handle production incidents under high pressure while maintaining team morale?\""}
-                </p>
+              <div className="p-10 rounded-[2.5rem] bg-surface-1/40 border border-primary/10 relative overflow-hidden">
+                <p className="text-[10px] font-black text-primary uppercase tracking-[0.3em] mb-4">Interviewer Question</p>
+                <p className="text-2xl font-bold text-white leading-relaxed tracking-tight">"{currentQuestion}"</p>
+                {isSubmitting && (
+                   <div className="mt-4 flex gap-1">
+                     {[0,1,2].map(i => <motion.div key={i} animate={{ scale: [1, 1.5, 1] }} transition={{ repeat: Infinity, duration: 1, delay: i*0.2 }} className="w-1.5 h-1.5 rounded-full bg-primary" />)}
+                   </div>
+                )}
               </div>
             </div>
 
-            {/* Right: Interaction & Progress */}
-            <div className="lg:col-span-4 space-y-6">
-              <div className="rounded-[2.5rem] border border-slate-800 bg-[#0f172a]/40 p-6">
-                <div className="flex items-center gap-3 mb-6 px-2">
-                  <div className="p-2 rounded-lg bg-blue-500/10 text-blue-500">
-                    <FiLayers size={16} />
-                  </div>
-                  <h3 className="font-bold text-white text-sm">Question Path</h3>
-                </div>
-                <div className="space-y-2">
-                  {questions.map((q, i) => (
-                    <div key={i} className="group p-4 rounded-2xl bg-slate-900/30 border border-slate-800/50 hover:border-slate-700 transition-all">
-                      <div className="flex items-start gap-3">
-                        <span className="text-[10px] font-mono font-bold text-slate-600 mt-1">0{i+1}</span>
-                        <p className="text-xs text-slate-400 group-hover:text-slate-200 transition-colors leading-relaxed">{q}</p>
-                      </div>
+            <div className="lg:col-span-4 flex flex-col gap-6">
+               <div className="flex-1 p-6 rounded-[2.5rem] bg-surface-1/40 border border-white/5 overflow-y-auto space-y-4">
+                  <h3 className="text-xs font-black text-white uppercase tracking-widest px-2">Conversation</h3>
+                  {qaHistory.map((q, i) => (
+                    <div key={i} className="p-4 rounded-2xl bg-white/[0.02] border border-white/5 space-y-2">
+                       <p className="text-[9px] font-black text-primary uppercase">Question {i+1}</p>
+                       <p className="text-xs text-text-secondary leading-relaxed">{q.question}</p>
                     </div>
                   ))}
-                </div>
-              </div>
+               </div>
 
-              {/* Fallback Input */}
-              <div className="rounded-[2.5rem] border border-slate-800 bg-[#0f172a]/40 p-6">
-                <h3 className="font-bold text-white text-sm mb-4 px-2">Text Response</h3>
-                <textarea
-                  value={chatMessage}
-                  onChange={(e) => setChatMessage(e.target.value)}
-                  className="w-full h-32 bg-slate-900/50 border border-slate-800 rounded-2xl p-4 text-xs text-slate-200 outline-none focus:border-blue-500/40 transition-all resize-none placeholder:text-slate-600"
-                  placeholder="Describe your approach here..."
-                />
-                <button 
-                  onClick={handleSendResponse}
-                  className="w-full mt-4 flex items-center justify-center gap-2 py-4 rounded-2xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-[10px] uppercase tracking-[0.2em] transition-all shadow-lg shadow-blue-900/10"
-                >
-                  <FiSend /> Submit Answer
-                </button>
-              </div>
+               <div className="p-6 rounded-[2.5rem] bg-surface-1/40 border border-white/5 space-y-4">
+                  <textarea
+                    value={chatMessage}
+                    onChange={(e) => setChatMessage(e.target.value)}
+                    disabled={isSubmitting}
+                    className="w-full h-32 bg-white/[0.02] border border-white/5 rounded-2xl p-4 text-xs text-white outline-none focus:border-primary/40 transition-all resize-none disabled:opacity-50"
+                    placeholder="Provide your answer..."
+                  />
+                  <div className="flex gap-2">
+                    <button onClick={toggleRecording} className={`flex-1 flex items-center justify-center gap-2 py-4 rounded-2xl ${isRecording ? "bg-red-600 text-white" : "bg-surface-2 text-text-muted"}`}>
+                      {isRecording ? <FiMicOff /> : <FiMic />}
+                    </button>
+                    <button 
+                      onClick={handleSendResponse}
+                      disabled={isSubmitting || !chatMessage.trim()}
+                      className="flex-[3] py-4 rounded-2xl bg-primary text-white font-black uppercase tracking-widest hover:bg-primary-hover disabled:opacity-50 transition-all shadow-lg shadow-primary/20"
+                    >
+                      {isSubmitting ? (
+                        <div className="flex items-center gap-2">
+                          Processing <motion.div animate={{ rotate: 360 }} transition={{ repeat: Infinity, duration: 1 }} className="w-3 h-3 border-2 border-white border-t-transparent rounded-full" />
+                        </div>
+                      ) : <span className="flex items-center justify-center gap-2">Submit <FiSend /></span>}
+                    </button>
+                  </div>
+               </div>
             </div>
           </div>
-      {/* Confirmation Overlay: HCI Aesthetic & Minimalist Design */}
+        </motion.div>
+      )}
+
       {showEndConfirm && (
-        <div className="fixed inset-0 z-[5000] flex items-center justify-center p-4 backdrop-blur-sm bg-black/60">
-          <div className="relative w-full max-w-sm rounded-[3rem] border border-slate-800 bg-[#0f172a] p-10 shadow-2xl text-center">
-            <div className="w-16 h-16 rounded-2xl bg-rose-500/10 flex items-center justify-center mb-6 mx-auto">
-              <FiAlertCircle className="text-2xl text-rose-500" />
-            </div>
-            <h3 className="text-xl font-bold text-white mb-2 tracking-tight">End Session?</h3>
-            <p className="text-xs text-slate-400 mb-8 leading-relaxed">
-              Are you sure you want to exit? Your current interview progress will be saved as a draft.
-            </p>
+        <div className="fixed inset-0 z-[1000] flex items-center justify-center p-4 backdrop-blur-sm bg-black/60">
+          <div className="max-w-sm w-full p-10 rounded-[3rem] bg-surface-1 border border-white/10 text-center space-y-6">
+            <FiAlertCircle className="text-4xl text-red-500 mx-auto" />
+            <h3 className="text-xl font-bold text-white">Exit Interview?</h3>
+            <p className="text-xs text-text-muted">Your progress for this round will be saved, but the session will end.</p>
             <div className="grid gap-3">
-              <button
-                onClick={() => { setShowEndConfirm(false); toast.info("Session Concluded."); }}
-                className="w-full py-4 rounded-2xl bg-rose-600 font-black text-[10px] uppercase tracking-widest text-white hover:bg-rose-500 transition-all"
-              >
-                Confirm Exit
-              </button>
-              <button
-                onClick={() => setShowEndConfirm(false)}
-                className="w-full py-4 rounded-2xl bg-slate-800 font-black text-[10px] uppercase tracking-widest text-slate-400 hover:text-white transition-all"
-              >
-                Go Back
-              </button>
+              <button onClick={() => router.push("/candidate/dashboard")} className="w-full py-4 rounded-2xl bg-red-600 text-white font-bold uppercase tracking-widest">Confirm Exit</button>
+              <button onClick={() => setShowEndConfirm(false)} className="w-full py-4 rounded-2xl bg-surface-2 text-white font-bold uppercase tracking-widest">Cancel</button>
             </div>
           </div>
         </div>
       )}
-    </div>
+    </AnimatePresence>
+  );
+}
+
+export default function AIInterviewPage() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <InterviewContent />
+    </Suspense>
   );
 }
