@@ -1,7 +1,16 @@
 import mongoose from "mongoose";
+import { TUser } from "./user.types";
 
-export interface TEmployee {
-    company_id: mongoose.Types.ObjectId;
-    user_id: mongoose.Types.ObjectId;
-    role: string;
+export interface TEmployeeNotifications {
+    email?: boolean;
+    desktop?: boolean;
+    marketing?: boolean;
+}
+
+export interface TEmployee extends TUser {
+    company_id?: mongoose.Types.ObjectId;
+    jobTitle?: string;
+    recruitingFocus?: string;
+    bio?: string;
+    notifications?: TEmployeeNotifications;
 }

@@ -1,6 +1,6 @@
 import bcrypt from "bcryptjs";
 import { User } from "../models/user.model";
-import { TProfile, TUser } from "../types/user.types";
+import { TUser } from "../types/user.types";
 import { AppError } from "../utils/AppError.utils";
 
 type CreateUserInput = Omit<TUser, "_id">;
@@ -40,10 +40,8 @@ export const getUserByIdService = async (id: string) => {
 };
 
 export const updateUserService = async (id: string, inputData: Partial<TUser>) => {
-    const { name, email, profile } = inputData;
+    const { name, email } = inputData;
 
-    // If email is being changed, check for duplicates
-    // If same email as before → passes (since it excludes self)
     if (email) {
         const existingUser = await User.findOne({ email, _id: { $ne: id } });
         if (existingUser) {
@@ -57,13 +55,6 @@ export const updateUserService = async (id: string, inputData: Partial<TUser>) =
     const updatePayload: Record<string, any> = {};
     if (name) updatePayload.name = name;
     if (email) updatePayload.email = email;
-
-    // Map nested profile fields to dot notation for atomic updates
-    if (profile) {
-        Object.entries(profile).forEach(([key, value]) => {
-            updatePayload[`profile.${key}`] = value;
-        });
-    }
 
     const user = await User.findByIdAndUpdate(
         id,

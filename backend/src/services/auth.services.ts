@@ -27,12 +27,15 @@ export const register = async (
 ) => {
     try {
         const user = await createUserService(req.body);
+        const userObject: any = typeof user.toObject === "function" ? user.toObject() : { ...user };
+        delete userObject.password;
+
         const token = signToken(user._id.toString(), user.role);
 
         res.status(201).json({
             success: true,
             message: "Signup successful",
-            data: user,
+            data: userObject,
             token,
         });
     } catch (error) {
@@ -69,7 +72,7 @@ export const login = async (
             throw new AppError("Invalid email or password", 401);
         }
 
-        const userObject = user.toObject();
+        const userObject: any = user.toObject();
         delete userObject.password;
 
         const token = signToken(user._id.toString(), user.role);
@@ -127,7 +130,7 @@ export const googleLogin = async (
             throw new AppError("User creation failed", 500);
         }
 
-        const userObject = user.toObject();
+        const userObject: any = user.toObject();
         delete userObject.password;
 
         const token = signToken(user._id.toString(), user.role);

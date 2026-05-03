@@ -7,10 +7,11 @@ import interviewRoutes from "./routes/interview.routes";
 import aiInterviewRoutes from "./routes/aiInterview.routes";
 import resumeRoutes from "./routes/resume.routes";
 import authRoutes from "./routes/auth.routes";
+import candidateRoutes from "./routes/candidate.routes";
+import employeeRoutes from "./routes/employee.routes";
 import linkedinOptimizerRoutes from "./routes/linkedinOptimizer.routes";
 import cors from "cors";
 import { globalErrorHandler } from "./middlewares/errors.middleware";
-
 const app = express();
 
 // Middlewares
@@ -41,6 +42,8 @@ app.use(cors(corsOptions));
 // Routes
 app.use("/api/auth", authRoutes);
 app.use("/api/users", userRoutes);
+app.use("/api/candidates", candidateRoutes);
+app.use("/api/employees", employeeRoutes);
 app.use("/api/companies", companyRoutes);
 app.use("/api/jobs", jobRoutes);
 app.use("/api/interview", interviewRoutes);

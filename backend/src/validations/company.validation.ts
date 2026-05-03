@@ -33,6 +33,9 @@ const companyBodySchema = z.object({
 
     logo: z.string().optional(),
 
+    size: z.string().trim().max(50, "Company size must be at most 50 characters").optional(),
+    industry: z.string().trim().max(100, "Industry must be at most 100 characters").optional(),
+
     owner_id: mongoIdString.optional(),
 });
 

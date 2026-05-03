@@ -1,4 +1,5 @@
-import mongoose, { Schema } from "mongoose";
+import { Schema } from "mongoose";
+import { User } from "./user.model";
 import { TEmployee } from "../types/employee.types";
 
 const employeeSchema = new Schema<TEmployee>(
@@ -6,32 +7,31 @@ const employeeSchema = new Schema<TEmployee>(
         company_id: {
             type: Schema.Types.ObjectId,
             ref: "Company",
-            required: [true, "Employee must be linked to a company"],
         },
-        user_id: {
-            type: Schema.Types.ObjectId,
-            ref: "User",
-            required: [true, "Employee must be associated with a user account"],
-        },
-        role: {
+        jobTitle: {
             type: String,
-            required: [
-                true,
-                "Employee role (e.g., HR, Admin, Interviewer) is required",
-            ],
             trim: true,
+            maxlength: [100, "Job title cannot exceed 100 characters"],
+        },
+        recruitingFocus: {
+            type: String,
+            trim: true,
+            maxlength: [250, "Recruiting focus cannot exceed 250 characters"],
+        },
+        bio: {
+            type: String,
+            trim: true,
+            maxlength: [1000, "Bio cannot exceed 1000 characters"],
+        },
+        notifications: {
+            email: { type: Boolean, default: true },
+            desktop: { type: Boolean, default: true },
+            marketing: { type: Boolean, default: false },
         },
     },
     {
-        timestamps: true,
-    },
+        _id: false,
+    }
 );
 
-/**
- * Using Compound Index
- * This ensures that a User cannot be added to the same Company as an employee more than once.
- * It prevents duplicate data and ensures data integrity.
- */
-employeeSchema.index({ company_id: 1, user_id: 1 }, { unique: true });
-
-export const Employee = mongoose.model<TEmployee>("Employee", employeeSchema);
+export const Employee = User.discriminator<TEmployee>("recruiter", employeeSchema);
