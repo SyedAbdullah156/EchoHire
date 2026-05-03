@@ -124,6 +124,17 @@ const interviewSchema = new Schema<TInterview>(
             type: [violationSchema],
             default: [],
         },
+        assessment_token: {
+            type: String,
+            unique: true,
+            sparse: true,
+        },
+        access_code: {
+            type: String,
+        },
+        access_code_expires: {
+            type: Date,
+        },
     },
     { timestamps: true },
 );

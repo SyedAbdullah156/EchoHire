@@ -11,6 +11,7 @@ export const createInterview = async (
     try {
         // Extract strictly what is allowed from the body
         const { job_id, cv_url } = req.body;
+        console.log("[INTERVIEW] Create request:", { job_id, cv_url, userId: req.user?._id });
 
         if (req.user?.role != "candidate") {
             throw new AppError("Only Candidate can register for Interview", 403);

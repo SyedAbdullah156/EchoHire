@@ -3,6 +3,9 @@ import { AuthRequest } from "../types/request.types";
 import * as jobService from "../services/job.services";
 import { AppError } from "../utils/AppError.utils";
 import { TEmployee } from "../types/employee.types";
+import { User } from "../models/user.model";
+import { Notification } from "../models/notification.model";
+import { Company } from "../models/company.model";
 
 export const createJob = async (
     req: AuthRequest,
@@ -24,6 +27,36 @@ export const createJob = async (
         }
         jobData.company_id = companyId;
         const job = await jobService.createJobService(jobData);
+
+        // Notify Candidates
+        try {
+            const company = await Company.findById(companyId);
+            const candidates = await User.find({ role: "candidate" });
+            
+            const notifications = candidates.map(candidate => ({
+                userId: candidate._id,
+                title: "New Job Opportunity",
+                message: `${company?.name || "A company"} just posted a new role: ${job.role}. Apply now!`,
+                type: "job_alert",
+                relatedId: job._id
+            }));
+            
+            if (notifications.length > 0) {
+                await Notification.insertMany(notifications);
+                
+                // Broadcast Real-time
+                if ((global as any).sendWSNotification) {
+                    (global as any).sendWSNotification({
+                        title: "New Job Opportunity",
+                        message: `${company?.name || "A company"} just posted a new role: ${job.role}. Apply now!`,
+                        type: "job_alert",
+                        createdAt: new Date().toISOString()
+                    });
+                }
+            }
+        } catch (notifError) {
+            console.error("Failed to send job notifications:", notifError);
+        }
 
         res.status(201).json({
             success: true,

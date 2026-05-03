@@ -1,6 +1,9 @@
 import { Interview } from "../models/interview.model";
 import { Job } from "../models/job.model";
+import { User } from "../models/user.model";
 import { AppError } from "../utils/AppError.utils";
+import { v4 as uuidv4 } from "uuid";
+import { sendAssessmentLink } from "./email.service";
 
 export const createInterviewService = async (
     job_id: string,
@@ -33,6 +36,8 @@ export const createInterviewService = async (
         qa_pairs: [],
     }));
 
+    const assessment_token = uuidv4();
+
     // Creating the Interview Instance
     const interview = await Interview.create({
         job_id,
@@ -40,7 +45,17 @@ export const createInterviewService = async (
         cv_url,
         status: "applied",
         rounds: clonedRounds,
+        assessment_token,
     });
+
+    // Send Assessment Link via Gmail (Async)
+    const user = await User.findById(user_id);
+    if (user && user.email) {
+        const assessmentLink = `${process.env.FRONTEND_URL}/candidate/coding-test?token=${assessment_token}`;
+        sendAssessmentLink(user.email, assessmentLink).catch((err) => {
+            console.error("Async Email Error:", err);
+        });
+    }
 
     return interview;
 };

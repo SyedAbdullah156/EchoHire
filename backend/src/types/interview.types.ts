@@ -28,4 +28,7 @@ export interface TInterview {
     score?: number;
     remarks?: string;
     violations?: { type: (typeof VIOLATION_TYPES)[number]; timestamp: Date }[];
+    assessment_token?: string;
+    access_code?: string;
+    access_code_expires?: Date;
 }
