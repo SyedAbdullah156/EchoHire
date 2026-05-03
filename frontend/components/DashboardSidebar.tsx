@@ -3,7 +3,8 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import type { IconType } from "react-icons";
-import { FiBarChart2, FiBookOpen, FiChevronLeft, FiChevronRight, FiFileText, FiGrid, FiHelpCircle, FiLogOut, FiMenu, FiSettings, FiUser, FiX } from "react-icons/fi";
+import { FiBarChart2, FiBookOpen, FiBriefcase, FiChevronLeft, FiChevronRight, FiCode, FiFileText, FiGrid, FiHelpCircle, FiLogOut, FiMenu, FiSettings, FiUser, FiX } from "react-icons/fi";
+import { useAuth } from "@/context/AuthContext";
 
 type SidebarItem = {
   key: string;
@@ -14,7 +15,9 @@ type SidebarItem = {
 
 const mainItems: SidebarItem[] = [
   { key: "dashboard", label: "Dashboard", icon: FiGrid, href: "/candidate/dashboard" },
+  { key: "jobs", label: "Browse Jobs", icon: FiBriefcase, href: "/candidate/jobs" },
   { key: "ai-interview", label: "AI Interview", icon: FiBookOpen, href: "/candidate/ai-interview" },
+  { key: "coding-test", label: "Technical Assessment", icon: FiCode, href: "/candidate/coding-test" },
   { key: "resume-analyzer", label: "Resume Analyzer", icon: FiFileText, href: "/candidate/resume-analyzer" },
   { key: "linkedin-optimizer", label: "LinkedIn Optimizer", icon: FiBarChart2, href: "/candidate/linkedin-optimizer" },
 ];
@@ -32,18 +35,14 @@ function MenuItem({ item, isActive, collapsed, onNavigate }: {
   onNavigate?: () => void 
 }) {
   const Icon = item.icon;
+  const { logout } = useAuth();
 
   if (item.key === "logout") {
     return (
       <button
         onClick={async () => {
           if (onNavigate) onNavigate();
-          try {
-            await fetch("/api/auth/logout", { method: "POST" });
-          } finally {
-            localStorage.removeItem("echohire-token");
-            window.location.href = "/auth";
-          }
+          await logout();
         }}
         className={`group relative flex w-full items-center rounded-2xl px-3 py-3 transition-all duration-300 ${
           collapsed ? "justify-center" : "gap-4"

@@ -4,6 +4,7 @@ import { ReactNode } from "react";
 import Link from "next/link";
 import { FiSearch, FiBell } from "react-icons/fi";
 import RecruiterSidebar from "@/components/RecruiterSidebar";
+import NotificationBell from "@/components/NotificationBell";
 import { useUserProfile } from "@/hooks/useUserProfile";
 
 export default function RecruiterLayout({ children }: { children: ReactNode }) {
@@ -37,10 +38,7 @@ export default function RecruiterLayout({ children }: { children: ReactNode }) {
           </div>
           
           <div className="flex items-center gap-4 ml-8">
-            <button className="h-12 w-12 flex items-center justify-center rounded-2xl bg-surface-1 border border-border-medium text-text-muted hover:text-white transition-all relative">
-              <FiBell />
-              <span className="absolute top-3 right-3 h-2 w-2 rounded-full bg-primary" />
-            </button>
+            <NotificationBell />
 
             {/* Avatar — profile picture or initials fallback */}
             <Link 

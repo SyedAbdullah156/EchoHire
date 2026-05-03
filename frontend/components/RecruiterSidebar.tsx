@@ -14,9 +14,11 @@ import {
   FiX,
   FiBriefcase,
   FiUsers,
-  FiPlus
+  FiPlus,
+  FiLock
 } from "react-icons/fi";
 import { usePathname } from "next/navigation";
+import { useAuth } from "@/context/AuthContext";
 
 type SidebarItem = {
   key: string;
@@ -38,25 +40,22 @@ const accountItems: SidebarItem[] = [
   { key: "logout", label: "Logout", icon: FiLogOut, href: "/auth" },
 ];
 
-function MenuItem({ item, isActive, collapsed, onNavigate }: { 
+function MenuItem({ item, isActive, collapsed, isLocked, onNavigate }: { 
   item: SidebarItem; 
   isActive: boolean; 
   collapsed: boolean; 
+  isLocked?: boolean;
   onNavigate?: () => void 
 }) {
   const Icon = item.icon;
+  const { logout } = useAuth();
 
   if (item.key === "logout") {
     return (
       <button
         onClick={async () => {
           if (onNavigate) onNavigate();
-          try {
-            await fetch("/api/auth/logout", { method: "POST" });
-          } finally {
-            localStorage.removeItem("echohire-token");
-            window.location.href = "/auth";
-          }
+          await logout();
         }}
         className={`group relative flex w-full items-center rounded-2xl px-3 py-3 transition-all duration-300 ${
           collapsed ? "justify-center" : "gap-4"
@@ -72,6 +71,26 @@ function MenuItem({ item, isActive, collapsed, onNavigate }: {
           </span>
         )}
       </button>
+    );
+  }
+
+  if (isLocked) {
+    return (
+      <div
+        className={`group relative flex items-center rounded-2xl px-3 py-3 transition-all duration-300 cursor-not-allowed ${
+          collapsed ? "justify-center" : "gap-4"
+        } text-slate-600 bg-slate-900/10`}
+      >
+        <div className="flex shrink-0 items-center justify-center text-slate-600">
+          <Icon size={20} />
+        </div>
+        {!collapsed && (
+          <span className="text-sm font-semibold tracking-wide opacity-50 flex-1">
+            {item.label}
+          </span>
+        )}
+        {!collapsed && <FiLock size={14} className="text-slate-700" />}
+      </div>
     );
   }
 
@@ -120,6 +139,10 @@ function SidebarShell({
   mobile?: boolean;
 }) {
   const pathname = usePathname();
+  const { user } = useAuth();
+  const isApproved = user?.isApproved ?? true;
+
+  const restrictedKeys = ["jobs", "candidates", "new-job"];
 
   return (
     <aside
@@ -161,6 +184,7 @@ function SidebarShell({
                 item={item}
                 isActive={pathname === item.href}
                 collapsed={collapsed}
+                isLocked={!isApproved && restrictedKeys.includes(item.key)}
                 onNavigate={onNavigate}
               />
             ))}

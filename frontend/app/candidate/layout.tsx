@@ -4,6 +4,7 @@ import { ReactNode } from "react";
 import Link from "next/link";
 import { FiSearch, FiBell } from "react-icons/fi";
 import DashboardSidebar from "@/components/DashboardSidebar";
+import NotificationBell from "@/components/NotificationBell";
 import { usePathname } from "next/navigation";
 import { useUserProfile } from "@/hooks/useUserProfile";
 
@@ -40,10 +41,7 @@ export default function CandidateLayout({ children }: { children: ReactNode }) {
           </div>
           
           <div className="flex items-center gap-4 ml-8">
-            <button className="h-12 w-12 flex items-center justify-center rounded-2xl bg-[#0d162a] border border-slate-800 text-slate-500 hover:text-white transition-all relative">
-              <FiBell />
-              <span className="absolute top-3 right-3 h-2 w-2 rounded-full bg-blue-500" />
-            </button>
+            <NotificationBell />
 
             {/* Avatar — profile picture or initials fallback */}
             <Link 

@@ -7,6 +7,7 @@ import { FiMenu, FiX } from "react-icons/fi";
 import { motion, AnimatePresence, Variants } from "framer-motion";
 
 import { useUserRole } from "@/hooks/useUserRole";
+import { useAuth } from "@/context/AuthContext";
 
 const navLinks = [
   { label: "Home", href: "/" },
@@ -40,6 +41,7 @@ const linkVariants: Variants = {
 };
 
 export default function Navbar() {
+  const { user, loading } = useAuth();
   const pathname = usePathname();
   const [isOpen, setIsOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
@@ -84,18 +86,29 @@ export default function Navbar() {
 
         {/* Desktop Actions */}
         <div className="hidden items-center gap-6 lg:flex">
-          <Link
-            href="/auth"
-            className="text-sm font-bold text-text-secondary hover:text-white transition-colors"
-          >
-            Sign In
-          </Link>
-          <Link
-            href="/auth"
-            className="rounded-xl bg-primary px-7 py-3 text-sm font-bold text-white transition-all hover:bg-primary-hover active:scale-95"
-          >
-            Get Started
-          </Link>
+          {!loading && user ? (
+            <Link
+              href={user.role === "recruiter" ? "/recruiter/dashboard" : "/candidate/dashboard"}
+              className="rounded-xl bg-primary px-7 py-3 text-sm font-bold text-white transition-all hover:bg-primary-hover active:scale-95"
+            >
+              Dashboard
+            </Link>
+          ) : (
+            <>
+              <Link
+                href="/auth"
+                className="text-sm font-bold text-text-secondary hover:text-white transition-colors"
+              >
+                Sign In
+              </Link>
+              <Link
+                href="/auth"
+                className="rounded-xl bg-primary px-7 py-3 text-sm font-bold text-white transition-all hover:bg-primary-hover active:scale-95"
+              >
+                Get Started
+              </Link>
+            </>
+          )}
         </div>
 
         {/* Mobile Toggle */}
