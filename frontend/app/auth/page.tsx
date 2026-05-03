@@ -1,12 +1,12 @@
 "use client";
 
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence, Variants } from "framer-motion";
 import { FiArrowLeft, FiMail, FiLock, FiUser, FiArrowRight, FiShield, FiGithub, FiCheck, FiCpu, FiBarChart2, FiAward, FiEye, FiEyeOff } from "react-icons/fi";
 import { FcGoogle } from "react-icons/fc";
-import { FormEvent, useMemo, useState, useEffect } from "react";
+import { FormEvent, useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { authSchema } from "@/lib/validation";
+import { authSchema, emailSchema } from "@/lib/validation";
 import Link from "next/link";
 import { loginAction, registerAction } from "./actions";
 import { GoogleOAuthProvider, useGoogleLogin } from "@react-oauth/google";
@@ -33,6 +33,14 @@ const TESTIMONIALS = [
   }
 ];
 
+const SHAKE_VARIANTS: Variants = {
+  default: { x: 0 },
+  shake: {
+    x: [0, -10, 10, -10, 10, 0],
+    transition: { duration: 0.4, ease: "easeInOut" }
+  }
+};
+
 // --- Sub-components ---
 
 function FloatingInput({
@@ -42,7 +50,9 @@ function FloatingInput({
   type = "text",
   icon: Icon,
   required = false,
-  error = ""
+  error = "",
+  onBlur,
+  name
 }: {
   label: string;
   value: string;
@@ -51,6 +61,8 @@ function FloatingInput({
   icon?: React.ElementType;
   required?: boolean;
   error?: string;
+  onBlur?: () => void;
+  name?: string;
 }) {
   const [isFocused, setIsFocused] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
@@ -60,8 +72,10 @@ function FloatingInput({
 
   return (
     <div className="relative w-full group">
-      <div
-        className={`relative flex items-center min-h-[56px] rounded-xl border transition-all duration-200 
+      <motion.div
+        variants={SHAKE_VARIANTS}
+        animate={error && !isFocused ? "shake" : "default"}
+        className={`relative flex items-center min-h-[56px] rounded-xl border transition-[border-color,background-color] duration-200 
           ${isFocused ? "border-primary bg-surface-2" : "border-border-medium bg-surface-1 hover:border-text-muted"}
           ${error ? "border-rose-500/50 bg-rose-500/5" : ""}
         `}
@@ -83,11 +97,15 @@ function FloatingInput({
             {label} {required && <span className="text-rose-500">*</span>}
           </label>
           <input
+            name={name}
             type={inputType}
             value={value}
             onChange={(e) => onChange(e.target.value)}
             onFocus={() => setIsFocused(true)}
-            onBlur={() => setIsFocused(false)}
+            onBlur={() => {
+              setIsFocused(false);
+              onBlur?.();
+            }}
             required={required}
             className={`w-full h-full bg-transparent border-none outline-none px-4 pt-4 text-sm text-white placeholder:opacity-0 focus:ring-0 ${isPassword ? "pr-12" : ""}`}
           />
@@ -104,56 +122,23 @@ function FloatingInput({
             {showPassword ? <FiEyeOff size={18} /> : <FiEye size={18} />}
           </button>
         )}
-      </div>
-      {error && (
-        <motion.p
-          initial={{ opacity: 0, y: -5 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="mt-1.5 ml-1 text-[11px] font-medium text-rose-400 tracking-tight"
-        >
-          {error}
-        </motion.p>
-      )}
+      </motion.div>
+      <AnimatePresence>
+        {error && (
+          <motion.p
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: "auto" }}
+            exit={{ opacity: 0, height: 0 }}
+            className="mt-1.5 ml-1 text-[11px] font-medium text-rose-400 tracking-tight overflow-hidden"
+          >
+            {error}
+          </motion.p>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
 
-function PasswordStrength({ password }: { password: string }) {
-  const strength = useMemo(() => {
-    if (!password) return 0;
-    let score = 0;
-    if (password.length >= 8) score += 25;
-    if (/[A-Z]/.test(password)) score += 25;
-    if (/[0-9]/.test(password)) score += 25;
-    if (/[^A-Za-z0-9]/.test(password)) score += 25;
-    return score;
-  }, [password]);
-
-  const getColor = () => {
-    if (strength <= 25) return "bg-rose-500";
-    if (strength <= 50) return "bg-amber-500";
-    if (strength <= 75) return "bg-blue-400";
-    return "bg-emerald-500";
-  };
-
-  return (
-    <div className="mt-4 space-y-2">
-      <div className="flex items-center justify-between px-1">
-        <span className="text-[10px] font-bold uppercase tracking-widest text-text-muted">Security Level</span>
-        <span className={`text-[10px] font-bold uppercase tracking-widest ${strength === 100 ? "text-emerald-500" : "text-text-muted"}`}>
-          {strength === 0 ? "None" : strength <= 50 ? "Weak" : strength <= 75 ? "Good" : "Ideal"}
-        </span>
-      </div>
-      <div className="h-1 w-full bg-border-medium rounded-full overflow-hidden">
-        <motion.div
-          initial={{ width: 0 }}
-          animate={{ width: `${strength}%` }}
-          className={`h-full transition-colors duration-500 ${getColor()}`}
-        />
-      </div>
-    </div>
-  );
-}
 
 function AuthContent() {
   const router = useRouter();
@@ -168,8 +153,51 @@ function AuthContent() {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [role, setRole] = useState<"candidate" | "recruiter">("candidate");
 
-  // Validation Errors
+  // Validation State
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [touched, setTouched] = useState<Record<string, boolean>>({});
+
+  const validateField = (fieldName: string, value: string) => {
+    let fieldError = "";
+    try {
+      if (fieldName === "email") emailSchema.parse(value);
+      else if (fieldName === "password" && mode === "signup") {
+        const missing = [];
+        if (value.length < 8) missing.push("8 characters");
+        if (!/[A-Z]/.test(value)) missing.push("one uppercase letter");
+        if (!/[0-9]/.test(value)) missing.push("one number");
+        if (!/[^A-Za-z0-9]/.test(value)) missing.push("one special character");
+
+        if (missing.length > 0) {
+          fieldError = `Password must include at least: ${missing.join(", ")}`;
+        }
+      }
+      else if (fieldName === "password" && mode === "signin" && !value) fieldError = "Password is required";
+      else if (fieldName === "name" && mode === "signup" && value.length < 2) fieldError = "Name is too short";
+      else if (fieldName === "confirmPassword" && mode === "signup" && value !== password) fieldError = "Passwords do not match";
+    } catch (err: unknown) {
+      if (err && typeof err === 'object' && 'issues' in err) {
+        const zodErr = err as { issues: { message: string }[] };
+        fieldError = zodErr.issues?.[0]?.message || "Invalid input";
+      } else {
+        fieldError = "Invalid input";
+      }
+    }
+    setErrors(prev => ({ ...prev, [fieldName]: fieldError }));
+  };
+
+  const handleBlur = (fieldName: string, value: string) => {
+    setTouched(prev => ({ ...prev, [fieldName]: true }));
+    validateField(fieldName, value);
+  };
+
+  const handleChange = (fieldName: string, value: string, setter: (v: string) => void) => {
+    setter(value);
+    const isPasswordSignup = fieldName === "password" && mode === "signup";
+    if (touched[fieldName] || errors[fieldName] || isPasswordSignup) {
+      validateField(fieldName, value);
+    }
+  };
 
   // Rotation for testimonials
   useEffect(() => {
@@ -185,7 +213,7 @@ function AuthContent() {
       try {
         // Implementation for Google login would go here
         toast.info("Google Authentication integration in progress.");
-      } catch (err) {
+      } catch {
         toast.error("Google login failed.");
       } finally {
         setIsSubmitting(false);
@@ -215,12 +243,17 @@ function AuthContent() {
 
     if (!parsed.success) {
       const fieldErrors: Record<string, string> = {};
+      const newTouched: Record<string, boolean> = {};
       parsed.error.issues.forEach(issue => {
         const path = issue.path.join(".");
         if (!fieldErrors[path]) fieldErrors[path] = issue.message;
       });
+      ["name", "email", "password", "confirmPassword"].forEach(f => newTouched[f] = true);
       setErrors(fieldErrors);
+      setTouched(newTouched);
       toast.error("Please correct the errors in the form.");
+      const firstError = parsed.error.issues[0].path.join(".");
+      document.getElementsByName(firstError)[0]?.focus();
       return;
     }
 
@@ -318,188 +351,195 @@ function AuthContent() {
         <section className="flex-1 bg-background overflow-y-auto">
           <div className="min-h-full w-full flex flex-col items-center justify-start py-12 lg:py-32 px-6 sm:px-12">
 
-          {/* Mobile Logo */}
-          <div className="lg:hidden mb-12">
-            <Link href="/" className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary">
-                <span className="text-base font-black text-white">EH</span>
-              </div>
-              <span className="text-2xl font-bold tracking-tight text-white">EchoHire</span>
-            </Link>
-          </div>
-
-          <motion.div
-          className="w-full max-w-[440px] bg-surface-1 border border-border-medium rounded-[3rem] p-8 md:p-12"
-          >
-            <AnimatePresence mode="wait">
-              <motion.div
-                key={mode}
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 0.2 }}
-                className="space-y-8"
-              >
-                {/* Header */}
-                <div className="space-y-2 text-center lg:text-left">
-                  <h1 className="text-3xl font-black text-white tracking-tight">
-                    {mode === "signin" ? "Access Workspace" : mode === "signup" ? "Build Your Profile" : "Passwordless Login"}
-                  </h1>
-                  <p className="text-sm text-text-secondary leading-relaxed">
-                    {mode === "signin"
-                      ? "Enter your credentials to continue your career journey."
-                      : mode === "signup"
-                        ? "Join 15,000+ engineers optimizing their future."
-                        : "Enter your email and we'll send you a secure login link."
-                    }
-                  </p>
+            {/* Mobile Logo */}
+            <div className="lg:hidden mb-12">
+              <Link href="/" className="flex items-center gap-3">
+                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary">
+                  <span className="text-base font-black text-white">EH</span>
                 </div>
+                <span className="text-2xl font-bold tracking-tight text-white">EchoHire</span>
+              </Link>
+            </div>
 
-                {/* Main Form */}
-                <form onSubmit={handleSubmit} className="space-y-5">
-                  {mode === "signup" && (
+            <motion.div
+              className="w-full max-w-[440px] bg-surface-1 border border-border-medium rounded-[3rem] p-8 md:p-12"
+            >
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key={mode}
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 0.2 }}
+                  className="space-y-8"
+                >
+                  {/* Header */}
+                  <div className="space-y-2 text-center lg:text-left">
+                    <h1 className="text-3xl font-black text-white tracking-tight">
+                      {mode === "signin" ? "Access Workspace" : mode === "signup" ? "Build Your Profile" : "Passwordless Login"}
+                    </h1>
+                    <p className="text-sm text-text-secondary leading-relaxed">
+                      {mode === "signin"
+                        ? "Enter your credentials to continue your career journey."
+                        : mode === "signup"
+                          ? "Join 15,000+ engineers optimizing their future."
+                          : "Enter your email and we'll send you a secure login link."
+                      }
+                    </p>
+                  </div>
+
+                  {/* Main Form */}
+                  <form onSubmit={handleSubmit} noValidate className="space-y-5">
+                    {mode === "signup" && (
+                      <FloatingInput
+                        name="name"
+                        label="Full Name"
+                        value={name}
+                        onChange={(v) => handleChange("name", v, setName)}
+                        onBlur={() => handleBlur("name", name)}
+                        icon={FiUser}
+                        required
+                        error={errors.name}
+                      />
+                    )}
+
                     <FloatingInput
-                      label="Full Name"
-                      value={name}
-                      onChange={setName}
-                      icon={FiUser}
+                      name="email"
+                      label="Email Address"
+                      value={email}
+                      onChange={(v) => handleChange("email", v, setEmail)}
+                      onBlur={() => handleBlur("email", email)}
+                      type="email"
+                      icon={FiMail}
                       required
-                      error={errors.name}
+                      error={errors.email}
                     />
-                  )}
 
-                  <FloatingInput
-                    label="Email Address"
-                    value={email}
-                    onChange={setEmail}
-                    type="email"
-                    icon={FiMail}
-                    required
-                    error={errors.email}
-                  />
-
-                  {mode !== "magic" && (
-                    <div className="space-y-1">
-                      <FloatingInput
-                        label="Password"
-                        value={password}
-                        onChange={setPassword}
-                        type="password"
-                        icon={FiLock}
-                        required
-                        error={errors.password}
-                      />
-                      {mode === "signup" && <PasswordStrength password={password} />}
-                      {mode === "signin" && (
-                        <div className="flex justify-end pt-1">
-                          <button
-                            type="button"
-                            onClick={() => setMode("magic")}
-                            className="text-[11px] font-bold uppercase tracking-widest text-text-muted hover:text-primary transition-colors"
-                          >
-                            Forgot Password?
-                          </button>
-                        </div>
-                      )}
-                    </div>
-                  )}
-
-                  {mode === "signup" && (
-                    <>
-                      <FloatingInput
-                        label="Confirm Password"
-                        value={confirmPassword}
-                        onChange={setConfirmPassword}
-                        type="password"
-                        icon={FiCheck}
-                        required
-                        error={errors.confirmPassword}
-                      />
-                      <div className="pt-2">
-                        <p className="text-[10px] font-bold uppercase tracking-widest text-text-muted mb-3 ml-1">Select Role</p>
-                        <div className="grid grid-cols-2 gap-3">
-                          {(["candidate", "recruiter"] as const).map((r) => (
+                    {mode !== "magic" && (
+                      <div className="space-y-1">
+                        <FloatingInput
+                          name="password"
+                          label="Password"
+                          value={password}
+                          onChange={(v) => handleChange("password", v, setPassword)}
+                          onBlur={() => handleBlur("password", password)}
+                          type="password"
+                          icon={FiLock}
+                          required
+                          error={errors.password}
+                        />
+                        {mode === "signin" && (
+                          <div className="flex justify-end pt-1">
                             <button
-                              key={r}
                               type="button"
-                              onClick={() => setRole(r)}
-                              className={`h-11 rounded-xl border text-xs font-bold uppercase tracking-widest transition-all
-                              ${role === r
-                                  ? "bg-primary border-primary text-white"
-                                  : "bg-surface-2 border-border-medium text-text-muted hover:border-text-muted"
-                                }
-                            `}
+                              onClick={() => setMode("magic")}
+                              className="text-[11px] font-bold uppercase tracking-widest text-text-muted hover:text-primary transition-colors"
                             >
-                              {r}
+                              Forgot Password?
                             </button>
-                          ))}
-                        </div>
+                          </div>
+                        )}
                       </div>
-                    </>
-                  )}
+                    )}
 
-                  <button
-                    type="submit"
-                    disabled={isSubmitting}
-                    className="w-full h-[56px] rounded-xl bg-primary text-sm font-bold text-white uppercase tracking-widest transition-all hover:bg-primary-hover active:scale-[0.98] disabled:opacity-50 flex items-center justify-center gap-3"
-                  >
-                    {isSubmitting ? "Authenticating..." : mode === "signin" ? "Login to Dashboard" : mode === "signup" ? "Create Account" : "Send Magic Link"}
-                    {!isSubmitting && <FiArrowRight />}
-                  </button>
-                </form>
+                    {mode === "signup" && (
+                      <>
+                        <FloatingInput
+                          name="confirmPassword"
+                          label="Confirm Password"
+                          value={confirmPassword}
+                          onChange={(v) => handleChange("confirmPassword", v, setConfirmPassword)}
+                          onBlur={() => handleBlur("confirmPassword", confirmPassword)}
+                          type="password"
+                          icon={FiCheck}
+                          required
+                          error={errors.confirmPassword}
+                        />
+                        <div className="pt-2">
+                          <p className="text-[10px] font-bold uppercase tracking-widest text-text-muted mb-3 ml-1">Select Role</p>
+                          <div className="grid grid-cols-2 gap-3">
+                            {(["candidate", "recruiter"] as const).map((r) => (
+                              <button
+                                key={r}
+                                type="button"
+                                onClick={() => setRole(r)}
+                                className={`h-11 rounded-xl border text-xs font-bold uppercase tracking-widest transition-all
+                              ${role === r
+                                    ? "bg-primary border-primary text-white"
+                                    : "bg-surface-2 border-border-medium text-text-muted hover:border-text-muted"
+                                  }
+                            `}
+                              >
+                                {r}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                      </>
+                    )}
 
-                {/* SSO Options */}
-                <div className="space-y-6 pt-4">
-                  <div className="relative flex items-center justify-center">
-                    <div className="absolute inset-0 flex items-center">
-                      <div className="w-full border-t border-border-subtle"></div>
+                    <button
+                      type="submit"
+                      disabled={isSubmitting}
+                      className="w-full h-[56px] rounded-xl bg-primary text-sm font-bold text-white uppercase tracking-widest transition-all hover:bg-primary-hover active:scale-[0.98] disabled:opacity-50 flex items-center justify-center gap-3"
+                    >
+                      {isSubmitting ? "Authenticating..." : mode === "signin" ? "Login to Dashboard" : mode === "signup" ? "Create Account" : "Send Magic Link"}
+                      {!isSubmitting && <FiArrowRight />}
+                    </button>
+                  </form>
+
+                  {/* SSO Options */}
+                  <div className="space-y-6 pt-4">
+                    <div className="relative flex items-center justify-center">
+                      <div className="absolute inset-0 flex items-center">
+                        <div className="w-full border-t border-border-subtle"></div>
+                      </div>
+                      <span className="relative px-4 bg-surface-1 text-[10px] font-bold uppercase tracking-widest text-text-muted">Or Securely Connect With</span>
                     </div>
-                    <span className="relative px-4 bg-surface-1 text-[10px] font-bold uppercase tracking-widest text-text-muted">Or Securely Connect With</span>
+
+                    <div className="grid grid-cols-2 gap-4">
+                      <button
+                        onClick={() => handleGoogleLogin()}
+                        className="h-[52px] rounded-xl border border-border-medium bg-surface-2 flex items-center justify-center gap-3 text-xs font-bold text-white hover:bg-surface-1 hover:border-text-muted transition-all"
+                      >
+                        <FcGoogle size={20} />
+                        Google
+                      </button>
+                      <button className="h-[52px] rounded-xl border border-border-medium bg-surface-2 flex items-center justify-center gap-3 text-xs font-bold text-white hover:bg-surface-1 hover:border-text-muted transition-all">
+                        <FiGithub size={20} />
+                        GitHub
+                      </button>
+                    </div>
                   </div>
 
-                  <div className="grid grid-cols-2 gap-4">
-                    <button
-                      onClick={() => handleGoogleLogin()}
-                      className="h-[52px] rounded-xl border border-border-medium bg-surface-2 flex items-center justify-center gap-3 text-xs font-bold text-white hover:bg-surface-1 hover:border-text-muted transition-all"
-                    >
-                      <FcGoogle size={20} />
-                      Google
-                    </button>
-                    <button className="h-[52px] rounded-xl border border-border-medium bg-surface-2 flex items-center justify-center gap-3 text-xs font-bold text-white hover:bg-surface-1 hover:border-text-muted transition-all">
-                      <FiGithub size={20} />
-                      GitHub
-                    </button>
+                  {/* Mode Switchers */}
+                  <div className="pt-8 text-center border-t border-border-subtle">
+                    <p className="text-sm text-text-muted">
+                      {mode === "signin" ? "Don't have an account?" : "Already have an account?"}
+                      {" "}
+                      <button
+                        onClick={() => setMode(mode === "signin" ? "signup" : "signin")}
+                        className="text-primary font-bold hover:underline underline-offset-4"
+                      >
+                        {mode === "signin" ? "Create Account" : "Sign In Instead"}
+                      </button>
+                    </p>
+                    {mode === "magic" && (
+                      <button
+                        onClick={() => setMode("signin")}
+                        className="mt-4 text-xs font-bold text-text-muted hover:text-white uppercase tracking-widest transition-colors flex items-center justify-center gap-2 mx-auto"
+                      >
+                        <FiArrowLeft /> Back to Password Login
+                      </button>
+                    )}
                   </div>
-                </div>
+                </motion.div>
+              </AnimatePresence>
+            </motion.div>
 
-                {/* Mode Switchers */}
-                <div className="pt-8 text-center border-t border-border-subtle">
-                  <p className="text-sm text-text-muted">
-                    {mode === "signin" ? "Don't have an account?" : "Already have an account?"}
-                    {" "}
-                    <button
-                      onClick={() => setMode(mode === "signin" ? "signup" : "signin")}
-                      className="text-primary font-bold hover:underline underline-offset-4"
-                    >
-                      {mode === "signin" ? "Create Account" : "Sign In Instead"}
-                    </button>
-                  </p>
-                  {mode === "magic" && (
-                    <button
-                      onClick={() => setMode("signin")}
-                      className="mt-4 text-xs font-bold text-text-muted hover:text-white uppercase tracking-widest transition-colors flex items-center justify-center gap-2 mx-auto"
-                    >
-                      <FiArrowLeft /> Back to Password Login
-                    </button>
-                  )}
-                </div>
-              </motion.div>
-            </AnimatePresence>
-          </motion.div>
-
-          <p className="mt-12 text-[10px] text-text-muted uppercase tracking-[0.2em] font-bold opacity-50">
-            &copy; 2024 EchoHire Labs &middot; Privacy First Architecture
-          </p>
+            <p className="mt-12 text-[10px] text-text-muted uppercase tracking-[0.2em] font-bold opacity-50">
+              &copy; 2026 EchoHire Inc. &middot; Privacy First Architecture
+            </p>
           </div>
         </section>
       </main>
