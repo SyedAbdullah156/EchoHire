@@ -90,7 +90,7 @@ interface Interview {
 
 type PracticeQuestion = typeof PRACTICE_QUESTIONS[0];
 
-export default function CodingTestPage() {
+function CodingTestContent() {
   const searchParams = useSearchParams();
   const token = searchParams.get("token");
 
@@ -365,5 +365,17 @@ export default function CodingTestPage() {
         <p className="text-[10px] text-text-muted font-medium">Assessment ID: {interview?._id.slice(-8).toUpperCase()}</p>
       </footer>
     </div>
+  );
+}
+
+export default function CodingTestPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="w-12 h-12 border-4 border-blue-500/20 border-t-blue-500 rounded-full animate-spin" />
+      </div>
+    }>
+      <CodingTestContent />
+    </Suspense>
   );
 }

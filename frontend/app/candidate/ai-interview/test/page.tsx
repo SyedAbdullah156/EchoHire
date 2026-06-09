@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef, useCallback, Suspense } from "react";
 import {
     FiMic, FiSend, FiVideo, FiVideoOff,
     FiLayers, FiMessageSquare, FiAlertCircle,
@@ -32,7 +32,7 @@ interface RoundData {
     remarks?: string;
 }
 
-export default function AIInterviewPage() {
+function AIInterviewTestContent() {
     const searchParams = useSearchParams();
     const interviewId = searchParams.get("id");
     const roundIndex = searchParams.get("round") ?? "0";
@@ -617,5 +617,20 @@ export default function AIInterviewPage() {
                 </div>
             </div>
         </div>
+    );
+}
+
+export default function AIInterviewPage() {
+    return (
+        <Suspense fallback={
+            <div className="flex h-screen items-center justify-center">
+                <div className="flex flex-col items-center gap-4">
+                    <div className="h-12 w-12 border-4 border-primary border-t-transparent rounded-full animate-spin" />
+                    <p className="text-xs font-black uppercase tracking-widest text-text-muted">Loading Interview Session...</p>
+                </div>
+            </div>
+        }>
+            <AIInterviewTestContent />
+        </Suspense>
     );
 }
